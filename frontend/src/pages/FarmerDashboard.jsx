@@ -46,10 +46,10 @@ const FarmerDashboard = () => {
               </p>
            </div>
         </div>
-        <button className="btn-primary">
+        <Link to="/dashboard/farmer/crops" className="btn-primary">
           <PlusCircle size={20} />
           {activeTab === 'crops' ? 'Add New Crop' : 'Request Student Help'}
-        </button>
+        </Link>
       </div>
 
       {/* Stats Summary Panel */}
@@ -86,15 +86,16 @@ const FarmerDashboard = () => {
           <h3 className="text-3xl font-black text-slate-800 mt-1">4</h3>
         </div>
 
-        <div className="glass p-6 rounded-2xl border-l-4 border-purple-500 hover:border-l-8 transition-all">
+        <Link to="/dashboard/farmer/orders" className="glass p-6 rounded-2xl border-l-4 border-purple-500 hover:border-l-8 transition-all hover:bg-purple-50/50 group">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
               <TrendingUp size={20} />
             </div>
+            <ArrowRight size={16} className="text-purple-400 group-hover:translate-x-1 transition-transform" />
           </div>
-          <p className="text-slate-500 text-sm font-bold uppercase tracking-wider">Estimated Revenue</p>
-          <h3 className="text-3xl font-black text-slate-800 mt-1">12.4k <span className="text-sm font-medium text-slate-400">ETB</span></h3>
-        </div>
+          <p className="text-slate-500 text-sm font-bold uppercase tracking-wider">Manage Shipments</p>
+          <h3 className="text-3xl font-black text-slate-800 mt-1">View All <span className="text-sm font-medium text-slate-400">Orders</span></h3>
+        </Link>
       </div>
 
       {/* Modern Tabs */}
