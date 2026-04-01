@@ -24,6 +24,7 @@ app.get('/', (req, res) => {
 // Import Routes (Placeholder)
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/crops', require('./routes/cropRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/problems', require('./routes/problemRoutes'));
 app.use('/api/solutions', require('./routes/solutionRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
