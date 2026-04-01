@@ -27,15 +27,29 @@ const BuyerDashboard = () => {
     setSelectedCrop(crop);
   };
 
-  const processPayment = () => {
+  const [deliveryAddress, setDeliveryAddress] = useState(user?.location || '');
+
+  const processPayment = async () => {
     setIsPaying(true);
-    // Simulate M-Pesa processing delay
-    setTimeout(() => {
-      setIsPaying(false);
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${user.token}` }
+      };
+      await axios.post('http://localhost:5000/api/orders', {
+        cropId: selectedCrop._id,
+        quantity: 1, // Defaulting to 1 for demo simplification
+        deliveryAddress
+      }, config);
+
       setSelectedCrop(null);
       setShowPaymentSuccess(true);
       setTimeout(() => setShowPaymentSuccess(false), 5000);
-    }, 2000);
+    } catch (err) {
+      console.error("Payment Error:", err);
+      alert("Payment failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setIsPaying(false);
+    }
   };
 
   const filteredCrops = crops.filter(crop => 
@@ -179,7 +193,17 @@ const BuyerDashboard = () => {
               <h3 className="text-2xl font-black text-slate-800">Complete Purchase</h3>
               <p className="text-slate-500 mt-2">You are about to buy <strong>{selectedCrop.name}</strong> from a local farmer.</p>
               
-              <div className="mt-8 space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <div className="mt-6 space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Delivery Address</label>
+                <textarea 
+                  className="input-field min-h-[80px]" 
+                  value={deliveryAddress} 
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="Specify location for drop-off..."
+                ></textarea>
+              </div>
+
+              <div className="mt-6 space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
                 <div className="flex justify-between font-medium">
                   <span className="text-slate-500">Unit Price:</span>
                   <span className="text-slate-800">{selectedCrop.pricePerUnit} ETB</span>
