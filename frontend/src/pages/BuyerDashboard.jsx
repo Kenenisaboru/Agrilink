@@ -155,12 +155,20 @@ const BuyerDashboard = () => {
                     <span className="px-2 py-1 bg-amber-50 text-amber-600 rounded">Fresh Harvest</span>
                 </div>
                 
-                <button 
-                  onClick={() => handleBuy(crop)}
-                  className="btn-primary w-full mt-6"
-                >
-                  <ShoppingCart size={18} /> Buy with M-Pesa
-                </button>
+                <div className="mt-6 flex gap-2">
+                  <button 
+                    onClick={() => handleBuy(crop)}
+                    className="btn-primary flex-grow"
+                  >
+                    <ShoppingCart size={18} /> Buy
+                  </button>
+                  <Link 
+                    to={`/chat?userId=${crop.farmer?._id || crop.farmer}&userName=${crop.farmer?.name || 'Farmer'}`}
+                    className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all"
+                  >
+                    <MessageSquare size={18} />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

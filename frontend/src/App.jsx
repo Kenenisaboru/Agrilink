@@ -11,6 +11,7 @@ import BuyerDashboard from './pages/BuyerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import CropManagement from './pages/CropManagement';
 import FarmerOrders from './pages/FarmerOrders';
+import ChatPage from './pages/ChatPage';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/chat" element={<ChatPage />} />
             
             {/* Protected Routes */}
             {user && user.role === 'Farmer' && (

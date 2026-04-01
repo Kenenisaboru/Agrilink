@@ -35,6 +35,7 @@ const Navbar = () => {
           <NavLink to="/" active={isActive('/')}>Home</NavLink>
           <NavLink to="/#about" active={isActive('/#about')} icon={<Info size={16}/>}>About</NavLink>
           <NavLink to="/#market" active={isActive('/#market')} icon={<ShoppingBag size={16}/>}>Marketplace</NavLink>
+          <NavLink to="/chat" active={isActive('/chat')} icon={<MessageSquare size={16}/>}>Messages</NavLink>
 
           {!user ? (
             <div className="flex items-center gap-4 pl-4 border-l border-slate-200">
