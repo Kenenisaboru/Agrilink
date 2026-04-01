@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 // Pages
@@ -18,48 +18,64 @@ function App() {
   const { user } = useAuth();
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col selection:bg-agriGreen selection:text-white">
-        <Navbar />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/chat" element={<ChatPage />} />
-            
-            {/* Protected Routes */}
-            {user && user.role === 'Farmer' && (
-              <>
-                <Route path="/dashboard/farmer" element={<FarmerDashboard />} />
-                <Route path="/dashboard/farmer/crops" element={<CropManagement />} />
-                <Route path="/dashboard/farmer/orders" element={<FarmerOrders />} />
-              </>
-            )}
-            {user && user.role === 'Student' && (
-              <Route path="/dashboard/student/*" element={<StudentDashboard />} />
-            )}
-            {user && user.role === 'Buyer' && (
-              <Route path="/dashboard/buyer/*" element={<BuyerDashboard />} />
-            )}
-            {user && user.role === 'Admin' && (
-              <Route path="/dashboard/admin/*" element={<AdminDashboard />} />
-            )}
-          </Routes>
-        </main>
-        {/* Footer */}
-        <footer className="bg-slate-900 text-white text-center p-8 mt-auto rounded-t-[3rem]">
-          <div className="max-w-4xl mx-auto space-y-4">
-             <h3 className="text-2xl font-black text-agriLight">AgriLink</h3>
-             <p className="text-slate-400 text-sm font-medium">East Hararghe Farmer-Student Innovation Platform</p>
-             <div className="h-px bg-slate-800 w-full"></div>
-             <p className="text-slate-500 text-xs tracking-widest uppercase font-black italic mt-4">
-               © {new Date().getFullYear()} Empowering Ethiopian Agriculture
-             </p>
-          </div>
-        </footer>
-      </div>
-    </Router>
+    <div className="min-h-screen flex flex-col selection:bg-agriGreen selection:text-white bg-agriBg">
+      <Navbar />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Protected Routes with Redirection Logic */}
+          <Route 
+            path="/chat" 
+            element={user ? <ChatPage /> : <Navigate to="/login" />} 
+          />
+          
+          <Route 
+            path="/dashboard/farmer" 
+            element={user?.role === 'Farmer' ? <FarmerDashboard /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/dashboard/farmer/crops" 
+            element={user?.role === 'Farmer' ? <CropManagement /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/dashboard/farmer/orders" 
+            element={user?.role === 'Farmer' ? <FarmerOrders /> : <Navigate to="/login" />} 
+          />
+          
+          <Route 
+            path="/dashboard/student" 
+            element={user?.role === 'Student' ? <StudentDashboard /> : <Navigate to="/login" />} 
+          />
+          
+          <Route 
+            path="/dashboard/buyer" 
+            element={user?.role === 'Buyer' ? <BuyerDashboard /> : <Navigate to="/login" />} 
+          />
+          
+          <Route 
+            path="/dashboard/admin" 
+            element={user?.role === 'Admin' ? <AdminDashboard /> : <Navigate to="/login" />} 
+          />
+
+          {/* Catch-all 404/Redirect */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+      
+      <footer className="bg-slate-900 text-white text-center p-8 mt-auto rounded-t-[3rem]">
+        <div className="max-w-4xl mx-auto space-y-4">
+           <h3 className="text-2xl font-black text-agriLight">AgriLink</h3>
+           <p className="text-slate-400 text-sm font-medium">East Hararghe Farmer-Student Innovation Platform</p>
+           <div className="h-px bg-slate-800 w-full"></div>
+           <p className="text-slate-500 text-xs tracking-widest uppercase font-black italic mt-4">
+             © {new Date().getFullYear()} Empowering Ethiopian Agriculture
+           </p>
+        </div>
+      </footer>
+    </div>
   );
 }
 
