@@ -2,42 +2,43 @@ import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in (e.g., check local storage for token & user data)
-    const storedUser = localStorage.getItem('userInfo');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error('Failed to parse user data:', error);
+      localStorage.removeItem('user');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('userInfo', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const register = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('userInfo');
-  };
-
-  const value = {
-    user,
-    login,
-    logout,
-    loading
+    localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
