@@ -1,254 +1,292 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  Search, 
+  ShoppingCart, 
+  Leaf, 
+  MapPin, 
+  Filter, 
+  ChevronRight,
+  Loader2,
+  ArrowRight,
+  Plus,
+  Minus,
+  X,
+  MessageSquare
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, MapPin, Search, Tag, Filter, CheckCircle2, ChevronRight, X } from 'lucide-react';
 
 const BuyerDashboard = () => {
   const { user } = useAuth();
   const [crops, setCrops] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCrop, setSelectedCrop] = useState(null);
-  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const categories = ['All', 'Vegetables', 'Fruits', 'Grains', 'Tubers'];
 
   useEffect(() => {
     const fetchCrops = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/crops');
-        setCrops(data);
+        const res = await axios.get('http://localhost:5000/api/crops');
+        setCrops(res.data);
       } catch (err) {
-        console.error("Error fetching crops:", err);
+        console.error('Error fetching crops:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCrops();
   }, []);
 
-  const handleBuy = (crop) => {
-    setSelectedCrop(crop);
+  const addToCart = (crop) => {
+    setCart(prev => {
+      const existing = prev.find(item => item._id === crop._id);
+      if (existing) {
+        return prev.map(item => 
+          item._id === crop._id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { ...crop, quantity: 1 }];
+    });
   };
 
-  const [deliveryAddress, setDeliveryAddress] = useState(user?.location || '');
-
-  const processPayment = async () => {
-    setIsPaying(true);
-    try {
-      const config = {
-        headers: { Authorization: `Bearer ${user.token}` }
-      };
-      await axios.post('http://localhost:5000/api/orders', {
-        cropId: selectedCrop._id,
-        quantity: 1, // Defaulting to 1 for demo simplification
-        deliveryAddress
-      }, config);
-
-      setSelectedCrop(null);
-      setShowPaymentSuccess(true);
-      setTimeout(() => setShowPaymentSuccess(false), 5000);
-    } catch (err) {
-      console.error("Payment Error:", err);
-      alert("Payment failed: " + (err.response?.data?.message || err.message));
-    } finally {
-      setIsPaying(false);
-    }
+  const removeFromCart = (id) => {
+    setCart(prev => prev.filter(item => item._id !== id));
   };
 
-  const filteredCrops = crops.filter(crop => 
-    crop.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    crop.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const updateQuantity = (id, delta) => {
+    setCart(prev => prev.map(item => {
+      if (item._id === id) {
+        const newQty = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    }));
+  };
+
+  const filteredCrops = crops.filter(crop => {
+    const matchesSearch = crop.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          crop.location?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || crop.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+  if (loading) return (
+    <div className="h-[60vh] flex items-center justify-center">
+      <Loader2 className="w-10 h-10 animate-spin text-agriGreen" />
+    </div>
   );
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
-      {/* Premium Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-agriGreen to-agriDark p-8 rounded-3xl shadow-2xl shadow-green-900/30">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-white">
-            <h1 className="text-4xl font-extrabold tracking-tight">Welcome, {user?.name}!</h1>
-            <p className="text-agriLight mt-2 text-lg font-medium opacity-90 max-w-lg">
-              Empowering your agricultural supply chain with direct-from-farmer connections in East Hararghe.
-            </p>
-            <div className="flex gap-4 mt-6">
-              <div className="glass px-4 py-2 rounded-full flex items-center gap-2 text-sm">
-                <Tag size={16} /> Best regional prices
-              </div>
-              <div className="glass px-4 py-2 rounded-full flex items-center gap-2 text-sm">
-                <CheckCircle2 size={16} /> Verified Farmers
-              </div>
-            </div>
-          </div>
-          
-          <div className="w-full md:w-96 relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="text-agriGreen" size={20} />
-            </div>
+    <div className="max-w-7xl mx-auto py-8 px-4 space-y-12">
+      {/* Hero Search Section */}
+      <section className="relative rounded-[3rem] overflow-hidden bg-agriDark p-12 lg:p-20 text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-agriGreen/20 rounded-full -mr-20 -mt-20 blur-3xl" />
+        <div className="relative z-10 max-w-2xl">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl lg:text-6xl font-black mb-6 leading-tight"
+          >
+            Fresh Produce from <br /> <span className="text-agriLight">Local Farms</span>
+          </motion.h1>
+          <div className="relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors" />
             <input 
-              type="text" 
-              placeholder="Search by crop or location..." 
-              className="w-full pl-12 pr-4 py-4 bg-white/95 backdrop-blur shadow-xl border-0 rounded-2xl focus:ring-4 focus:ring-agriLight/50 text-gray-800 transition-all font-medium"
+              type="text"
+              placeholder="Search for vegetables, fruits, or location..."
+              className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl py-5 pl-16 pr-6 outline-none focus:bg-white focus:text-gray-900 transition-all text-lg font-medium placeholder:text-gray-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
+      </section>
+
+      {/* Categories & Filter */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all ${
+                selectedCategory === cat 
+                  ? 'bg-agriGreen text-white shadow-lg shadow-green-200' 
+                  : 'bg-white text-gray-500 border border-gray-100 hover:border-agriGreen/30'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+          <Filter className="w-5 h-5" />
+          More Filters
+        </button>
       </div>
 
-      {/* Success Notification */}
-      {showPaymentSuccess && (
-        <div className="fixed top-24 right-8 z-50 bg-green-500 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in">
-          <div className="bg-white/20 p-2 rounded-full">
-            <CheckCircle2 size={24} />
-          </div>
-          <div>
-            <p className="font-bold">Payment Successful!</p>
-            <p className="text-sm opacity-90">M-Pesa transaction complete. Check your dashboard for details.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Marketplace Grid */}
-      <div>
-        <div className="flex justify-between items-center mb-8 px-2">
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-            <ShoppingCart className="text-agriGreen" /> Fresh Harvest Marketplace
-          </h2>
-          <button className="flex items-center gap-2 text-agriGreen font-bold hover:gap-3 transition-all">
-            Filter <Filter size={18} />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      {/* Crops Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <AnimatePresence mode="popLayout">
           {filteredCrops.map((crop, idx) => (
-            <div key={crop._id} className="card group" style={{ animationDelay: `${idx * 100}ms` }}>
-              <div className="relative h-56 overflow-hidden">
-                <div className="absolute top-3 left-3 z-10">
-                  <span className="bg-black/50 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-full">
-                    {crop.category || "General"}
+            <motion.div
+              layout
+              key={crop._id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
+              className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group"
+            >
+              <div className="h-56 bg-gray-100 relative overflow-hidden">
+                <img 
+                  src={crop.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400'} 
+                  alt={crop.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute top-4 left-4">
+                  <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-agriGreen shadow-sm">
+                    {crop.category || 'Produce'}
                   </span>
                 </div>
-                {crop.image 
-                  ? <img src={crop.image} alt={crop.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-50 to-amber-50">
-                      <div className="text-center">
-                        <ShoppingCart size={40} className="mx-auto text-agriLight opacity-40" />
-                        <span className="text-xs text-agriLight mt-2 font-bold uppercase tracking-widest">No Image</span>
-                      </div>
-                    </div>
-                }
               </div>
-              
               <div className="p-6">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-xl font-black text-slate-800 group-hover:text-agriGreen transition-colors">{crop.name}</h3>
-                  <div className="flex items-center text-slate-500 text-xs font-bold">
-                    <MapPin size={14} className="mr-1 text-agriEarth" /> {crop.location}
-                  </div>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-black text-gray-900 leading-tight">{crop.name}</h3>
+                  <div className="text-agriGreen font-black text-lg">${crop.price}</div>
                 </div>
-
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-slate-900">{crop.pricePerUnit}</span>
-                  <span className="text-sm font-bold text-slate-400">ETB / {crop.unit}</span>
+                <div className="flex items-center gap-2 text-gray-500 text-sm mb-6">
+                  <MapPin className="w-4 h-4" />
+                  <span>{crop.location || 'East Hararghe'}</span>
                 </div>
-
-                <div className="mt-4 flex items-center justify-between text-xs font-bold tracking-tight">
-                    <span className="text-slate-400">STOCK: <span className="text-slate-700">{crop.quantity} {crop.unit}</span></span>
-                    <span className="px-2 py-1 bg-amber-50 text-amber-600 rounded">Fresh Harvest</span>
-                </div>
-                
-                <div className="mt-6 flex gap-2">
+                <div className="flex gap-2">
                   <button 
-                    onClick={() => handleBuy(crop)}
-                    className="btn-primary flex-grow"
+                    onClick={() => addToCart(crop)}
+                    className="flex-grow btn-primary py-3 rounded-2xl flex items-center justify-center gap-2 group/btn"
                   >
-                    <ShoppingCart size={18} /> Buy
+                    <ShoppingCart className="w-5 h-5 transition-transform group-hover/btn:-translate-y-1" />
+                    Add to Cart
                   </button>
                   <Link 
                     to={`/chat?userId=${crop.farmer?._id || crop.farmer}&userName=${crop.farmer?.name || 'Farmer'}`}
-                    className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all"
+                    className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl transition-colors"
                   >
-                    <MessageSquare size={18} />
+                    <MessageSquare className="w-5 h-5" />
                   </Link>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
-
-        {filteredCrops.length === 0 && (
-          <div className="py-20 text-center glass rounded-3xl border-dashed border-2 border-slate-200">
-            <Search size={48} className="mx-auto text-slate-300 mb-4" />
-            <h3 className="text-xl font-bold text-slate-600">No crops found</h3>
-            <p className="text-slate-400">Try searching for something else like "Coffee" or "Harar"</p>
-          </div>
-        )}
+        </AnimatePresence>
       </div>
 
-      {/* Mock M-Pesa Payment Modal */}
-      {selectedCrop && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative">
-            <button 
-              onClick={() => setSelectedCrop(null)}
-              className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="p-8">
-              <div className="bg-agriGreen/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
-                <ShoppingCart className="text-agriGreen" size={32} />
-              </div>
-              <h3 className="text-2xl font-black text-slate-800">Complete Purchase</h3>
-              <p className="text-slate-500 mt-2">You are about to buy <strong>{selectedCrop.name}</strong> from a local farmer.</p>
-              
-              <div className="mt-6 space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Delivery Address</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  value={deliveryAddress} 
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                  placeholder="Specify location for drop-off..."
-                ></textarea>
-              </div>
-
-              <div className="mt-6 space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Unit Price:</span>
-                  <span className="text-slate-800">{selectedCrop.pricePerUnit} ETB</span>
-                </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Service Fee:</span>
-                  <span className="text-slate-800">5 ETB</span>
-                </div>
-                <div className="h-px bg-slate-200 my-2"></div>
-                <div className="flex justify-between text-lg font-black">
-                  <span className="text-slate-800">Total:</span>
-                  <span className="text-agriGreen">{selectedCrop.pricePerUnit + 5} ETB</span>
-                </div>
-              </div>
-
-              <div className="mt-8 flex items-center gap-3 bg-amber-50/50 p-4 rounded-xl border border-amber-100 italic text-sm text-amber-700">
-                <ChevronRight size={16} /> M-Pesa prompt will be sent to your phone
-              </div>
-
-              <button 
-                onClick={processPayment}
-                disabled={isPaying}
-                className={`btn-primary w-full mt-8 py-4 ${isPaying ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {isPaying ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Processing Payment...
-                  </div>
-                ) : (
-                  <>Confirm & Pay with M-Pesa</>
-                )}
-              </button>
-            </div>
-          </div>
+      {filteredCrops.length === 0 && (
+        <div className="py-20 text-center bg-gray-50 rounded-[3rem] border-dashed border-2 border-gray-200">
+          <Search size={48} className="mx-auto text-gray-300 mb-4" />
+          <h3 className="text-xl font-bold text-gray-600">No results found</h3>
+          <p className="text-gray-400">Try adjusting your search or filters.</p>
         </div>
       )}
+
+      {/* Cart Floating Button */}
+      {cart.length > 0 && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          onClick={() => setIsCartOpen(true)}
+          className="fixed bottom-8 right-8 bg-agriGreen text-white p-5 rounded-full shadow-2xl shadow-green-400 z-40 flex items-center gap-3 hover:scale-110 transition-transform"
+        >
+          <div className="relative">
+            <ShoppingCart className="w-7 h-7" />
+            <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-agriGreen">
+              {cart.reduce((acc, item) => acc + item.quantity, 0)}
+            </span>
+          </div>
+          <span className="font-black pr-2">${cartTotal.toFixed(2)}</span>
+        </motion.button>
+      )}
+
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCartOpen(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+            >
+              <div className="p-8 flex items-center justify-between border-b border-gray-100">
+                <h2 className="text-2xl font-black text-gray-900">Your Basket</h2>
+                <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto p-8 space-y-6">
+                {cart.map((item) => (
+                  <div key={item._id} className="flex gap-4">
+                    <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
+                      <img src={item.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400'} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-gray-900">{item.name}</h4>
+                        <button onClick={() => removeFromCart(item._id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="text-agriGreen font-black mt-1">${item.price}</div>
+                      <div className="flex items-center gap-3 mt-3">
+                        <button 
+                          onClick={() => updateQuantity(item._id, -1)}
+                          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="font-bold w-4 text-center">{item.quantity}</span>
+                        <button 
+                          onClick={() => updateQuantity(item._id, 1)}
+                          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-8 border-t border-gray-100 bg-gray-50 space-y-4">
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span className="text-gray-500">Subtotal</span>
+                  <span className="text-gray-900 font-black">${cartTotal.toFixed(2)}</span>
+                </div>
+                <button className="w-full btn-primary py-4 rounded-2xl text-lg font-black shadow-xl shadow-green-200">
+                  Checkout Now
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
