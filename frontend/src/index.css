@@ -3,20 +3,74 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.4 96.6% 11.6%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.1 70.6% 45.3%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border selection:bg-primary/20 selection:text-primary-dark;
+  }
   body {
-    @apply bg-agriBg text-slate-800 font-sans selection:bg-agriLight;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(142, 76%, 36%, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(38, 92%, 50%, 0.03) 0px, transparent 50%);
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-agriGreen hover:bg-agriDark text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-green-200/50 hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center justify-center gap-2;
+    @apply bg-agriGreen hover:bg-agriDark text-white font-bold py-3 px-8 rounded-2xl shadow-lg shadow-green-200/50 hover:shadow-xl hover:shadow-green-300/50 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100 disabled:shadow-none;
   }
   .btn-secondary {
-    @apply bg-agriEarth hover:bg-amber-900 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-amber-200/50 hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center justify-center gap-2;
+    @apply bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 font-bold py-3 px-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center gap-2;
   }
-  .card {
-    @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-slate-200/50 border border-white/40 overflow-hidden hover:shadow-2xl hover:shadow-slate-300/60 transition-all duration-500 hover:-translate-y-1;
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-2xl;
   }
   .input-field {
     @apply w-full px-5 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all duration-200 placeholder:text-slate-400;
