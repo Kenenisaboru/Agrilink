@@ -1,89 +1,200 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sprout, LogOut, User as UserIcon, LayoutDashboard, ShoppingBag, Info, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Menu, 
+  X, 
+  Leaf, 
+  User, 
+  LogOut, 
+  MessageSquare, 
+  LayoutDashboard, 
+  Package
+} from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const getDashboardLink = () => {
-    if (!user) return '/';
-    return `/dashboard/${user.role.toLowerCase()}`;
-  };
+  const navLinks = [
+    { name: 'Home', path: '/', icon: Leaf },
+    ...(user ? [
+      { 
+        name: 'Dashboard', 
+        path: `/dashboard/${user.role.toLowerCase()}`,
+        icon: LayoutDashboard 
+      },
+      { name: 'Chat', path: '/chat', icon: MessageSquare },
+    ] : []),
+  ];
 
-  const isActive = (path) => location.pathname === path;
+  if (user?.role === 'Farmer') {
+    navLinks.push(
+      { name: 'My Crops', path: '/dashboard/farmer/crops', icon: Leaf },
+      { name: 'Orders', path: '/dashboard/farmer/orders', icon: Package }
+    );
+  }
 
   return (
-    <nav className="sticky top-0 z-[100] w-full px-6 py-4">
-      <div className="max-w-7xl mx-auto glass rounded-[2rem] shadow-xl shadow-green-900/10 px-8 py-3 flex justify-between items-center border border-white/60">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="bg-agriGreen p-2 rounded-2xl group-hover:rotate-12 transition-transform duration-300">
-            <Sprout size={28} className="text-white" />
+    <nav
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-3",
+        scrolled ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50" : "bg-transparent"
+      )}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="bg-agriGreen p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-green-200/50">
+            <Leaf className="text-white w-6 h-6" />
           </div>
-          <span className="text-2xl font-black tracking-tighter text-slate-800">
-            Agri<span className="text-agriGreen">Link</span>
+          <span className={cn(
+            "text-2xl font-black tracking-tighter transition-colors",
+            scrolled ? "text-agriDark" : "text-agriGreen"
+          )}>
+            Agri<span className="text-amber-600">Link</span>
           </span>
         </Link>
-        
-        <div className="hidden lg:flex space-x-8 items-center">
-          <NavLink to="/" active={isActive('/')}>Home</NavLink>
-          <NavLink to="/#about" active={isActive('/#about')} icon={<Info size={16}/>}>About</NavLink>
-          <NavLink to="/#market" active={isActive('/#market')} icon={<ShoppingBag size={16}/>}>Marketplace</NavLink>
-          <NavLink to="/chat" active={isActive('/chat')} icon={<MessageSquare size={16}/>}>Messages</NavLink>
 
-          {!user ? (
-            <div className="flex items-center gap-4 pl-4 border-l border-slate-200">
-              <Link to="/login" className="text-sm font-black text-slate-600 hover:text-agriGreen transition-colors">Sign In</Link>
-              <Link to="/register" className="btn-primary py-2 px-6 shadow-green-200/50">Join Platform</Link>
-            </div>
-          ) : (
-            <div className="flex items-center gap-6 pl-6 border-l border-slate-200">
-              <Link 
-                to={getDashboardLink()} 
-                className={`flex items-center gap-2 group transition-all ${isActive(getDashboardLink()) ? 'text-agriGreen' : 'text-slate-600'}`}
-              >
-                <div className={`p-2 rounded-xl transition-all ${isActive(getDashboardLink()) ? 'bg-agriGreen text-white' : 'bg-slate-100 group-hover:bg-agriGreen/10 group-hover:text-agriGreen'}`}>
-                  {user.role === 'Admin' ? <ShieldCheck size={18} /> : <LayoutDashboard size={18} />}
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={cn(
+                "text-sm font-bold transition-all hover:text-agriGreen relative group",
+                location.pathname === link.path ? "text-agriGreen" : "text-gray-600"
+              )}
+            >
+              {link.name}
+              <span className={cn(
+                "absolute -bottom-1 left-0 w-0 h-0.5 bg-agriGreen transition-all group-hover:w-full",
+                location.pathname === link.path && "w-full"
+              )} />
+            </Link>
+          ))}
+          
+          {user ? (
+            <div className="flex items-center gap-4">
+              <div className="h-8 w-px bg-gray-200" />
+              <div className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full border border-gray-100 hover:border-agriGreen/30 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-agriGreen/10 flex items-center justify-center text-agriGreen font-bold">
+                  {user.name?.[0] || <User className="w-4 h-4" />}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest leading-none opacity-50">{user.role}</span>
-                  <span className="text-sm font-black tracking-tight leading-none mt-1">Dashboard</span>
+                  <span className="text-xs font-bold text-gray-900 leading-none">{user.name}</span>
+                  <span className="text-[10px] text-gray-500 font-medium">{user.role}</span>
                 </div>
-              </Link>
-              
-              <button 
-                onClick={handleLogout} 
-                className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-all font-bold group"
+              </div>
+              <button
+                onClick={logout}
+                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                title="Logout"
               >
-                <div className="p-2 bg-slate-50 group-hover:bg-red-50 rounded-xl transition-all">
-                  <LogOut size={18} />
-                </div>
+                <LogOut className="w-5 h-5" />
               </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link to="/login" className="text-sm font-bold text-gray-600 hover:text-agriGreen transition-colors">
+                Sign In
+              </Link>
+              <Link 
+                to="/register" 
+                className="btn-primary py-2 shadow-none"
+              >
+                Join Now
+              </Link>
             </div>
           )}
         </div>
 
-        {/* Mobile menu toggle would go here */}
+        {/* Mobile Toggle */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden p-2 text-gray-600 hover:text-agriGreen"
+        >
+          {isOpen ? <X /> : <Menu />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white mt-2 rounded-2xl border border-gray-100 shadow-2xl overflow-hidden"
+          >
+            <div className="p-4 space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl font-bold transition-colors",
+                    location.pathname === link.path ? "bg-agriGreen text-white" : "text-gray-600 hover:bg-gray-50 hover:text-agriGreen"
+                  )}
+                >
+                  {link.icon && <link.icon className="w-5 h-5" />}
+                  {link.name}
+                </Link>
+              ))}
+              <div className="h-px bg-gray-100 my-2" />
+              {user ? (
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl font-bold text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 p-2">
+                  <Link 
+                    to="/login" 
+                    onClick={() => setIsOpen(false)}
+                    className="flex justify-center p-3 rounded-xl font-bold text-gray-600 bg-gray-100"
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    onClick={() => setIsOpen(false)}
+                    className="flex justify-center p-3 rounded-xl font-bold bg-agriGreen text-white"
+                  >
+                    Join
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
-
-const NavLink = ({ to, children, active, icon }) => (
-  <Link 
-    to={to} 
-    className={`flex items-center gap-1.5 text-sm font-black tracking-tight transition-all duration-300 ${active ? 'text-agriGreen' : 'text-slate-500 hover:text-agriGreen'}`}
-  >
-    {icon}
-    {children}
-    {active && <div className="w-1 h-1 bg-agriGreen rounded-full ml-0.5"></div>}
-  </Link>
-);
 
 export default Navbar;
