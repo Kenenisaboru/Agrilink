@@ -10,7 +10,6 @@ import {
   ArrowRight, 
   Loader2, 
   AlertCircle,
-  Briefcase,
   GraduationCap,
   ShoppingBag,
   CheckCircle2,
@@ -44,7 +43,7 @@ const Register = () => {
     setLoading(true);
     setError('');
     try {
-      const user = await register(formData.name, formData.email, formData.password, formData.role, formData.location, formData.mpesaNumber, formData.university);
+      const user = await register(formData);
       navigate(`/dashboard/${user.role.toLowerCase()}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -83,7 +82,7 @@ const Register = () => {
               </motion.div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
@@ -116,19 +115,68 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
-                  <input
-                    type="password"
-                    required
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  />
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                    <input
+                      type="password"
+                      required
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    />
+                  </div>
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Location</label>
+                  <div className="relative group">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                    <input
+                      type="text"
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                      placeholder="e.g. Haramaya, Harar"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Payment Number</label>
+                  <div className="relative group">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                    <input
+                      type="text"
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                      placeholder="09..."
+                      value={formData.mpesaNumber}
+                      onChange={(e) => setFormData({ ...formData, mpesaNumber: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {formData.role === 'Student' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">University Name</label>
+                    <div className="relative group">
+                      <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                      <input
+                        type="text"
+                        required={formData.role === 'Student'}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                        placeholder="Haramaya University"
+                        value={formData.university}
+                        onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -157,6 +205,7 @@ const Register = () => {
                   ))}
                 </div>
               </div>
+
               <button
                 type="submit"
                 disabled={loading}
