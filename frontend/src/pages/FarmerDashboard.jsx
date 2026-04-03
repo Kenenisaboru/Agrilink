@@ -52,6 +52,7 @@ const FarmerDashboard = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      if (!user?.token) return;
       try {
         const config = {
           headers: { Authorization: `Bearer ${user.token}` }
@@ -73,7 +74,7 @@ const FarmerDashboard = () => {
         setLoading(false);
       }
     };
-    if (user?.token) fetchDashboardData();
+    fetchDashboardData();
   }, [user]);
 
   if (loading) return (
@@ -81,6 +82,8 @@ const FarmerDashboard = () => {
       <Loader2 className="w-10 h-10 animate-spin text-agriGreen" />
     </div>
   );
+
+  if (!user) return null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 py-8 px-4">
