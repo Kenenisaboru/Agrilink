@@ -17,9 +17,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Farmer', 'Student', 'Buyer', 'Admin'],
+    enum: ['Farmer', 'Student', 'Buyer', 'Admin', 'Representative'],
     required: [true, 'Please specify a user role'],
   },
+  managedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   location: {
     type: String,
     // E.g., 'Harar', 'Haramaya', 'Dire Dawa', 'Jigjiga', 'Oda Bultum'
