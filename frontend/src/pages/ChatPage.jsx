@@ -36,19 +36,51 @@ const ChatPage = () => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef();
 
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState(null);
+  const typingTimeoutRef = useRef(null);
+
   useEffect(() => {
     if (user?._id) {
-      socket.emit('join', { userId: user._id });
+      socket.emit('join', user._id);
     }
 
     socket.on('message', (msg) => {
-       if (recipient && (msg.sender === recipient._id || msg.sender === user._id)) {
-          setMessages((prev) => [...prev, msg]);
-       }
+      // If message is for current open chat
+      if (recipient && (msg.sender._id === recipient._id || msg.sender === recipient._id)) {
+        setMessages((prev) => [...prev, msg]);
+      }
+      // Update history/sidebar even if chat not open
+      fetchHistory();
     });
 
-    return () => socket.off('message');
+    socket.on('userTyping', ({ senderId }) => {
+      if (recipient && senderId === recipient._id) {
+        setTypingUser(senderId);
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
+      }
+    });
+
+    return () => {
+      socket.off('message');
+      socket.off('userTyping');
+    };
   }, [user, recipient]);
+
+  const fetchHistory = async () => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      const { data } = await axios.get('http://localhost:5000/api/messages/conversations/list', config);
+      setHistory(data);
+    } catch (err) {
+      console.error("Error fetching history:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.token) fetchHistory();
+  }, [user]);
 
   useEffect(() => {
     const fetchConversation = async () => {
@@ -70,29 +102,25 @@ const ChatPage = () => {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, typingUser]);
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !recipient) return;
 
-    try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/messages', {
-        receiverId: recipient._id,
-        content: newMessage
-      }, config);
+    socket.emit('sendMessage', {
+      senderId: user._id,
+      receiverId: recipient._id,
+      content: newMessage
+    });
 
-      socket.emit('sendMessage', {
-        senderId: user._id,
-        receiverId: recipient._id,
-        content: newMessage
-      });
+    setNewMessage('');
+  };
 
-      setMessages((prev) => [...prev, data]);
-      setNewMessage('');
-    } catch (err) {
-      console.error("Error sending message:", err);
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    if (recipient) {
+      socket.emit('typing', { senderId: user._id, receiverId: recipient._id });
     }
   };
 
@@ -122,35 +150,43 @@ const ChatPage = () => {
         </div>
         
         <div className="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
-          {recipient && (
-            <div className="p-4 bg-agriGreen text-white rounded-[2rem] shadow-xl shadow-green-100/50 cursor-pointer transition-all flex items-center gap-4 group">
+          {history.length > 0 ? history.map((contact) => (
+            <div 
+              key={contact._id}
+              onClick={() => setRecipient(contact)}
+              className={cn(
+                "p-4 rounded-[2rem] cursor-pointer transition-all flex items-center gap-4 group border",
+                recipient?._id === contact._id 
+                  ? "bg-agriGreen text-white shadow-xl shadow-green-100 border-transparent" 
+                  : "hover:bg-gray-50 border-transparent hover:border-gray-100"
+              )}
+            >
               <div className="relative">
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
+                  recipient?._id === contact._id ? "bg-white/20" : "bg-gray-100 text-gray-400 group-hover:bg-agriGreen/10 group-hover:text-agriGreen"
+                )}>
                   <User className="w-6 h-6" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-agriGreen rounded-full shadow-sm" />
               </div>
               <div className="flex-grow">
                 <div className="flex justify-between items-start">
-                  <p className="font-black text-lg tracking-tight leading-none mb-1">{recipient.name}</p>
-                  <span className="text-[10px] font-bold opacity-70">JUST NOW</span>
+                  <p className={cn(
+                    "font-black text-lg tracking-tight leading-none mb-1",
+                    recipient?._id === contact._id ? "text-white" : "text-gray-900"
+                  )}>{contact.name}</p>
                 </div>
-                <p className="text-xs font-medium opacity-80 truncate max-w-[150px]">Online</p>
+                <p className={cn(
+                  "text-xs font-medium truncate max-w-[150px]",
+                  recipient?._id === contact._id ? "text-white/80" : "text-gray-500"
+                )}>{contact.role}</p>
               </div>
+            </div>
+          )) : (
+            <div className="text-center py-10">
+              <p className="text-gray-400 font-bold text-sm">No conversations yet</p>
             </div>
           )}
-          <div className="p-4 hover:bg-gray-50 rounded-[2rem] cursor-pointer transition-all flex items-center gap-4 group border border-transparent hover:border-gray-100">
-            <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-2xl flex items-center justify-center group-hover:bg-agriGreen/10 group-hover:text-agriGreen transition-colors">
-              <User className="w-6 h-6" />
-            </div>
-            <div className="flex-grow">
-              <div className="flex justify-between items-start">
-                <p className="font-bold text-gray-900 tracking-tight leading-none mb-1">Demo Support</p>
-                <span className="text-[10px] font-bold text-gray-400">YESTERDAY</span>
-              </div>
-              <p className="text-xs font-medium text-gray-500 truncate max-w-[150px]">How can we help you today?</p>
-            </div>
-          </div>
         </div>
       </motion.div>
 
@@ -179,7 +215,7 @@ const ChatPage = () => {
             {/* Chat Header */}
             <div className="px-10 py-6 border-b border-gray-50 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-5">
-                <Link to="/dashboard/farmer" className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <Link to="/dashboard" className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
                   <ArrowLeft className="w-6 h-6" />
                 </Link>
                 <div className="relative">
@@ -190,9 +226,15 @@ const ChatPage = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-black text-gray-900 tracking-tight leading-none">{recipient.name}</h3>
-                  <p className="text-xs font-black text-green-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
-                    <Circle className="w-2 h-2 fill-current" /> Online
-                  </p>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    {typingUser === recipient._id ? (
+                      <p className="text-xs font-black text-agriGreen animate-pulse uppercase tracking-widest">Typing...</p>
+                    ) : (
+                      <p className="text-xs font-black text-green-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <Circle className="w-2 h-2 fill-current" /> Online
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -226,15 +268,15 @@ const ChatPage = () => {
                       key={idx}
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className={`flex ${msg.sender === user._id ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${msg.sender === user._id || msg.sender?._id === user._id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div className={`max-w-[75%] p-5 rounded-[2.5rem] shadow-sm relative group ${
-                        msg.sender === user._id 
+                        msg.sender === user._id || msg.sender?._id === user._id
                           ? 'bg-agriGreen text-white rounded-br-none shadow-green-100' 
                           : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none'
                       }`}>
                         <p className="text-[15px] font-medium leading-relaxed">{msg.content}</p>
-                        <p className={`text-[10px] mt-2 font-black uppercase tracking-wider opacity-40 ${msg.sender === user._id ? 'text-right' : 'text-left'}`}>
+                        <p className={`text-[10px] mt-2 font-black uppercase tracking-wider opacity-40 ${msg.sender === user._id || msg.sender?._id === user._id ? 'text-right' : 'text-left'}`}>
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -254,7 +296,7 @@ const ChatPage = () => {
                     placeholder="Type your message to negotiate..." 
                     className="w-full bg-gray-50 border border-gray-100 rounded-[2rem] py-5 px-8 pr-16 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen focus:bg-white transition-all font-medium"
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={handleTyping}
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300">
                     <Info className="w-5 h-5" />
@@ -274,6 +316,8 @@ const ChatPage = () => {
       </motion.div>
     </div>
   );
-}
+};
+
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export default ChatPage;
