@@ -13,7 +13,9 @@ import {
   DollarSign,
   ArrowRight,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  Lightbulb,
+  CheckCircle2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
