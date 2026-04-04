@@ -77,7 +77,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/*  */}
+        {/*Protected Routes  */}
         <Route
           path="/chat"
           element={<ProtectedRoute><ChatPage /></ProtectedRoute>}
