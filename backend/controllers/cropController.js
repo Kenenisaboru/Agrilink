@@ -48,7 +48,10 @@ const createCrop = async (req, res) => {
       return res.status(403).json({ message: 'Only farmers can create crop listings' });
     }
 
-    const { name, category, quantity, unit, pricePerUnit, location, description, image } = req.body;
+    const { name, category, quantity, unit, pricePerUnit, location, description } = req.body;
+    
+    // Get image URL from Cloudinary upload (multer-cloudinary stores it in req.file.path)
+    const image = req.file ? req.file.path : req.body.image || '';
 
     const crop = new Crop({
       farmer: req.user._id,
