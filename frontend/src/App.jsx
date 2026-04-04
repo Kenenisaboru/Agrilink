@@ -1,5 +1,13 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+
+// Layouts
+import FarmerLayout from './layout/FarmerLayout/FarmerLayout';
+import BuyerLayout from './layout/BuyerLayout/BuyerLayout';
+import StudentLayout from './layout/StudentLayout/StudentLayout';
+import AdminLayout from './layout/AdminLayout/AdminLayout';
+import RepresentativeLayout from './layout/RepresentativeLayout/RepresentativeLayout';
+import Navbar from './components/Navbar';
 
 // Pages
 import Home from './pages/Home';
@@ -9,73 +17,108 @@ import FarmerDashboard from './pages/FarmerDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import BuyerDashboard from './pages/BuyerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import RepresentativeDashboard from './pages/RepresentativeDashboard';
 import CropManagement from './pages/CropManagement';
 import FarmerOrders from './pages/FarmerOrders';
 import ChatPage from './pages/ChatPage';
-import Navbar from './components/Navbar';
+
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
+};
+
+const LayoutWrapper = ({ children }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  
+  const publicPaths = ['/', '/login', '/register'];
+  const isPublicPath = publicPaths.includes(location.pathname);
+
+  if (isPublicPath || !user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-agriBg">
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // Role-based layouts
+  switch (user.role) {
+    case 'Farmer':
+      return <FarmerLayout>{children}</FarmerLayout>;
+    case 'Buyer':
+      return <BuyerLayout>{children}</BuyerLayout>;
+    case 'Student':
+      return <StudentLayout>{children}</StudentLayout>;
+    case 'Admin':
+      return <AdminLayout>{children}</AdminLayout>;
+    case 'Representative':
+      return <RepresentativeLayout>{children}</RepresentativeLayout>;
+    default:
+      return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow">{children}</main></div>;
+  }
+};
 
 function App() {
-  const { user } = useAuth();
-
   return (
-    <div className="min-h-screen flex flex-col selection:bg-agriGreen selection:text-white bg-agriBg">
-      <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+    <LayoutWrapper>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected Routes */}
+        <Route 
+          path="/chat" 
+          element={<ProtectedRoute><ChatPage /></ProtectedRoute>} 
+        />
+        
+        <Route 
+          path="/dashboard/farmer" 
+          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerDashboard /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/dashboard/farmer/crops" 
+          element={<ProtectedRoute allowedRoles={['Farmer']}><CropManagement /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/dashboard/farmer/orders" 
+          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerOrders /></ProtectedRoute>} 
+        />
+        
+        <Route 
+          path="/dashboard/student" 
+          element={<ProtectedRoute allowedRoles={['Student']}><StudentDashboard /></ProtectedRoute>} 
+        />
+        
+        <Route 
+          path="/dashboard/buyer" 
+          element={<ProtectedRoute allowedRoles={['Buyer']}><BuyerDashboard /></ProtectedRoute>} 
+        />
+        
+        <Route 
+          path="/dashboard/admin" 
+          element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>} 
+        />
 
-          {/* Protected Routes with Redirection Logic */}
-          <Route
-            path="/chat"
-            element={user ? <ChatPage /> : <Navigate to="/login" />}
-          />
+        <Route 
+          path="/dashboard/representative" 
+          element={<ProtectedRoute allowedRoles={['Representative']}><RepresentativeDashboard /></ProtectedRoute>} 
+        />
 
-          <Route
-            path="/dashboard/farmer"
-            element={user?.role === 'Farmer' ? <FarmerDashboard /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/dashboard/farmer/crops"
-            element={user?.role === 'Farmer' ? <CropManagement /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/dashboard/farmer/orders"
-            element={user?.role === 'Farmer' ? <FarmerOrders /> : <Navigate to="/login" />}
-          />
-
-          <Route
-            path="/dashboard/student"
-            element={user?.role === 'Student' ? <StudentDashboard /> : <Navigate to="/login" />}
-          />
-
-          <Route
-            path="/dashboard/buyer"
-            element={user?.role === 'Buyer' ? <BuyerDashboard /> : <Navigate to="/login" />}
-          />
-
-          <Route
-            path="/dashboard/admin"
-            element={user?.role === 'Admin' ? <AdminDashboard /> : <Navigate to="/login" />}
-          />
-
-          {/* Catch-all 404/Redirect */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
-
-      <footer className="bg-slate-900 text-white text-center p-8 mt-auto rounded-t-[3rem]">
-        <div className="max-w-4xl mx-auto space-y-4">
-          <h3 className="text-2xl font-black text-agriLight">AgriLink</h3>
-          <p className="text-slate-400 text-sm font-medium">East Hararghe Farmer-Student Innovation Platforms</p>
-          <div className="h-px bg-slate-800 w-full"></div>
-          <p className="text-slate-500 text-xs tracking-widest uppercase font-black italic mt-4">
-            © {new Date().getFullYear()} Empowering Ethiopian Agriculture
-          </p>
-        </div>
-      </footer>
-    </div>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </LayoutWrapper>
   );
 }
 
