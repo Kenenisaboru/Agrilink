@@ -47,7 +47,29 @@ const getConversation = async (req, res) => {
   }
 };
 
+// @desc    Get all unique users current user has chatted with
+// @route   GET /api/messages/conversations/list
+// @access  Private
+const getConversations = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find unique users from both sender and receiver fields
+    const sentTo = await Message.find({ sender: userId }).distinct('receiver');
+    const receivedFrom = await Message.find({ receiver: userId }).distinct('sender');
+
+    const uniqueUserIds = [...new Set([...sentTo, ...receivedFrom])];
+
+    const users = await User.find({ _id: { $in: uniqueUserIds } }).select('name role');
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   sendMessage,
-  getConversation
+  getConversation,
+  getConversations
 };
