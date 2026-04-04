@@ -43,4 +43,13 @@ const authorize = (...roles) => {
   };
 };
 
+// Check if user is an admin
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'Admin') {
+    next();
+  } else {
+    res.status(401).json({ message: 'Not authorized as an admin' });
+  }
+};
+
 module.exports = { protect, admin, authorize };
