@@ -24,20 +24,20 @@ import ChatPage from './pages/ChatPage';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) return null;
   if (!user) return <Navigate to="/login" />;
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" />;
   }
-  
+
   return children;
 };
 
 const LayoutWrapper = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
-  
+
   const publicPaths = ['/', '/login', '/register'];
   const isPublicPath = publicPaths.includes(location.pathname);
 
@@ -76,44 +76,44 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* Protected Routes */}
-        <Route 
-          path="/chat" 
-          element={<ProtectedRoute><ChatPage /></ProtectedRoute>} 
-        />
-        
-        <Route 
-          path="/dashboard/farmer" 
-          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerDashboard /></ProtectedRoute>} 
-        />
-        <Route 
-          path="/dashboard/farmer/crops" 
-          element={<ProtectedRoute allowedRoles={['Farmer']}><CropManagement /></ProtectedRoute>} 
-        />
-        <Route 
-          path="/dashboard/farmer/orders" 
-          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerOrders /></ProtectedRoute>} 
-        />
-        
-        <Route 
-          path="/dashboard/student" 
-          element={<ProtectedRoute allowedRoles={['Student']}><StudentDashboard /></ProtectedRoute>} 
-        />
-        
-        <Route 
-          path="/dashboard/buyer" 
-          element={<ProtectedRoute allowedRoles={['Buyer']}><BuyerDashboard /></ProtectedRoute>} 
-        />
-        
-        <Route 
-          path="/dashboard/admin" 
-          element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>} 
+
+        {/*  */}
+        <Route
+          path="/chat"
+          element={<ProtectedRoute><ChatPage /></ProtectedRoute>}
         />
 
-        <Route 
-          path="/dashboard/representative" 
-          element={<ProtectedRoute allowedRoles={['Representative']}><RepresentativeDashboard /></ProtectedRoute>} 
+        <Route
+          path="/dashboard/farmer"
+          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerDashboard /></ProtectedRoute>}
+        />
+        <Route
+          path="/dashboard/farmer/crops"
+          element={<ProtectedRoute allowedRoles={['Farmer']}><CropManagement /></ProtectedRoute>}
+        />
+        <Route
+          path="/dashboard/farmer/orders"
+          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerOrders /></ProtectedRoute>}
+        />
+
+        <Route
+          path="/dashboard/student"
+          element={<ProtectedRoute allowedRoles={['Student']}><StudentDashboard /></ProtectedRoute>}
+        />
+
+        <Route
+          path="/dashboard/buyer"
+          element={<ProtectedRoute allowedRoles={['Buyer']}><BuyerDashboard /></ProtectedRoute>}
+        />
+
+        <Route
+          path="/dashboard/admin"
+          element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>}
+        />
+
+        <Route
+          path="/dashboard/representative"
+          element={<ProtectedRoute allowedRoles={['Representative']}><RepresentativeDashboard /></ProtectedRoute>}
         />
 
         <Route path="*" element={<Navigate to="/" />} />
