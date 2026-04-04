@@ -23,6 +23,8 @@ const CropManagement = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -32,7 +34,6 @@ const CropManagement = () => {
     quantity: '',
     location: user?.location || '',
     description: '',
-    image: '',
   });
 
   const categories = ['Vegetable', 'Fruit', 'Grain', 'Cereal', 'Legume', 'Oilseed', 'Stimulant'];
@@ -42,14 +43,41 @@ const CropManagement = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('category', formData.category);
+      data.append('pricePerUnit', formData.pricePerUnit);
+      data.append('unit', formData.unit);
+      data.append('quantity', formData.quantity);
+      data.append('location', formData.location);
+      data.append('description', formData.description);
+      if (imageFile) {
+        data.append('image', imageFile);
+      }
+
       const config = {
-        headers: { Authorization: `Bearer ${user.token}` }
+        headers: { 
+          Authorization: `Bearer ${user.token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       };
-      await axios.post('http://localhost:5000/api/crops', formData, config);
+      await axios.post('http://localhost:5000/api/crops', data, config);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -222,13 +250,19 @@ const CropManagement = () => {
             className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm"
           >
             <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 px-2">Product Photo</h3>
-            <div className="aspect-square bg-gray-50 border-4 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center justify-center p-6 text-center group hover:bg-gray-100 hover:border-agriGreen/20 transition-all cursor-pointer">
-              <div className="bg-white p-4 rounded-3xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                <ImageIcon className="w-10 h-10 text-agriGreen" />
-              </div>
-              <p className="text-gray-600 font-bold">Add Harvest Photo</p>
-              <p className="text-gray-400 text-xs mt-2">Recommended: 800x800px <br /> (JPG or PNG)</p>
-              <input type="file" className="hidden" />
+            <div className="aspect-square bg-gray-50 border-4 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center justify-center p-6 text-center group hover:bg-gray-100 hover:border-agriGreen/20 transition-all cursor-pointer relative overflow-hidden">
+              {imagePreview ? (
+                <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <>
+                  <div className="bg-white p-4 rounded-3xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                    <ImageIcon className="w-10 h-10 text-agriGreen" />
+                  </div>
+                  <p className="text-gray-600 font-bold">Add Harvest Photo</p>
+                  <p className="text-gray-400 text-xs mt-2">Recommended: 800x800px <br /> (JPG or PNG)</p>
+                </>
+              )}
+              <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageChange} />
             </div>
           </motion.div>
 
