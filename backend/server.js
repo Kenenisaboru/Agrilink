@@ -4,6 +4,7 @@ const socketio = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const socketHandler = require('./sockets/chatSocket');
 
 dotenv.config();
 connectDB();
@@ -12,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     methods: ["GET", "POST"]
   }
 });
@@ -30,27 +31,7 @@ app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 
 // Socket.io Integration
-io.on('connection', (socket) => {
-  console.log('New WebSocket Connection...');
-
-  socket.on('join', ({ userId }) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined their private room.`);
-  });
-
-  socket.on('sendMessage', ({ senderId, receiverId, content }) => {
-    // Emit to the receiver's private room
-    io.to(receiverId).emit('message', {
-      sender: senderId,
-      content,
-      createdAt: new Date()
-    });
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
+socketHandler(io);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
