@@ -31,7 +31,7 @@ const FarmerOrders = () => {
         const config = {
           headers: { Authorization: `Bearer ${user.token}` }
         };
-        const { data } = await axios.get('http://localhost:5000/api/orders/myorders', config);
+        const { data } = await axios.get('/api/orders/myorders', config);
         setOrders(data);
       } catch (err) {
         console.error("Error fetching farmer orders:", err);
