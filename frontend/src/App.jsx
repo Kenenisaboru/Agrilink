@@ -21,6 +21,7 @@ import RepresentativeDashboard from './pages/RepresentativeDashboard';
 import CropManagement from './pages/CropManagement';
 import FarmerOrders from './pages/FarmerOrders';
 import ChatPage from './pages/ChatPage';
+import Checkout from './pages/buyer/Checkout';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -104,6 +105,10 @@ function App() {
         <Route
           path="/dashboard/buyer"
           element={<ProtectedRoute allowedRoles={['Buyer']}><BuyerDashboard /></ProtectedRoute>}
+        />
+        <Route
+          path="/checkout"
+          element={<ProtectedRoute allowedRoles={['Buyer']}><Checkout /></ProtectedRoute>}
         />
 
         <Route
