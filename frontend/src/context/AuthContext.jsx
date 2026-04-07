@@ -23,22 +23,26 @@ export const AuthProvider = ({ children }) => {
 
   // Load user from localStorage on mount
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
-        if (parsed.token) {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+    const initializeAuth = () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          setUser(parsed);
+          if (parsed.token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+          }
         }
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to parse user data:', error);
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email, password) => {
@@ -72,7 +76,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
