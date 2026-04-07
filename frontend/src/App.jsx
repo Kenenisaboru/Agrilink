@@ -52,6 +52,7 @@ const LayoutWrapper = ({ children }) => {
         <main className="flex-grow">
           {children}
         </main>
+        <AboutSection />
         <Footer />
       </div>
     );
