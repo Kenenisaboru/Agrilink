@@ -10,10 +10,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add an email'],
     unique: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
     required: [true, 'Please add a password'],
+    minlength: 6,
   },
   role: {
     type: String,
@@ -28,12 +31,32 @@ const userSchema = new mongoose.Schema({
     type: String,
     // E.g., 'Harar', 'Haramaya', 'Dire Dawa', 'Jigjiga', 'Oda Bultum'
   },
+  phone: {
+    type: String,
+    // Primary phone number for payments (Telebirr, M-Pesa, etc.)
+  },
   mpesaNumber: {
     type: String,
-    // Expected format for M-Pesa or local payment system
+    // Legacy field - kept for backwards compatibility
+  },
+  telebirrNumber: {
+    type: String,
+  },
+  cbeAccountNumber: {
+    type: String,
+  },
+  // Virtual wallet balance in ETB
+  balance: {
+    type: Number,
+    default: 0,
+    min: 0,
   },
   university: {
     type: String, // E.g., 'Haramaya University' for students
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   }
 }, {
   timestamps: true,
@@ -42,10 +65,11 @@ const userSchema = new mongoose.Schema({
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 // Match password
