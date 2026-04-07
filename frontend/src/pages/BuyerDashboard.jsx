@@ -15,11 +15,12 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const BuyerDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [crops, setCrops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -278,7 +279,10 @@ const BuyerDashboard = () => {
                   <span className="text-gray-500">Subtotal</span>
                   <span className="text-gray-900 font-black">${cartTotal.toFixed(2)}</span>
                 </div>
-                <button className="w-full btn-primary py-4 rounded-2xl text-lg font-black shadow-xl shadow-green-200">
+                <button 
+                  onClick={() => navigate('/checkout', { state: { cart, total: cartTotal } })}
+                  className="w-full btn-primary py-4 rounded-2xl text-lg font-black shadow-xl shadow-green-200"
+                >
                   Checkout Now
                   <ArrowRight className="w-5 h-5" />
                 </button>
