@@ -5,35 +5,28 @@ const Crop = require('../models/Crop');
 // @route   POST /api/orders
 // @access  Private (Buyer)
 exports.createOrder = async (req, res) => {
-  const { cropId, quantity, deliveryAddress } = req.body;
+  const { orderItems, deliveryAddress, totalPrice } = req.body;
 
-  try {
-    const crop = await Crop.findById(cropId);
-    if (!crop) {
-      return res.status(404).json({ message: 'Crop not found' });
+  if (orderItems && orderItems.length === 0) {
+    res.status(400).json({ message: 'No order items' });
+    return;
+  } else {
+    try {
+      const order = new Order({
+        buyer: req.user._id,
+        orderItems,
+        totalPrice,
+        deliveryAddress
+      });
+
+      const createdOrder = await order.save();
+
+      // For a production app, you might want to subtract from stock here
+      // But for a hackathon, this is a good start.
+      res.status(201).json(createdOrder);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-
-    if (crop.quantity < quantity) {
-      return res.status(400).json({ message: 'Not enough quantity in stock' });
-    }
-
-    const totalPrice = crop.pricePerUnit * quantity;
-
-    const order = await Order.create({
-      buyer: req.user._id,
-      crop: cropId,
-      quantity,
-      totalPrice,
-      deliveryAddress
-    });
-
-    // Reduce crop quantity
-    crop.quantity -= quantity;
-    await crop.save();
-
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };
 
@@ -42,7 +35,7 @@ exports.createOrder = async (req, res) => {
 // @access  Private
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ buyer: req.user._id }).populate('crop');
+    const orders = await Order.find({ buyer: req.user._id }).sort('-createdAt');
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -54,7 +47,7 @@ exports.getMyOrders = async (req, res) => {
 // @access  Private
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('buyer', 'name email').populate('crop');
+    const order = await Order.findById(req.params.id).populate('buyer', 'name email');
     if (order) {
       res.json(order);
     } else {
