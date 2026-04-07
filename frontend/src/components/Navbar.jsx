@@ -35,7 +35,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/', icon: Leaf },
-    { name: 'About', path: '/about', icon: Leaf },
+    { name: 'About', path: '/#about', icon: Leaf },
     ...(user ? [
       { 
         name: 'Dashboard', 
@@ -76,20 +76,34 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                "text-sm font-bold transition-all hover:text-agriGreen relative group",
-                location.pathname === link.path ? "text-agriGreen" : "text-gray-600"
-              )}
-            >
-              {link.name}
-              <span className={cn(
-                "absolute -bottom-1 left-0 w-0 h-0.5 bg-agriGreen transition-all group-hover:w-full",
-                location.pathname === link.path && "w-full"
-              )} />
-            </Link>
+            link.path.startsWith('/#') ? (
+              <a
+                key={link.path}
+                href={link.path}
+                className={cn(
+                  "text-sm font-bold transition-all hover:text-agriGreen relative group",
+                  "text-gray-600"
+                )}
+              >
+                {link.name}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-agriGreen transition-all group-hover:w-full" />
+              </a>
+            ) : (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  "text-sm font-bold transition-all hover:text-agriGreen relative group",
+                  location.pathname === link.path ? "text-agriGreen" : "text-gray-600"
+                )}
+              >
+                {link.name}
+                <span className={cn(
+                  "absolute -bottom-1 left-0 w-0 h-0.5 bg-agriGreen transition-all group-hover:w-full",
+                  location.pathname === link.path && "w-full"
+                )} />
+              </Link>
+            )
           ))}
           
           {user ? (
@@ -147,18 +161,33 @@ const Navbar = () => {
           >
             <div className="p-4 space-y-2">
               {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-xl font-bold transition-colors",
-                    location.pathname === link.path ? "bg-agriGreen text-white" : "text-gray-600 hover:bg-gray-50 hover:text-agriGreen"
-                  )}
-                >
-                  {link.icon && <link.icon className="w-5 h-5" />}
-                  {link.name}
-                </Link>
+                link.path.startsWith('/#') ? (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl font-bold transition-colors",
+                      "text-gray-600 hover:bg-gray-50 hover:text-agriGreen"
+                    )}
+                  >
+                    {link.icon && <link.icon className="w-5 h-5" />}
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl font-bold transition-colors",
+                      location.pathname === link.path ? "bg-agriGreen text-white" : "text-gray-600 hover:bg-gray-50 hover:text-agriGreen"
+                    )}
+                  >
+                    {link.icon && <link.icon className="w-5 h-5" />}
+                    {link.name}
+                  </Link>
+                )
               ))}
               <div className="h-px bg-gray-100 my-2" />
               {user ? (
