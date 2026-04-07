@@ -77,7 +77,7 @@ const CropManagement = () => {
           'Content-Type': 'multipart/form-data'
         }
       };
-      await axios.post('http://localhost:5000/api/crops', data, config);
+      await axios.post('/api/crops', data, config);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
