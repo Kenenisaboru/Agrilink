@@ -121,17 +121,28 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading and data fetching
-    const timer = setTimeout(() => {
-      setStats({
-        totalUsers: 142,
-        totalCrops: 86,
-        activeOrders: 12,
-        revenue: 45200,
-      });
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const fetchStats = async () => {
+      try {
+        const [usersRes, cropsRes, ordersRes, paymentsRes] = await Promise.all([
+          axios.get('/api/auth/profile'), // This verified admin but we might need a dedicated users list
+          axios.get('/api/crops'),
+          axios.get('/api/orders/myorders'), // For now, since admin might not have a dedicated 'all' orders yet
+          axios.get('/api/payments/admin/all'),
+        ]);
+
+        setStats({
+          totalUsers: 142, // Placeholder until a dedicated admin/users route is added
+          totalCrops: cropsRes.data.length,
+          activeOrders: ordersRes.data.filter(o => o.status === 'Pending').length,
+          revenue: paymentsRes.data.stats?.totalRevenue || 0,
+        });
+      } catch (err) {
+        console.error('Error fetching admin stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
   }, []);
 
   if (loading) return (
