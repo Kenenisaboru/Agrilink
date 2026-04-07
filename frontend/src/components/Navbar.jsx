@@ -39,7 +39,7 @@ const Navbar = () => {
     ...(user ? [
       { 
         name: 'Dashboard', 
-        path: `/dashboard/${user.role.toLowerCase()}`,
+        path: `/dashboard/${user.role?.toLowerCase() || 'user'}`,
         icon: LayoutDashboard 
       },
       { name: 'Chat', path: '/chat', icon: MessageSquare },
