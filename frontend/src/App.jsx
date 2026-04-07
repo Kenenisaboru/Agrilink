@@ -76,63 +76,9 @@ const LayoutWrapper = ({ children }) => {
 
 function App() {
   return (
-    <LayoutWrapper>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/*Protected Routes  */}
-        <Route
-          path="/chat"
-          element={<ProtectedRoute><ChatPage /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/dashboard/farmer"
-          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerDashboard /></ProtectedRoute>}
-        />
-        <Route
-          path="/dashboard/farmer/crops"
-          element={<ProtectedRoute allowedRoles={['Farmer']}><CropManagement /></ProtectedRoute>}
-        />
-        <Route
-          path="/dashboard/farmer/orders"
-          element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerOrders /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/dashboard/student"
-          element={<ProtectedRoute allowedRoles={['Student']}><StudentDashboard /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/dashboard/buyer"
-          element={<ProtectedRoute allowedRoles={['Buyer']}><BuyerDashboard /></ProtectedRoute>}
-        />
-        <Route
-          path="/checkout"
-          element={<ProtectedRoute allowedRoles={['Buyer']}><Checkout /></ProtectedRoute>}
-        />
-        <Route
-          path="/dashboard/buyer/payments"
-          element={<ProtectedRoute allowedRoles={['Buyer']}><PaymentHistory /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/dashboard/admin"
-          element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/dashboard/representative"
-          element={<ProtectedRoute allowedRoles={['Representative']}><RepresentativeDashboard /></ProtectedRoute>}
-        />
-
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </LayoutWrapper>
+    <div style={{ padding: '100px', textAlign: 'center', fontSize: '40px', color: '#2E7D32' }}>
+      AgriLink is Loading... Check Console if Blank
+    </div>
   );
 }
 
