@@ -8,7 +8,6 @@ import { AuthProvider } from './context/AuthContext.jsx'
 
 axios.defaults.baseURL = 'http://localhost:5000';
 
-alert('Frontend Bundle Executing');
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -16,5 +15,5 @@ createRoot(document.getElementById('root')).render(
         <App />
       </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>,
+  </React.StrictMode>
 )
