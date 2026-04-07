@@ -8,17 +8,13 @@
     <script>
       window.process = { env: { NODE_ENV: 'development' } };
     </script>
+    <style>
+      #root { min-height: 100vh; display: flex; flex-direction: column; }
+      body { margin: 0; padding: 0; background-color: white; }
+    </style>
   </head>
   <body>
-    <div id="root">
-      <h1 style="color: red; text-align: center; margin-top: 50px;">
-        Vite is Serving... Waiting for React...
-      </h1>
-    </div>
-    <script>
-      console.log('Direct script from index.html executing');
-      document.getElementById('root').innerHTML = '<h1 style="color: blue; text-align: center; margin-top: 50px;">Vite Server Working!</h1>';
-    </script>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
