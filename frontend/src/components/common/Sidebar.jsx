@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Package,
   TrendingUp,
-  Shield
+  Shield,
+  CreditCard
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';

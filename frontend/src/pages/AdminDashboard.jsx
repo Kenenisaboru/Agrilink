@@ -12,6 +12,7 @@ import {
   ArrowDownRight, 
   Search,
   Shield,
+  ShieldCheck,
   Activity,
   Database,
   Cloud,

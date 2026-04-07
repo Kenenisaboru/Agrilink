@@ -17,7 +17,8 @@ import {
   Wallet,
   CheckCircle2,
   XCircle,
-  Clock
+  Clock,
+  ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
