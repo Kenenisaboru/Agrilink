@@ -6,10 +6,9 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin,
+  Camera,
+  Briefcase,
+  Send,
   Heart,
   Truck,
   Shield,
@@ -47,10 +46,10 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' }
+    { icon: Users, href: '#', label: 'Community' },
+    { icon: Send, href: '#', label: 'Updates' },
+    { icon: Camera, href: '#', label: 'Instagram' },
+    { icon: Briefcase, href: '#', label: 'LinkedIn' }
   ];
 
   const contactInfo = [
