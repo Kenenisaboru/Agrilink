@@ -39,6 +39,7 @@ const Sidebar = ({ role }) => {
   const buyerLinks = [
     { name: 'Marketplace', path: '/dashboard/buyer', icon: ShoppingCart },
     { name: 'My Orders', path: '/dashboard/buyer/orders', icon: Package },
+    { name: 'Payment History', path: '/dashboard/buyer/payments', icon: CreditCard },
     { name: 'Messages', path: '/chat', icon: MessageSquare },
   ];
 
