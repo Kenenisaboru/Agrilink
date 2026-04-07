@@ -39,6 +39,8 @@ const registerUser = async (req, res) => {
         role: user.role,
         location: user.location,
         phone: user.phone,
+        telebirrNumber: user.telebirrNumber,
+        cbeAccountNumber: user.cbeAccountNumber,
         balance: user.balance,
         token,
       });
@@ -79,6 +81,8 @@ const loginUser = async (req, res) => {
       role: user.role,
       location: user.location,
       phone: user.phone || user.mpesaNumber,
+      telebirrNumber: user.telebirrNumber,
+      cbeAccountNumber: user.cbeAccountNumber,
       balance: user.balance || 0,
       token,
     });
