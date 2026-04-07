@@ -7,15 +7,26 @@ const getCrops = async (req, res) => {
   try {
     const { keyword, category, location } = req.query;
     
-    // Filtering logic
     const filter = { isAvailable: true };
-    if (keyword) {
-      filter.name = { $regex: keyword, $options: 'i' };
-    }
+    if (keyword) filter.name = { $regex: keyword, $options: 'i' };
     if (category) filter.category = category;
     if (location) filter.location = { $regex: location, $options: 'i' };
 
-    const crops = await Crop.find(filter).populate('farmer', 'name location mpesaNumber');
+    const crops = await Crop.find(filter)
+      .populate('farmer', 'name location phone mpesaNumber')
+      .sort({ createdAt: -1 });
+    res.json(crops);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get crops for the logged-in farmer
+// @route   GET /api/crops/farmer/mycrops
+// @access  Private (Farmer)
+const getFarmerCrops = async (req, res) => {
+  try {
+    const crops = await Crop.find({ farmer: req.user._id }).sort({ createdAt: -1 });
     res.json(crops);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -27,7 +38,8 @@ const getCrops = async (req, res) => {
 // @access  Public
 const getCropById = async (req, res) => {
   try {
-    const crop = await Crop.findById(req.params.id).populate('farmer', 'name email location mpesaNumber');
+    const crop = await Crop.findById(req.params.id)
+      .populate('farmer', 'name email location phone mpesaNumber');
     
     if (crop) {
       res.json(crop);
@@ -50,16 +62,20 @@ const createCrop = async (req, res) => {
 
     const { name, category, quantity, unit, pricePerUnit, location, description } = req.body;
     
-    // Get image URL from Cloudinary upload (multer-cloudinary stores it in req.file.path)
-    const image = req.file ? req.file.path : req.body.image || '';
+    // Handle image: use Cloudinary URL if available, else skip
+    let image = req.body.image || '';
+    if (req.file) {
+      // Cloudinary storage sets path; memory storage has buffer
+      image = req.file.path || '';
+    }
 
     const crop = new Crop({
       farmer: req.user._id,
       name,
       category,
-      quantity,
+      quantity: Number(quantity),
       unit,
-      pricePerUnit,
+      pricePerUnit: Number(pricePerUnit),
       location,
       description,
       image,
@@ -78,31 +94,27 @@ const createCrop = async (req, res) => {
 // @access  Private (Farmer)
 const updateCrop = async (req, res) => {
   try {
-    const { name, category, quantity, unit, pricePerUnit, location, description, image, isAvailable } = req.body;
-
     const crop = await Crop.findById(req.params.id);
 
     if (!crop) {
       return res.status(404).json({ message: 'Crop not found' });
     }
 
-    // Ensure only the farmer who owns it (or admin) can update
     if (crop.farmer.toString() !== req.user._id.toString() && req.user.role !== 'Admin') {
       return res.status(403).json({ message: 'Not authorized to update this crop' });
     }
 
+    const { name, category, quantity, unit, pricePerUnit, location, description, isAvailable } = req.body;
+
     crop.name = name || crop.name;
     crop.category = category || crop.category;
-    crop.quantity = quantity || crop.quantity;
+    if (quantity !== undefined) crop.quantity = Number(quantity);
     crop.unit = unit || crop.unit;
-    crop.pricePerUnit = pricePerUnit || crop.pricePerUnit;
+    if (pricePerUnit !== undefined) crop.pricePerUnit = Number(pricePerUnit);
     crop.location = location || crop.location;
     crop.description = description || crop.description;
-    crop.image = image || crop.image;
-    
-    if (isAvailable !== undefined) {
-      crop.isAvailable = isAvailable;
-    }
+    if (req.file) crop.image = req.file.path || crop.image;
+    if (isAvailable !== undefined) crop.isAvailable = isAvailable === 'true' || isAvailable === true;
 
     const updatedCrop = await crop.save();
     res.json(updatedCrop);
@@ -122,13 +134,12 @@ const deleteCrop = async (req, res) => {
       return res.status(404).json({ message: 'Crop not found' });
     }
 
-    // Ensure only the farmer who owns it (or admin) can delete
     if (crop.farmer.toString() !== req.user._id.toString() && req.user.role !== 'Admin') {
       return res.status(403).json({ message: 'Not authorized to delete this crop' });
     }
 
     await crop.deleteOne();
-    res.json({ message: 'Crop removed' });
+    res.json({ message: 'Crop removed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -136,6 +147,7 @@ const deleteCrop = async (req, res) => {
 
 module.exports = {
   getCrops,
+  getFarmerCrops,
   getCropById,
   createCrop,
   updateCrop,
