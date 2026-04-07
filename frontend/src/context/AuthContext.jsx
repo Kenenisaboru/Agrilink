@@ -9,15 +9,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Set axios auth header whenever user changes
+  useEffect(() => {
+    if (user?.token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${user.token}`;
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', user.token);
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+      localStorage.removeItem('token');
+    }
+  }, [user]);
+
+  // Load user from localStorage on mount
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+        if (parsed.token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+        }
       }
     } catch (error) {
       console.error('Failed to parse user data:', error);
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
@@ -25,25 +43,35 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await axios.post('/api/auth/login', { email, password });
-    setUser(response.data);
-    localStorage.setItem('user', JSON.stringify(response.data));
-    return response.data;
+    const userData = response.data;
+    setUser(userData);
+    return userData;
   };
 
   const register = async (userData) => {
     const response = await axios.post('/api/auth/register', userData);
-    setUser(response.data);
-    localStorage.setItem('user', JSON.stringify(response.data));
-    return response.data;
+    const data = response.data;
+    setUser(data);
+    return data;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
+  };
+
+  const updateUser = (newData) => {
+    setUser(prev => {
+      const updated = { ...prev, ...newData };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );
