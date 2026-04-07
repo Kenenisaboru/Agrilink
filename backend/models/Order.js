@@ -6,18 +6,23 @@ const orderSchema = new mongoose.Schema({
     required: true,
     ref: 'User',
   },
-  crop: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'Crop',
-  },
-  quantity: {
-    type: Number,
-    required: [true, 'Please specify order quantity'],
-  },
+  orderItems: [
+    {
+      name: { type: String, required: true },
+      quantity: { type: Number, required: true },
+      image: { type: String },
+      price: { type: Number, required: true },
+      crop: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Crop',
+      },
+    },
+  ],
   totalPrice: {
     type: Number,
     required: true,
+    default: 0.0,
   },
   status: {
     type: String,
