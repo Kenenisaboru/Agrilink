@@ -24,7 +24,10 @@ const Register = () => {
     password: '',
     role: 'Buyer',
     location: '',
+    phone: '',
     mpesaNumber: '',
+    telebirrNumber: '',
+    cbeAccountNumber: '',
     university: ''
   });
   const [error, setError] = useState('');
@@ -148,20 +151,21 @@ const Register = () => {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Payment Number</label>
+                  <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
                   <div className="relative group">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
                     <input
                       type="text"
+                      required
                       className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
                       placeholder="09..."
-                      value={formData.mpesaNumber}
-                      onChange={(e) => setFormData({ ...formData, mpesaNumber: e.target.value })}
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     />
                   </div>
                 </div>
 
-                {formData.role === 'Student' && (
+                {formData.role === 'Student' ? (
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">University Name</label>
                     <div className="relative group">
@@ -176,8 +180,53 @@ const Register = () => {
                       />
                     </div>
                   </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Telebirr Number (Optional)</label>
+                    <div className="relative group">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                      <input
+                        type="text"
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                        placeholder="09..."
+                        value={formData.telebirrNumber}
+                        onChange={(e) => setFormData({ ...formData, telebirrNumber: e.target.value })}
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
+
+              {formData.role === 'Farmer' && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">CBE Account Number</label>
+                    <div className="relative group">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                      <input
+                        type="text"
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                        placeholder="1000..."
+                        value={formData.cbeAccountNumber}
+                        onChange={(e) => setFormData({ ...formData, cbeAccountNumber: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">M-Pesa Number</label>
+                    <div className="relative group">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-5 h-5" />
+                      <input
+                        type="text"
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
+                        placeholder="07..."
+                        value={formData.mpesaNumber}
+                        onChange={(e) => setFormData({ ...formData, mpesaNumber: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <label className="text-sm font-bold text-gray-700 ml-1">Select Your Role</label>
