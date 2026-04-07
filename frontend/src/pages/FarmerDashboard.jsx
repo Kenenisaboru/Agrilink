@@ -15,7 +15,8 @@ import {
   MessageSquare,
   AlertCircle,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  Smartphone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -279,6 +280,45 @@ const FarmerDashboard = () => {
                    <div className="h-full bg-agriGreen w-[98%] rounded-full" />
                 </div>
              </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.8 }}
+            className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-black text-gray-900">Payment Status</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-black">TB</div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Telebirr</p>
+                    <p className="text-sm font-bold text-gray-900 mt-1">{user.telebirrNumber || 'Not Linked'}</p>
+                  </div>
+                </div>
+                {user.telebirrNumber && <CheckCircle2 className="w-4 h-4 text-agriGreen" />}
+              </div>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-[10px] font-black">CBE</div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">CBE Account</p>
+                    <p className="text-sm font-bold text-gray-900 mt-1">{user.cbeAccountNumber || 'Not Linked'}</p>
+                  </div>
+                </div>
+                {user.cbeAccountNumber && <CheckCircle2 className="w-4 h-4 text-agriGreen" />}
+              </div>
+              <button className="w-full py-4 bg-gray-50 text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors mt-2">
+                Manage Methods
+              </button>
+            </div>
           </motion.div>
         </div>
       </div>
