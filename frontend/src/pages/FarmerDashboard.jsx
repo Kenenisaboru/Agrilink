@@ -60,8 +60,8 @@ const FarmerDashboard = () => {
           headers: { Authorization: `Bearer ${user.token}` }
         };
         const [cropsRes, ordersRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/crops/farmer', config),
-          axios.get('http://localhost:5000/api/orders/myorders', config)
+          axios.get('/api/crops/farmer/mycrops', config),
+          axios.get('/api/orders/myorders', config)
         ]);
 
         setStats({
