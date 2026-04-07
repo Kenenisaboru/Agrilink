@@ -27,11 +27,21 @@ const Checkout = () => {
 
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState(user?.phone || '');
-  const [accountNumber, setAccountNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone || user?.telebirrNumber || '');
+  const [accountNumber, setAccountNumber] = useState(user?.cbeAccountNumber || '');
   const [loading, setLoading] = useState(false);
   const [successData, setSuccessData] = useState(null);
   const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    if (paymentMethod === 'Telebirr') {
+      setPhoneNumber(user?.telebirrNumber || user?.phone || '');
+    } else if (paymentMethod === 'MPesa') {
+      setPhoneNumber(user?.mpesaNumber || user?.phone || '');
+    } else if (paymentMethod === 'CBE') {
+      setAccountNumber(user?.cbeAccountNumber || '');
+    }
+  }, [paymentMethod, user]);
 
   const methods = [
     { id: 'Telebirr', name: 'Telebirr', icon: Smartphone, color: 'bg-blue-600', group: 'Mobile' },
