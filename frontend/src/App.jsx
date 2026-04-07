@@ -8,11 +8,13 @@ import StudentLayout from './layout/StudentLayout/StudentLayout';
 import AdminLayout from './layout/AdminLayout/AdminLayout';
 import RepresentativeLayout from './layout/RepresentativeLayout/RepresentativeLayout';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import About from './pages/About';
 import FarmerDashboard from './pages/FarmerDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import BuyerDashboard from './pages/BuyerDashboard';
@@ -40,7 +42,7 @@ const LayoutWrapper = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  const publicPaths = ['/', '/login', '/register'];
+  const publicPaths = ['/', '/about', '/login', '/register'];
   const isPublicPath = publicPaths.includes(location.pathname);
 
   if (isPublicPath || !user) {
@@ -50,6 +52,7 @@ const LayoutWrapper = ({ children }) => {
         <main className="flex-grow">
           {children}
         </main>
+        <Footer />
       </div>
     );
   }
@@ -67,7 +70,7 @@ const LayoutWrapper = ({ children }) => {
     case 'Representative':
       return <RepresentativeLayout>{children}</RepresentativeLayout>;
     default:
-      return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow">{children}</main></div>;
+      return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow">{children}</main><Footer /></div>;
   }
 };
 
@@ -76,6 +79,7 @@ function App() {
     <LayoutWrapper>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
