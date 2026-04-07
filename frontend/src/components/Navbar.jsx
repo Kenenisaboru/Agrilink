@@ -35,6 +35,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/', icon: Leaf },
+    { name: 'About', path: '/about', icon: Leaf },
     ...(user ? [
       { 
         name: 'Dashboard', 
