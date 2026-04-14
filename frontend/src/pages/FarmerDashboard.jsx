@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCropImage } from '../utils/cropUtils';
 
 /**
  * StatCard Component - Reusable dashboard stat display
@@ -409,12 +410,8 @@ const FarmerDashboard = () => {
                     className="flex items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-transparent hover:border-agriGreen/20 hover:bg-white hover:shadow-xl hover:shadow-green-100/20 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                        {crop.image ? (
-                          <img src={crop.image} alt={crop.name} className="w-full h-full object-cover rounded-2xl" />
-                        ) : (
-                          <Leaf className="text-agriGreen w-8 h-8" />
-                        )}
+                      <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform overflow-hidden">
+                        <img src={getCropImage(crop)} alt={crop.name} className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <h4 className="font-black text-xl text-gray-900 group-hover:text-agriGreen transition-colors">{crop.name}</h4>
