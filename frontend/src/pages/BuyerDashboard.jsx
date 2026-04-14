@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getCropImage } from '../utils/cropUtils';
 
 const BuyerDashboard = () => {
   const { user } = useAuth();
@@ -149,7 +150,7 @@ const BuyerDashboard = () => {
             >
               <div className="h-56 bg-gray-100 relative overflow-hidden">
                 <img 
-                  src={crop.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400'} 
+                  src={getCropImage(crop)} 
                   alt={crop.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -244,7 +245,7 @@ const BuyerDashboard = () => {
                 {cart.map((item) => (
                   <div key={item._id} className="flex gap-4">
                     <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
-                      <img src={item.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400'} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={getCropImage(item)} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-grow">
                       <div className="flex justify-between items-start">
