@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { getCropImage } from '../../utils/cropUtils';
 
 /**
  * BuyerOrders Page
@@ -188,7 +189,7 @@ const BuyerOrders = () => {
                           <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-2xl">
                             <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 overflow-hidden shrink-0">
                               <img 
-                                src={item.image || 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=200'} 
+                                src={getCropImage(item)} 
                                 alt={item.name}
                                 className="w-full h-full object-cover" 
                               />
