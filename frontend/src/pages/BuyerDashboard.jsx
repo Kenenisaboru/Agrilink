@@ -77,7 +77,7 @@ const BuyerDashboard = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const cartTotal = cart.reduce((acc, item) => acc + (item.pricePerUnit * item.quantity), 0);
 
   if (loading) return (
     <div className="h-[60vh] flex items-center justify-center">
@@ -162,7 +162,7 @@ const BuyerDashboard = () => {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-xl font-black text-gray-900 leading-tight">{crop.name}</h3>
-                  <div className="text-agriGreen font-black text-lg">${crop.price}</div>
+                  <div className="text-agriGreen font-black text-lg">${crop.pricePerUnit}</div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-500 text-sm mb-6">
                   <MapPin className="w-4 h-4" />
@@ -253,7 +253,7 @@ const BuyerDashboard = () => {
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                      <div className="text-agriGreen font-black mt-1">${item.price}</div>
+                      <div className="text-agriGreen font-black mt-1">${item.pricePerUnit}</div>
                       <div className="flex items-center gap-3 mt-3">
                         <button 
                           onClick={() => updateQuantity(item._id, -1)}

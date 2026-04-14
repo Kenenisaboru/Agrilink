@@ -25,6 +25,7 @@ import FarmerOrders from './pages/FarmerOrders';
 import ChatPage from './pages/ChatPage';
 import Checkout from './pages/buyer/Checkout';
 import PaymentHistory from './pages/buyer/PaymentHistory';
+import PaymentVerify from './pages/buyer/PaymentVerify';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -114,6 +115,10 @@ function App() {
         <Route
           path="/checkout"
           element={<ProtectedRoute allowedRoles={['Buyer']}><Checkout /></ProtectedRoute>}
+        />
+        <Route
+          path="/payment/verify/:tx_ref"
+          element={<ProtectedRoute allowedRoles={['Buyer']}><PaymentVerify /></ProtectedRoute>}
         />
         <Route
           path="/dashboard/buyer/payments"

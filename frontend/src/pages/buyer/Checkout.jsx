@@ -68,7 +68,7 @@ const Checkout = () => {
           name: item.name,
           quantity: item.quantity,
           image: item.image,
-          price: item.price,
+          price: item.pricePerUnit,
           crop: item._id
         })),
         totalPrice: total,
@@ -78,7 +78,6 @@ const Checkout = () => {
       const orderRes = await axios.post('/api/orders', orderData);
       const orderId = orderRes.data._id;
 
-      // 2. Request Payment
       const paymentRes = await axios.post('/api/payments/request', {
         orderId,
         amount: total,
@@ -92,13 +91,15 @@ const Checkout = () => {
         updateUser({ balance: (user.balance || 0) - total });
       }
 
-      setSuccessData(paymentRes.data);
       setLoading(false);
       
-      // Auto-redirect after 5 seconds
-      setTimeout(() => {
+      // Redirect to Chapa Payment Page
+      if (paymentRes.data.checkoutUrl) {
+        window.location.href = paymentRes.data.checkoutUrl;
+      } else {
+        // Fallback or wallet success handling
         navigate('/dashboard/buyer');
-      }, 5000);
+      }
 
     } catch (err) {
       setError(err.response?.data?.message || 'Transaction failed. Please check your connection or balance.');
@@ -106,43 +107,9 @@ const Checkout = () => {
     }
   };
 
-  if (successData) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center p-6">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-[3rem] p-12 max-w-lg w-full text-center shadow-2xl border border-gray-100"
-        >
-          <div className="w-24 h-24 bg-green-50 text-agriGreen rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-            <CheckCircle2 size={56} />
-          </div>
-          <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">Payment Approved!</h2>
-          <p className="text-gray-500 font-medium mb-8">
-            Your order has been confirmed. Receipt <span className="text-agriGreen font-bold">#{successData.payment.receiptNumber}</span> has been sent to your email.
-          </p>
-          
-          <div className="bg-gray-50 rounded-3xl p-6 mb-8 space-y-3 text-left">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400 font-bold uppercase tracking-widest">Transaction ID</span>
-              <span className="text-gray-900 font-black">{successData.payment.transactionReference}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400 font-bold uppercase tracking-widest">Amount Paid</span>
-              <span className="text-agriGreen font-black">{total.toFixed(2)} ETB</span>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => navigate('/dashboard/buyer')}
-            className="w-full btn-primary py-4 rounded-2xl text-lg font-black"
-          >
-            Go to My Dashboard
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
+// Removed the immediate success UI block.
+  // Success is now handled by redirecting to /payment/verify/:tx_ref
+  // or shown via the success page component.
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
@@ -236,35 +203,37 @@ const Checkout = () => {
                      exit={{ opacity: 0, height: 0 }}
                      className="mt-8 p-6 bg-gray-50 rounded-[2rem] border border-gray-100"
                    >
-                     {['Telebirr', 'MPesa'].includes(paymentMethod) ? (
+                      {['Telebirr', 'MPesa'].includes(paymentMethod) ? (
                         <div className="space-y-3">
-                           <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Phone Number</label>
+                           <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Phone Number (Required for {paymentMethod})</label>
                            <div className="relative">
                               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                               <input 
                                 type="tel"
-                                placeholder="254..."
+                                required
+                                placeholder="0912..."
                                 className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-agriGreen transition-all font-bold"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                               />
                            </div>
                         </div>
-                     ) : (
+                     ) : paymentMethod === 'CBE' ? (
                         <div className="space-y-3">
-                           <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Account Number / IBAN</label>
+                           <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">CBE Account Number</label>
                            <div className="relative">
                               <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                               <input 
                                 type="text"
-                                placeholder="Account details"
+                                required
+                                placeholder="1000..."
                                 className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-agriGreen transition-all font-bold"
                                 value={accountNumber}
                                 onChange={(e) => setAccountNumber(e.target.value)}
                               />
                            </div>
                         </div>
-                     )}
+                     ) : null}
                    </motion.div>
                  )}
                </AnimatePresence>
@@ -291,7 +260,7 @@ const Checkout = () => {
                             </div>
                           </div>
                           <div className="font-black text-gray-900">
-                            {(item.price * item.quantity).toLocaleString()} <span className="text-[10px] text-gray-400">ETB</span>
+                            {(item.pricePerUnit * item.quantity).toLocaleString()} <span className="text-[10px] text-gray-400">ETB</span>
                           </div>
                         </div>
                       ))}
