@@ -1,7 +1,26 @@
 const Payment = require('../models/Payment');
 const Order = require('../models/Order');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
+const Crop = require('../models/Crop');
 const mongoose = require('mongoose');
+
+/**
+ * ===========================================================
+ *  PAYMENT CONTROLLER - Chapa Integration (Live + Demo Mode)
+ * ===========================================================
+ * 
+ *  Complete payment flow:
+ *  1. Buyer creates order → POST /api/orders
+ *  2. Buyer requests payment → POST /api/payments/request
+ *  3. Buyer is redirected to Chapa (or mock page in demo)
+ *  4. After payment, verify → GET /api/payments/verify/:tx_ref
+ *  5. On success: Order marked as Paid → Farmer notified
+ * 
+ *  DEMO MODE: Set PAYMENT_MODE=DEMO in .env (default)
+ *  LIVE MODE: Set PAYMENT_MODE=LIVE and add CHAPA_SECRET_KEY
+ * ===========================================================
+ */
 
 // Ethiopian payment method configurations
 const PAYMENT_METHODS = {
@@ -11,6 +30,7 @@ const PAYMENT_METHODS = {
   Cash: { name: 'Cash on Delivery', prefix: 'CSH', requiresPhone: false },
 };
 
+
 // @desc    Get available payment methods
 // @route   GET /api/payments/methods
 // @access  Public
@@ -18,22 +38,70 @@ const getPaymentMethods = async (req, res) => {
   res.json(PAYMENT_METHODS);
 };
 
-/**
- * SIMULATION HELPER: Send notification to farmer
- * In a real system, this would use FCM, Socket.io, or Email/SMS API.
- */
-const simulateFarmerNotification = async (orderId) => {
-  try {
-    const order = await Order.findById(orderId).populate('orderItems.crop');
-    if (!order) return;
 
-    // In a real app, you'd find the owner of each crop
-    console.log(`[NOTIFICATION SIMULATION] order ${orderId} marked as PAID.`);
-    console.log(`[SMS SIMULATION] Sending SMS to Rural Farmers in East Hararghe: "Someone bought your crops! Check Agrilink."`);
+/**
+ * NOTIFICATION HELPER: Create in-app + console notification for the farmer
+ * 
+ * In a real production system, this would also:
+ *  - Send an SMS via Africa's Talking or Twilio
+ *  - Send a push notification via Firebase Cloud Messaging
+ *  - Send an email notification
+ * 
+ * For now, we store it in MongoDB and log to console.
+ */
+const notifyFarmer = async (order) => {
+  try {
+    // Populate the order with buyer and crop details
+    const populatedOrder = await Order.findById(order._id)
+      .populate('buyer', 'name email phone')
+      .populate('farmer', 'name phone')
+      .populate('orderItems.crop', 'name');
+
+    if (!populatedOrder) return;
+
+    const buyerName = populatedOrder.buyer?.name || 'A buyer';
+    const itemNames = populatedOrder.orderItems.map(i => i.name).join(', ');
+    const total = populatedOrder.totalPrice;
+
+    // 1. Store notification in MongoDB (in-app notification)
+    await Notification.create({
+      recipient: populatedOrder.farmer._id,
+      type: 'NEW_ORDER',
+      title: '🛒 New Order Received!',
+      message: `${buyerName} ordered ${itemNames} for ${total.toLocaleString()} ETB. Check your dashboard to process this order.`,
+      order: order._id,
+    });
+
+    // 2. Console log simulation (simulates SMS/Push)
+    console.log('');
+    console.log('╔═══════════════════════════════════════════════╗');
+    console.log('║   📱 FARMER NOTIFICATION (Simulated SMS)      ║');
+    console.log('╠═══════════════════════════════════════════════╣');
+    console.log(`║  To:      ${populatedOrder.farmer?.name || 'Farmer'}`);
+    console.log(`║  Phone:   ${populatedOrder.farmer?.phone || 'N/A'}`);
+    console.log(`║  From:    ${buyerName}`);
+    console.log(`║  Items:   ${itemNames}`);
+    console.log(`║  Total:   ${total} ETB`);
+    console.log(`║  Address: ${populatedOrder.deliveryAddress}`);
+    console.log(`║  Status:  PAID ✅`);
+    console.log('╚═══════════════════════════════════════════════╝');
+    console.log('');
+
+    // 3. Also create a "payment success" notification for the buyer
+    await Notification.create({
+      recipient: populatedOrder.buyer._id,
+      type: 'PAYMENT_SUCCESS',
+      title: '✅ Payment Successful!',
+      message: `Your payment of ${total.toLocaleString()} ETB for ${itemNames} has been confirmed. The farmer has been notified and will prepare your order.`,
+      order: order._id,
+    });
+
   } catch (err) {
-    console.error('Notification simulation failed', err);
+    // Don't let notification errors break the payment flow
+    console.error('[NOTIFICATION ERROR]', err.message);
   }
 };
+
 
 // @desc    Process a payment request (Real or Demo)
 // @route   POST /api/payments/request
@@ -91,6 +159,7 @@ const requestPayment = async (req, res) => {
         message: 'DEMO Payment Initialized',
         checkoutUrl: `http://localhost:5173/payment/verify/${tx_ref}?demo=true`,
         paymentId: payment._id,
+        tx_ref: tx_ref,
         mode: 'DEMO'
       });
     }
@@ -127,6 +196,7 @@ const requestPayment = async (req, res) => {
         message: 'Payment initialized',
         checkoutUrl: data.data.checkout_url,
         paymentId: payment._id,
+        tx_ref: tx_ref,
         mode: 'LIVE'
       });
     } else {
@@ -144,9 +214,10 @@ const requestPayment = async (req, res) => {
   }
 };
 
-// @desc    Verify payment (Real or Demo)
+
+// @desc    Verify payment (Real or Demo) — Called after Chapa redirect
 // @route   GET /api/payments/verify/:tx_ref
-// @access  Private
+// @access  Public (so Chapa webhook can call it too)
 const verifyPayment = async (req, res) => {
   try {
     const { tx_ref } = req.params;
@@ -155,31 +226,60 @@ const verifyPayment = async (req, res) => {
     const payment = await Payment.findOne({ transactionReference: tx_ref });
     if (!payment) return res.status(404).json({ message: 'Transaction record not found' });
 
-    // Handle Demo Verification
+    // Don't re-verify if already successful
+    if (payment.status === 'Success') {
+      const order = await Order.findById(payment.order)
+        .populate('buyer', 'name email')
+        .populate('farmer', 'name')
+        .populate('orderItems.crop', 'name');
+
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already verified',
+        payment,
+        order,
+      });
+    }
+
+    // === DEMO MODE VERIFICATION ===
     if (isDemoQuery || tx_ref.includes('-DEMO-')) {
       console.log(`[DEMO MODE] Verifying fake payment: ${tx_ref}`);
       
-      // Simulate delay (beginner-friendly learning: use setTimeout or delay promise)
+      // Simulate processing delay (1.5 seconds)
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      // Mark payment as successful
       payment.status = 'Success';
       payment.metadata = { ...payment.metadata, verifiedAt: new Date(), gateway: 'MOCK_CHAPA' };
       await payment.save();
 
-      // Update Order Status
+      // Update Order Status to "Paid"
       const order = await Order.findById(payment.order);
       if (order) {
         order.status = 'Paid';
+        order.paymentStatus = 'Paid';
+        order.transactionId = tx_ref;
         await order.save();
+
+        // 🔔 NOTIFY THE FARMER — This is the key step!
+        await notifyFarmer(order);
       }
 
-      // Simulate Farmer Notification
-      await simulateFarmerNotification(payment.order);
+      // Fetch the fully populated order for the response
+      const populatedOrder = await Order.findById(payment.order)
+        .populate('buyer', 'name email phone')
+        .populate('farmer', 'name phone location')
+        .populate('orderItems.crop', 'name image');
 
-      return res.status(200).json({ success: true, message: 'DEMO Payment Verified', payment });
+      return res.status(200).json({
+        success: true,
+        message: 'DEMO Payment Verified Successfully!',
+        payment,
+        order: populatedOrder,
+      });
     }
 
-    // --- LIVE MODE: Real Chapa Verification ---
+    // === LIVE MODE: Real Chapa Verification ===
     const CHAPA_KEY = process.env.CHAPA_SECRET_KEY;
     const response = await fetch(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
       method: 'GET',
@@ -194,13 +294,27 @@ const verifyPayment = async (req, res) => {
       await payment.save();
 
       const order = await Order.findById(payment.order);
-      if (order && order.status !== 'Paid') {
+      if (order && order.paymentStatus !== 'Paid') {
         order.status = 'Paid';
+        order.paymentStatus = 'Paid';
+        order.transactionId = tx_ref;
         await order.save();
-        await simulateFarmerNotification(payment.order);
+
+        // 🔔 NOTIFY THE FARMER
+        await notifyFarmer(order);
       }
+
+      const populatedOrder = await Order.findById(payment.order)
+        .populate('buyer', 'name email phone')
+        .populate('farmer', 'name phone location')
+        .populate('orderItems.crop', 'name image');
       
-      return res.status(200).json({ success: true, message: 'Payment verified', payment });
+      return res.status(200).json({
+        success: true,
+        message: 'Payment verified successfully',
+        payment,
+        order: populatedOrder,
+      });
     } else {
       payment.status = 'Failed';
       await payment.save();
@@ -211,6 +325,7 @@ const verifyPayment = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // @desc    Get payment history for current user
 // @route   GET /api/payments/history
@@ -227,6 +342,7 @@ const getPaymentHistory = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Get all payments (Admin)
 // @route   GET /api/payments/admin/all
@@ -289,6 +405,7 @@ const getAllPayments = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Get a single payment by ID
 // @route   GET /api/payments/:id
