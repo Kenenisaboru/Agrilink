@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCropImage } from '../utils/cropUtils';
 
 const CropManagement = () => {
   const { user } = useAuth();
@@ -274,8 +275,12 @@ const CropManagement = () => {
           >
             <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 px-4">Marketplace Preview</h3>
             <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm opacity-60 pointer-events-none">
-              <div className="h-48 bg-gray-50 flex items-center justify-center">
-                <Package className="w-12 h-12 text-gray-200" />
+              <div className="h-48 bg-gray-50 relative overflow-hidden">
+                <img 
+                  src={imagePreview || getCropImage(formData)} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-black text-gray-900 truncate">
