@@ -16,11 +16,21 @@ import {
   AlertCircle,
   Lightbulb,
   CheckCircle2,
-  Smartphone
+  Smartphone,
+  Bell,
+  X,
+  ShoppingBag,
+  User,
+  MapPin,
+  Clock,
+  Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * StatCard Component - Reusable dashboard stat display
+ */
 const StatCard = ({ icon: Icon, label, value, trend, color, delay }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -47,9 +57,24 @@ const StatCard = ({ icon: Icon, label, value, trend, color, delay }) => (
   </motion.div>
 );
 
+
+/**
+ * FarmerDashboard - Main page for farmers
+ * 
+ * Includes:
+ * - Stats overview (crops, orders, earnings)
+ * - Recent crops list
+ * - 🔔 Notification bell with dropdown
+ * - Recent incoming orders preview
+ * - Farm intelligence cards
+ */
 const FarmerDashboard = () => {
   const [stats, setStats] = useState({ crops: 0, orders: 0, revenue: 0 });
   const [recentCrops, setRecentCrops] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -60,17 +85,25 @@ const FarmerDashboard = () => {
         const config = {
           headers: { Authorization: `Bearer ${user.token}` }
         };
-        const [cropsRes, ordersRes] = await Promise.all([
+        
+        // Fetch crops, orders, and notifications in parallel
+        const [cropsRes, ordersRes, notifRes] = await Promise.all([
           axios.get('/api/crops/farmer/mycrops', config),
-          axios.get('/api/orders/myorders', config)
+          axios.get('/api/orders/farmer/orders', config),
+          axios.get('/api/notifications', config).catch(() => ({ data: { notifications: [], unreadCount: 0 } })),
         ]);
 
         setStats({
           crops: cropsRes.data.length,
           orders: ordersRes.data.length,
-          revenue: ordersRes.data.reduce((acc, order) => acc + (order.totalPrice || 0), 0)
+          revenue: ordersRes.data
+            .filter(o => o.paymentStatus === 'Paid')
+            .reduce((acc, order) => acc + (order.totalPrice || 0), 0)
         });
         setRecentCrops(cropsRes.data.slice(0, 5));
+        setRecentOrders(ordersRes.data.slice(0, 3));
+        setNotifications(notifRes.data.notifications || []);
+        setUnreadCount(notifRes.data.unreadCount || 0);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
       } finally {
@@ -79,6 +112,28 @@ const FarmerDashboard = () => {
     };
     fetchDashboardData();
   }, [user]);
+
+  // Mark a notification as read
+  const markNotificationRead = async (notifId) => {
+    try {
+      await axios.put(`/api/notifications/${notifId}/read`);
+      setNotifications(prev => prev.map(n => n._id === notifId ? { ...n, isRead: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
+  };
+
+  // Mark all as read
+  const markAllRead = async () => {
+    try {
+      await axios.put('/api/notifications/read-all');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
+    }
+  };
 
   if (loading) return (
     <div className="h-[60vh] flex items-center justify-center">
@@ -90,7 +145,7 @@ const FarmerDashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 py-8 px-4">
-      {/* Welcome Header */}
+      {/* Welcome Header with Notification Bell */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <motion.h1 
@@ -107,6 +162,117 @@ const FarmerDashboard = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="flex items-center gap-3"
         >
+          {/* 🔔 Notification Bell */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              <Bell className="w-6 h-6 text-gray-700" />
+              {unreadCount > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-white"
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </motion.span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            <AnimatePresence>
+              {showNotifications && (
+                <>
+                  {/* Overlay */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowNotifications(false)} 
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 top-16 w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 z-50 overflow-hidden"
+                  >
+                    {/* Dropdown Header */}
+                    <div className="p-5 border-b border-gray-50 flex items-center justify-between">
+                      <h3 className="font-black text-gray-900 text-lg">Notifications</h3>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button 
+                            onClick={markAllRead}
+                            className="text-xs font-bold text-agriGreen hover:underline"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                        <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                          <X className="w-4 h-4 text-gray-400" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Notification List */}
+                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                      {notifications.length > 0 ? (
+                        notifications.slice(0, 10).map((notif) => (
+                          <div
+                            key={notif._id}
+                            onClick={() => markNotificationRead(notif._id)}
+                            className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
+                              !notif.isRead ? 'bg-green-50/30' : ''
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`p-2 rounded-xl shrink-0 ${
+                                notif.type === 'NEW_ORDER' ? 'bg-green-100 text-green-600' :
+                                notif.type === 'PAYMENT_SUCCESS' ? 'bg-blue-100 text-blue-600' :
+                                'bg-gray-100 text-gray-500'
+                              }`}>
+                                {notif.type === 'NEW_ORDER' ? <ShoppingBag className="w-4 h-4" /> :
+                                 notif.type === 'PAYMENT_SUCCESS' ? <CheckCircle2 className="w-4 h-4" /> :
+                                 <Bell className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-grow min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-black text-gray-900 truncate">{notif.title}</p>
+                                  {!notif.isRead && (
+                                    <span className="w-2 h-2 bg-agriGreen rounded-full shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
+                                <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-wider flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {new Date(notif.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-10 text-center">
+                          <Bell className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                          <p className="text-gray-400 font-bold text-sm">No notifications yet</p>
+                          <p className="text-gray-300 text-xs mt-1">You'll be notified when buyers order your crops</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* View All Link */}
+                    <Link 
+                      to="/dashboard/farmer/orders"
+                      onClick={() => setShowNotifications(false)}
+                      className="block p-4 text-center text-sm font-black text-agriGreen hover:bg-gray-50 transition-colors border-t border-gray-50"
+                    >
+                      View All Orders →
+                    </Link>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
           <Link to="/dashboard/farmer/crops" className="btn-primary py-4 px-8 rounded-2xl shadow-xl shadow-green-200/50">
             <Plus className="w-5 h-5" />
             Add New Harvest
@@ -128,7 +294,7 @@ const FarmerDashboard = () => {
           icon={Package} 
           label="Incoming Orders" 
           value={stats.orders} 
-          trend="5%" 
+          trend={stats.orders > 0 ? `${stats.orders} new` : undefined} 
           color="bg-blue-500"
           delay={0.2}
         />
@@ -150,69 +316,135 @@ const FarmerDashboard = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-10">
-        {/* Recent Crops List */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="lg:col-span-2 bg-white rounded-[3rem] border border-gray-100 p-10 shadow-sm overflow-hidden"
-        >
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-              <div className="w-2 h-8 bg-agriGreen rounded-full" />
-              Latest Harvests
-            </h2>
-            <Link to="/dashboard/farmer/crops" className="bg-gray-50 text-gray-900 font-black text-xs uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2">
-              Management <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+        {/* Left Column: Recent Crops + Recent Orders */}
+        <div className="lg:col-span-2 space-y-10">
+          {/* Recent Orders (NEW!) */}
+          {recentOrders.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="bg-white rounded-[3rem] border border-gray-100 p-10 shadow-sm"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                  <div className="w-2 h-8 bg-blue-500 rounded-full" />
+                  Recent Orders
+                </h2>
+                <Link to="/dashboard/farmer/orders" className="bg-gray-50 text-gray-900 font-black text-xs uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2">
+                  View All <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
 
-          <div className="space-y-4">
-            <AnimatePresence>
-              {recentCrops.length > 0 ? recentCrops.map((crop, i) => (
-                <motion.div 
-                  key={crop._id} 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
-                  className="flex items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-transparent hover:border-agriGreen/20 hover:bg-white hover:shadow-xl hover:shadow-green-100/20 transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                      {crop.image ? (
-                        <img src={crop.image} alt={crop.name} className="w-full h-full object-cover rounded-2xl" />
-                      ) : (
-                        <Leaf className="text-agriGreen w-8 h-8" />
-                      )}
+              <div className="space-y-4">
+                {recentOrders.map((order, i) => (
+                  <motion.div 
+                    key={order._id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                    className="flex items-center justify-between p-5 rounded-2xl bg-gray-50/50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                      }`}>
+                        {order.paymentStatus === 'Paid' ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                      </div>
+                      <div>
+                        <p className="font-black text-gray-900">
+                          {order.orderItems?.[0]?.name || 'Order'} 
+                          {order.orderItems?.length > 1 ? ` +${order.orderItems.length - 1} more` : ''}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <User className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-gray-400 font-bold">{order.buyer?.name || 'Buyer'}</span>
+                          <span className="text-gray-300">•</span>
+                          <Calendar className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-gray-400 font-bold">
+                            {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-black text-xl text-gray-900 group-hover:text-agriGreen transition-colors">{crop.name}</h4>
-                      <p className="text-xs font-bold text-gray-400 flex items-center gap-2 mt-1 uppercase tracking-wider">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {new Date(crop.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
+                    <div className="text-right">
+                      <p className="font-black text-agriGreen text-lg">{order.totalPrice?.toLocaleString()} <span className="text-xs text-gray-400">ETB</span></p>
+                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {order.paymentStatus || order.status}
+                      </span>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-black text-2xl text-gray-900">{crop.price} <span className="text-xs text-gray-400">ETB</span></div>
-                    <div className="text-[10px] font-black text-agriGreen bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest mt-1">
-                      {crop.quantity} {crop.unit || 'kg'} STOCK
-                    </div>
-                  </div>
-                </motion.div>
-              )) : (
-                <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
-                  <div className="bg-white p-4 rounded-3xl shadow-sm inline-block mb-4">
-                    <Package className="w-8 h-8 text-gray-300" />
-                  </div>
-                  <p className="text-gray-400 font-bold">Your barn is empty. Start by listing a crop!</p>
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
-        {/* Action Center */}
+          {/* Recent Crops List */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-[3rem] border border-gray-100 p-10 shadow-sm overflow-hidden"
+          >
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                <div className="w-2 h-8 bg-agriGreen rounded-full" />
+                Latest Harvests
+              </h2>
+              <Link to="/dashboard/farmer/crops" className="bg-gray-50 text-gray-900 font-black text-xs uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2">
+                Management <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              <AnimatePresence>
+                {recentCrops.length > 0 ? recentCrops.map((crop, i) => (
+                  <motion.div 
+                    key={crop._id} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.1 }}
+                    className="flex items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-transparent hover:border-agriGreen/20 hover:bg-white hover:shadow-xl hover:shadow-green-100/20 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                        {crop.image ? (
+                          <img src={crop.image} alt={crop.name} className="w-full h-full object-cover rounded-2xl" />
+                        ) : (
+                          <Leaf className="text-agriGreen w-8 h-8" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-black text-xl text-gray-900 group-hover:text-agriGreen transition-colors">{crop.name}</h4>
+                        <p className="text-xs font-bold text-gray-400 flex items-center gap-2 mt-1 uppercase tracking-wider">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {new Date(crop.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-black text-2xl text-gray-900">{crop.pricePerUnit} <span className="text-xs text-gray-400">ETB</span></div>
+                      <div className="text-[10px] font-black text-agriGreen bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest mt-1">
+                        {crop.quantity} {crop.unit || 'kg'} STOCK
+                      </div>
+                    </div>
+                  </motion.div>
+                )) : (
+                  <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
+                    <div className="bg-white p-4 rounded-3xl shadow-sm inline-block mb-4">
+                      <Package className="w-8 h-8 text-gray-300" />
+                    </div>
+                    <p className="text-gray-400 font-bold">Your barn is empty. Start by listing a crop!</p>
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right Column: Action Center */}
         <div className="space-y-8">
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
