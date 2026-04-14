@@ -52,6 +52,7 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/problems', require('./routes/problemRoutes'));
 app.use('/api/solutions', require('./routes/solutionRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 
 // Socket.io Integration
