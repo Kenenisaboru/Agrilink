@@ -72,7 +72,8 @@ const Checkout = () => {
           crop: item._id
         })),
         totalPrice: total,
-        deliveryAddress
+        deliveryAddress,
+        paymentMethod,
       };
 
       const orderRes = await axios.post('/api/orders', orderData);
