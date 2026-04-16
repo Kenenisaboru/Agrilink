@@ -1,7 +1,12 @@
 export const getCropImage = (crop) => {
-  if (crop.image && crop.image !== '') {
-    return crop.image;
+  if (crop && crop.image && crop.image !== '' && crop.image !== 'undefined' && crop.image !== 'null') {
+    if (crop.image.startsWith('http') || crop.image.startsWith('data:image')) {
+      return crop.image;
+    }
+    // Prefix relative paths with the backend URL and normalize slashes
+    return `http://localhost:5000/${crop.image.replace(/\\/g, '/')}`;
   }
+
 
   const category = crop.category || 'Other';
   const name = (crop.name || '').toLowerCase();
