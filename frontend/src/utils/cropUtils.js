@@ -4,7 +4,8 @@ export const getCropImage = (crop) => {
       return crop.image;
     }
     // Prefix relative paths with the backend URL and normalize slashes
-    return `http://localhost:5000/${crop.image.replace(/\\/g, '/')}`;
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return `${baseUrl}/${crop.image.replace(/\\/g, '/')}`;
   }
 
 
@@ -12,29 +13,35 @@ export const getCropImage = (crop) => {
   const name = (crop.name || '').toLowerCase();
 
   const categoryImages = {
-    'Vegetable': 'https://images.unsplash.com/photo-1566385101042-1a0aa0c12e8c?auto=format&fit=crop&q=80&w=400',
-    'Fruit': 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=400',
-    'Grain': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=400',
-    'Cereal': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=400',
-    'Legume': 'https://images.unsplash.com/photo-1515544832971-daac5775836c?auto=format&fit=crop&q=80&w=400',
-    'Oilseed': 'https://images.unsplash.com/photo-1464454709131-ffd692591ee5?auto=format&fit=crop&q=80&w=400',
-    'Stimulant': 'https://images.unsplash.com/photo-1495924979005-79104481a52f?auto=format&fit=crop&q=80&w=400',
-    'Cash Crop': 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=400',
-    'Other': 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400'
+    'Vegetable': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Vegetables_in_basket.jpg/400px-Vegetables_in_basket.jpg',
+    'Fruit': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Culinary_fruits_front_view.jpg/400px-Culinary_fruits_front_view.jpg',
+    'Grain': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Wheat_close-up.JPG/400px-Wheat_close-up.JPG',
+    'Cereal': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Wheat_close-up.JPG/400px-Wheat_close-up.JPG',
+    'Legume': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Various_legumes.jpg/400px-Various_legumes.jpg',
+    'Oilseed': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Sunflower_seeds_on_a_white_background.jpg/400px-Sunflower_seeds_on_a_white_background.jpg',
+    'Stimulant': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Catha_edulis_001.jpg/400px-Catha_edulis_001.jpg',
+    'Cash Crop': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Roasted_coffee_beans.jpg/400px-Roasted_coffee_beans.jpg',
+    'Other': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Fresh_produce.jpg/400px-Fresh_produce.jpg'
   };
 
   // Keyword overrides
   if (name.includes('coffee') || name.includes('buna') || name.includes('cofe')) {
     return categoryImages['Cash Crop'];
   }
-  if (name.includes('maize') || name.includes('bokolo')) {
-    return categoryImages['Grain'];
+  if (name.includes('maize') || name.includes('bokolo') || name.includes('corn')) {
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Corn_on_the_cob.jpg/400px-Corn_on_the_cob.jpg';
   }
-  if (name.includes('papaya') || name.includes('orange')) {
-    return categoryImages['Fruit'];
+  if (name.includes('papaya')) {
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Papaya_cross_section_BNC.jpg/400px-Papaya_cross_section_BNC.jpg';
   }
-  if (name.includes('tomato') || name.includes('onion')) {
-    return categoryImages['Vegetable'];
+  if (name.includes('orange')) {
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Ambersweet_oranges.jpg/400px-Ambersweet_oranges.jpg';
+  }
+  if (name.includes('tomato')) {
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tomato_je.jpg/400px-Tomato_je.jpg';
+  }
+  if (name.includes('onion')) {
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Onions_on_a_white_background.jpg/400px-Onions_on_a_white_background.jpg';
   }
   if (name.includes('chat') || name.includes('qat')) {
     return categoryImages['Stimulant'];
