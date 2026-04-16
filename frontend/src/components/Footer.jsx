@@ -206,14 +206,34 @@ const Footer = () => {
             transition={{ duration: 0.5 }}
             className="flex flex-col md:flex-row justify-between items-center gap-4"
           >
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <span>© {currentYear} AgriLink. All rights reserved.</span>
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <span>© {currentYear} AgriLink. All rights reserved.</span>
+              </div>
+              <div className="h-4 w-px bg-gray-800 hidden md:block" />
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <span className="text-gray-500">Built by</span>
+                <a 
+                  href="https://github.com/Kenenisaboru" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-agriGreen hover:text-amber-500 transition-colors font-bold flex items-center gap-1.5"
+                >
+                  Kenenisa Boru
+                  <span className="bg-agriGreen/10 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-tighter">Fullstack</span>
+                </a>
+              </div>
             </div>
             
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <span>Made with</span>
-              <Heart className="w-4 h-4 text-red-500 fill-current" />
-              <span>for farmers worldwide</span>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-gray-500">
+                <a href="https://t.me/kwth21" className="hover:text-agriGreen transition-colors flex items-center gap-1">
+                  <Send className="w-3 h-3" /> Telegram
+                </a>
+                <a href="tel:0906921428" className="hover:text-agriGreen transition-colors flex items-center gap-1">
+                  <Phone className="w-3 h-3" /> 0906921428
+                </a>
+              </div>
             </div>
 
             <div className="flex items-center gap-6 text-sm">
