@@ -34,7 +34,7 @@ const BuyerDashboard = () => {
   useEffect(() => {
     const fetchCrops = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/crops');
+        const res = await axios.get('/api/crops');
         setCrops(res.data);
       } catch (err) {
         console.error('Error fetching crops:', err);

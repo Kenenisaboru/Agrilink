@@ -27,7 +27,7 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/problems');
+        const { data } = await axios.get('/api/problems');
         setProblems(data);
       } catch (err) {
         console.error("Error fetching problems:", err);
