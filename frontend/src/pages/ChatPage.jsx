@@ -18,7 +18,7 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const socket = io('http://localhost:5000');
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
 
 const ChatPage = () => {
   const { user } = useAuth();
@@ -71,7 +71,7 @@ const ChatPage = () => {
   const fetchHistory = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/messages/conversations/list', config);
+      const { data } = await axios.get('/api/messages/conversations/list', config);
       setHistory(data);
     } catch (err) {
       console.error("Error fetching history:", err);
@@ -88,7 +88,7 @@ const ChatPage = () => {
         setLoading(true);
         try {
           const config = { headers: { Authorization: `Bearer ${user.token}` } };
-          const { data } = await axios.get(`http://localhost:5000/api/messages/${recipient._id}`, config);
+          const { data } = await axios.get(`/api/messages/${recipient._id}`, config);
           setMessages(data);
         } catch (err) {
           console.error("Error fetching chat:", err);
