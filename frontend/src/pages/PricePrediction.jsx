@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, Plant, Calendar, CheckCircle2, ChevronRight, BrainCircuit, Activity } from 'lucide-react';
+import { TrendingUp, Leaf, Calendar, CheckCircle2, ChevronRight, Cpu, Activity } from 'lucide-react';
 import { predictPrice, getRecommendations } from '../services/aiApi';
 
 const CROPS = ['Maize', 'Wheat', 'Teff', 'Chat', 'Coffee'];
@@ -60,7 +60,7 @@ const PricePrediction = () => {
             animate={{ scale: 1 }} 
             className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center"
           >
-            <BrainCircuit className="w-10 h-10 text-green-600" />
+            <Cpu className="w-10 h-10 text-green-600" />
           </motion.div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
             Smart Farming <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-400">Insights</span>
@@ -105,7 +105,7 @@ const PricePrediction = () => {
                   {/* Crop Selection */}
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <Plant className="w-4 h-4 text-green-500" /> Select Crop
+                      <Leaf className="w-4 h-4 text-green-500" /> Select Crop
                     </label>
                     <div className="relative">
                       <select
@@ -252,7 +252,7 @@ const PricePrediction = () => {
                       userType === 'farmer' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30' : 'bg-purple-600 hover:bg-purple-700 shadow-purple-500/30'
                     }`}
                   >
-                    {isRecommending ? <Activity className="w-5 h-5 animate-pulse" /> : <BrainCircuit className="w-5 h-5" />}
+                    {isRecommending ? <Activity className="w-5 h-5 animate-pulse" /> : <Cpu className="w-5 h-5" />}
                     Get Tailored Advice
                   </button>
                 </div>
