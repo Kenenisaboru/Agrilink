@@ -23,6 +23,8 @@ import RepresentativeDashboard from './pages/RepresentativeDashboard';
 import CropManagement from './pages/CropManagement';
 import FarmerOrders from './pages/FarmerOrders';
 import ChatPage from './pages/ChatPage';
+import AIAssistant from './pages/AIAssistant';
+import PricePrediction from './pages/PricePrediction';
 import Checkout from './pages/buyer/Checkout';
 import PaymentHistory from './pages/buyer/PaymentHistory';
 import PaymentVerify from './pages/buyer/PaymentVerify';
@@ -89,6 +91,14 @@ function App() {
         <Route
           path="/chat"
           element={<ProtectedRoute><ChatPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/ai-assistant"
+          element={<ProtectedRoute><AIAssistant /></ProtectedRoute>}
+        />
+        <Route
+          path="/ai-prediction"
+          element={<ProtectedRoute><PricePrediction /></ProtectedRoute>}
         />
 
         <Route
