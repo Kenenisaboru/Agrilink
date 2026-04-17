@@ -1,15 +1,4 @@
-import pandas as pd
-import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-
-# Simulate realistic agricultural dataset for East Ethiopia
-np.random.seed(42)
-crops = ['maize', 'wheat', 'teff', 'chat', 'coffee']
-months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-locations = ['East Hararghe', 'West Hararghe', 'Dire Dawa', 'Haramaya']
+import random
 
 # Base prices in ETB per Quintal (100KG) or per Kg (for Chat/Coffee)
 base_prices = {
@@ -20,62 +9,37 @@ base_prices = {
     'coffee': 450    # ETB/Kg
 }
 
-# Seasonal multiplier index (simulated)
+# Seasonal multiplier index to simulate linear trends
 seasonality = {
     'January': 0.9, 'February': 0.85, 'March': 0.95, 'April': 1.05, 
     'May': 1.1, 'June': 1.15, 'July': 1.2, 'August': 1.25, 
     'September': 1.2, 'October': 1.1, 'November': 1.0, 'December': 0.95
 }
 
-# Generate synthetic dataset
-data = []
-for _ in range(500):
-    crop = np.random.choice(crops)
-    month = np.random.choice(months)
-    loc = np.random.choice(locations)
-    
-    # Calculate price with some noise
-    price = base_prices[crop] * seasonality[month]
-    
-    # Add random noise +/- 10%
-    noise = np.random.uniform(0.9, 1.1)
-    final_price = round(price * noise, 2)
-    
-    data.append([crop, month, loc, final_price])
-
-df = pd.DataFrame(data, columns=['Crop', 'Month', 'Location', 'Price'])
-
-# Train a Linear Regression Pipeline
-categorical_features = ['Crop', 'Month', 'Location']
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
-    ])
-
-pipeline = Pipeline(steps=[('preprocessor', preprocessor),
-                           ('regressor', LinearRegression())])
-
-X = df.drop('Price', axis=1)
-y = df['Price']
-
-# Train the model once
-pipeline.fit(X, y)
-
 def predict_price(crop, month, location="East Hararghe"):
     crop = crop.lower()
     month = month.capitalize()
     
-    # Simple formatting to match synthetic data
-    input_data = pd.DataFrame([[crop, month, location]], columns=['Crop', 'Month', 'Location'])
+    if crop not in base_prices:
+        return 0, f"Crop '{crop}' not recognized. Try Maize, Wheat, Teff, Chat, or Coffee."
     
     try:
-        prediction = pipeline.predict(input_data)[0]
-        # Generate an explanation based on typical demand patterns
-        explanation = f"The model predicts a price of {prediction:.2f} ETB based on historical trends."
+        # Simulate realistic model inference
+        base = base_prices[crop]
+        season_mod = seasonality.get(month, 1.0)
         
-        if seasonality.get(month, 1.0) > 1.1:
+        # Add realistic noise for the specific location vs national average
+        loc_noise = 1.05 if location.lower() == 'dire dawa' else 1.0
+        random_variance = random.uniform(0.95, 1.05)
+        
+        prediction = base * season_mod * loc_noise * random_variance
+        
+        # Generate an explanation based on typical demand patterns
+        explanation = f"Based on our simulated market models, we predict a price of {prediction:.2f} ETB."
+        
+        if season_mod > 1.1:
             explanation += f" Prices for {crop} are typically higher in {month} due to low post-harvest supply."
-        elif seasonality.get(month, 1.0) < 0.95:
+        elif season_mod < 0.95:
             explanation += f" Prices for {crop} tend to drop in {month} as new harvests enter the market."
         else:
             explanation += f" {month} represents a relatively stable pricing period for {crop}."
