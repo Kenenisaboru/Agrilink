@@ -56,6 +56,7 @@ app.use('/api/solutions', require('./routes/solutionRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Socket.io Integration
 socketHandler(io);
