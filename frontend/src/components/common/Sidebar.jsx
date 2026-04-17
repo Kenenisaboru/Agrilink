@@ -15,8 +15,8 @@ import {
   TrendingUp,
   Shield,
   CreditCard,
-  Bot,
-  BrainCircuit
+  MessageCircle,
+  BarChart
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -36,8 +36,8 @@ const Sidebar = ({ role }) => {
     { name: 'My Harvests', path: '/dashboard/farmer/crops', icon: Leaf },
     { name: 'Orders', path: '/dashboard/farmer/orders', icon: Package },
     { name: 'Analytics', path: '/dashboard/farmer/analytics', icon: TrendingUp },
-    { name: 'AI Assistant', path: '/ai-assistant', icon: Bot },
-    { name: 'Smart Insights', path: '/ai-prediction', icon: BrainCircuit },
+    { name: 'AI Assistant', path: '/ai-assistant', icon: MessageCircle },
+    { name: 'Smart Insights', path: '/ai-prediction', icon: BarChart },
     { name: 'Messages', path: '/chat', icon: MessageSquare },
   ];
 
@@ -45,8 +45,8 @@ const Sidebar = ({ role }) => {
     { name: 'Marketplace', path: '/dashboard/buyer', icon: ShoppingCart },
     { name: 'My Orders', path: '/dashboard/buyer/orders', icon: Package },
     { name: 'Payment History', path: '/dashboard/buyer/payments', icon: CreditCard },
-    { name: 'AI Assistant', path: '/ai-assistant', icon: Bot },
-    { name: 'Smart Insights', path: '/ai-prediction', icon: BrainCircuit },
+    { name: 'AI Assistant', path: '/ai-assistant', icon: MessageCircle },
+    { name: 'Smart Insights', path: '/ai-prediction', icon: BarChart },
     { name: 'Messages', path: '/chat', icon: MessageSquare },
   ];
 
