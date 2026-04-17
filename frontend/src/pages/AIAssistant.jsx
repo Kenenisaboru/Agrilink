@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Bot, User, Loader2, Sparkles, Languages } from 'lucide-react';
+import { Send, MessageCircle, User, Loader2, Zap, Globe } from 'lucide-react';
 import { chatWithAI } from '../services/aiApi';
 
 const AIAssistant = () => {
@@ -81,19 +81,19 @@ const AIAssistant = () => {
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                <Bot className="w-7 h-7 text-white" />
+                <MessageCircle className="w-7 h-7 text-white" />
               </div>
               <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1e1b4b] rounded-full"></span>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                AgriLink AI <Sparkles className="w-5 h-5 text-yellow-400" />
+                AgriLink AI <Zap className="w-5 h-5 text-yellow-400" />
               </h1>
               <p className="text-sm text-blue-200">Multilingual Ecosystem Assistant</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 text-white border border-white/20 shadow-inner">
-            <Languages className="w-4 h-4" /> Auto-Detect
+            <Globe className="w-4 h-4" /> Auto-Detect
           </div>
         </div>
 
@@ -109,7 +109,7 @@ const AIAssistant = () => {
               <div className={`flex max-w-[75%] gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 {msg.sender === 'bot' && (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <Bot className="w-4 h-4 text-white" />
+                    <MessageCircle className="w-4 h-4 text-white" />
                   </div>
                 )}
                 
@@ -144,7 +144,7 @@ const AIAssistant = () => {
             >
               <div className="flex max-w-[75%] gap-3 text-white">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <Bot className="w-4 h-4 text-white" />
+                  <MessageCircle className="w-4 h-4 text-white" />
                 </div>
                 <div className="px-5 py-4 rounded-2xl rounded-tl-sm bg-white/10 backdrop-blur-md border border-white/10 shadow-lg flex items-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
