@@ -3,6 +3,8 @@ from flask_cors import CORS
 from modules.chatbot import get_chat_response
 from modules.model import predict_price
 from modules.recommendation import get_recommendations
+from modules.vision import analyze_crop_image
+from modules.weather import get_weather_alert
 
 app = Flask(__name__)
 CORS(app)
@@ -52,6 +54,21 @@ def recommend_endpoint():
     
     recommendations = get_recommendations(user_type, crop, location)
     return jsonify({'recommendations': recommendations})
+
+@app.route('/api/vision', methods=['POST'])
+def vision_endpoint():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image provided'}), 400
+    
+    file = request.files['image']
+    result = analyze_crop_image(file)
+    return jsonify(result)
+
+@app.route('/api/weather/alert', methods=['GET'])
+def get_weather_alert_endpoint():
+    location = request.args.get('location', 'East Hararghe')
+    alert = get_weather_alert(location)
+    return jsonify({"alert": alert})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
