@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'http://192.168.137.160:5001/api';
 
 export const chatWithAI = async (message) => {
   try {
