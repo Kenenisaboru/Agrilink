@@ -1,41 +1,31 @@
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+
 def get_recommendations(user_type, crop_interest='', location='East Hararghe'):
-    crop = crop_interest.lower() if crop_interest else ''
-    
-    if user_type.lower() == 'farmer':
-        # Recommendations for Farmers
-        recs = [
-            {
-                "title": "Best Time to Sell",
-                "description": f"For {crop if crop else 'most staple crops'} in {location}, the peak prices often hit between June and August before the next harvest." if crop != 'chat' else "Chat prices remain relatively high year-round, but demand peaks during major holidays and dry seasons."
-            },
-            {
-                "title": "Recommended Buyers (Simulated)",
-                "description": "Matching your location with top-rated local cooperatives and certified export agents in Dire Dawa and Harar."
-            },
-            {
-                "title": "Market Insight",
-                "description": "Consider bulk selling. Partnering with 2-3 neighboring farmers increases negotiation leverage by up to 15%."
-            }
-        ]
-        return recs
+    try:
+        # Ask Gemini to generate personalized recommendations
+        prompt = f"As an agricultural advisor in Ethiopia, provide 3 short, high-impact recommendations for a {user_type} in {location} who is interested in {crop_interest if crop_interest else 'general farming'}. Return specifically in a JSON list format: [{{\"title\": \"...\", \"description\": \"...\"}}, ...]"
         
-    elif user_type.lower() == 'buyer':
-        # Recommendations for Buyers
-        recs = [
-            {
-                "title": "Best Crops to Source Right Now",
-                "description": "Teff and Harar Coffee currently show high export demand margins. Maize is heavily demanded domestically."
-            },
-            {
-                "title": "Optimal Sourcing Regions",
-                "description": "Haramaya and West Hararghe are currently showing slight surplus, making them ideal sourcing locations for better procurement prices."
-            },
-            {
-                "title": "Logistics Insight",
-                "description": "Consolidating transport from East Hararghe out to central markets can reduce overhead costs by an estimated 12%."
-            }
-        ]
-        return recs
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
+        response = requests.post(GEMINI_URL, json=payload, timeout=5)
         
-    else:
-        return [{"title": "Error", "description": "Invalid user type. Please specify 'farmer' or 'buyer'."}]
+        if response.status_code == 200:
+            import json
+            text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+            clean_text = text.strip().replace('```json', '').replace('```', '')
+            return json.loads(clean_text)
+    except:
+        pass
+
+    # Fallback to static if API fails
+    return [
+        {"title": "Sell Timing", "description": "Prices usually peak before the next harvest cycle."},
+        {"title": "Market Access", "description": "Engage verified buyers directly on AgriLink for better margins."},
+        {"title": "Logistics", "description": "Group your deliveries with others to save on transport costs."}
+    ]
