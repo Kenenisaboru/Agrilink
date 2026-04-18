@@ -1,15 +1,18 @@
 import random
+import requests
+import os
+from dotenv import load_dotenv
 
-# Base prices in ETB per Quintal (100KG) or per Kg (for Chat/Coffee)
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+
+# Base prices in ETB per Quintal (100KG) or per Kg
 base_prices = {
-    'maize': 4000,   # ETB/Quintal
-    'wheat': 5500,   # ETB/Quintal
-    'teff': 9000,    # ETB/Quintal
-    'chat': 800,     # ETB/Kg
-    'coffee': 450    # ETB/Kg
+    'maize': 4000, 'wheat': 5500, 'teff': 9000, 'chat': 800, 'coffee': 450
 }
 
-# Seasonal multiplier index to simulate linear trends
 seasonality = {
     'January': 0.9, 'February': 0.85, 'March': 0.95, 'April': 1.05, 
     'May': 1.1, 'June': 1.15, 'July': 1.2, 'August': 1.25, 
@@ -24,31 +27,22 @@ def predict_price(crop, month, location="East Hararghe"):
         return 0, f"Crop '{crop}' not recognized. Try Maize, Wheat, Teff, Chat, or Coffee."
     
     try:
-        # Simulate realistic model inference
         base = base_prices[crop]
         season_mod = seasonality.get(month, 1.0)
+        prediction = base * season_mod * random.uniform(0.98, 1.02)
         
-        # Add realistic noise for the specific location vs national average
-        loc_noise = 1.05 if location.lower() == 'dire dawa' else 1.0
-        random_variance = random.uniform(0.95, 1.05)
+        # Use Gemini to generate a professional market explanation
+        prompt = f"As an Ethiopian agricultural economist, explain why the price of {crop} in {location} during the month of {month} is predicted to be around {round(prediction, 2)} ETB. Mention seasonal factors, local rainfall patterns, and market demand in Harar/Dire Dawa. Keep it to 2-3 sentences."
         
-        prediction = base * season_mod * loc_noise * random_variance
-        
-        # Generate an explanation based on typical demand patterns
-        explanation = f"Based on our simulated market models, we predict a price of {prediction:.2f} ETB."
-        
-        if season_mod > 1.1:
-            explanation += f" Prices for {crop} are typically higher in {month} due to low post-harvest supply."
-        elif season_mod < 0.95:
-            explanation += f" Prices for {crop} tend to drop in {month} as new harvests enter the market."
-        else:
-            explanation += f" {month} represents a relatively stable pricing period for {crop}."
-            
-        if crop in ['chat', 'coffee']:
-            explanation += " Note: Price is estimated per Kg."
-        else:
-            explanation += " Note: Price is estimated per Quintal (100 Kg)."
-            
+        explanation = "Market prediction successful."
+        try:
+            payload = {"contents": [{"parts": [{"text": prompt}]}]}
+            response = requests.post(GEMINI_URL, json=payload, timeout=5)
+            if response.status_code == 200:
+                explanation = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        except:
+            explanation = f"Prices for {crop} are influenced by {month} seasonal supply/demand cycles in {location}."
+
         return round(prediction, 2), explanation
     except Exception as e:
-        return 0, f"Error generating prediction: {str(e)}"
+        return 0, f"Error: {str(e)}"
