@@ -31,3 +31,27 @@ export const getRecommendations = async (userType, crop, location) => {
     throw error;
   }
 };
+
+export const analyzeCropImage = async (imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    const response = await axios.post(`${API_BASE_URL}/vision`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("AI Vision Error:", error);
+    throw error;
+  }
+};
+
+export const getWeatherAlert = async (location = 'East Hararghe') => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/weather/alert`, { params: { location } });
+    return response.data;
+  } catch (error) {
+    console.error("Weather Alert Error:", error);
+    throw error;
+  }
+};
