@@ -17,11 +17,18 @@ const AIAssistant = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [weatherAlert, setWeatherAlert] = useState(null);
   const [showAlertMessage, setShowAlertMessage] = useState(true);
+  const [isPageReady, setIsPageReady] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    setIsPageReady(true);
+  }, []);
+
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
@@ -137,8 +144,8 @@ const AIAssistant = () => {
     recognition.onend = () => setIsRecording(false);
     
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
+      const transcript = (event.results && event.results[0] && event.results[0][0]) ? event.results[0][0].transcript : null;
+      if (transcript) setInput(transcript);
     };
 
     recognition.onerror = (event) => {
@@ -157,6 +164,8 @@ const AIAssistant = () => {
       default: return 'English';
     }
   };
+
+  if (!isPageReady) return <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white text-xl">Loading AgriLink...</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e1b4b] flex items-center justify-center p-4">
@@ -182,13 +191,13 @@ const AIAssistant = () => {
               }`}
             >
               <div className="flex-shrink-0 mt-1">
-                {weatherAlert.icon === 'rain' ? <CloudRain className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
+                {(weatherAlert && weatherAlert.icon === 'rain') ? <CloudRain className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
               </div>
               <div className="flex-1">
                 <h4 className="font-bold text-lg flex items-center gap-2">
-                  Smart Alert: {weatherAlert.type}
+                  Smart Alert: {(weatherAlert && weatherAlert.type) ? weatherAlert.type : 'Weather Update'}
                 </h4>
-                <p className="text-sm opacity-90 mt-1">{weatherAlert.message}</p>
+                <p className="text-sm opacity-90 mt-1">{(weatherAlert && weatherAlert.message) ? weatherAlert.message : 'Checking local conditions...'}</p>
               </div>
               <button 
                 onClick={() => setShowAlertMessage(false)}
