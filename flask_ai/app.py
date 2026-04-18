@@ -71,4 +71,5 @@ def get_weather_alert_endpoint():
     return jsonify({"alert": alert})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    # Listening on 0.0.0.0 makes the service visible to your phone on Wi-Fi
+    app.run(debug=True, host='0.0.0.0', port=5001)
