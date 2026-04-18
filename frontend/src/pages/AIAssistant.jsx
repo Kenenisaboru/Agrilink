@@ -1,20 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Send, MessageCircle, User, Loader2, Zap, Globe } from 'lucide-react';
-import { chatWithAI } from '../services/aiApi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, MessageCircle, Loader2, Zap, Globe, Mic, Image as ImageIcon, CloudRain, AlertTriangle, X, Camera } from 'lucide-react';
+import { chatWithAI, analyzeCropImage, getWeatherAlert } from '../services/aiApi';
 
 const AIAssistant = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: "Hello! I am your Smart AgriLink Assistant. I can help you with crop demands, best selling times, and market strategies in English, Amharic, or Afaan Oromo. How can I assist you today?",
+      text: "Hello! I am your Smart AgriLink Advisor. I can help you with crop demands, market strategies, vision-based plant diagnostics, and weather alerts in English, Amharic, or Afaan Oromo. How can I assist you today?",
       detectedLanguage: 'en'
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [weatherAlert, setWeatherAlert] = useState(null);
+  const [showAlertMessage, setShowAlertMessage] = useState(true);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -24,17 +28,32 @@ const AIAssistant = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const data = await getWeatherAlert('East Hararghe');
+        if (data && data.alert) {
+          setWeatherAlert(data.alert);
+        }
+      } catch (e) {
+        console.error("Failed to load weather alert");
+      }
+    };
+    fetchWeather();
+  }, []);
+
   const handleSend = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!input.trim()) return;
 
-    const userMessage = { id: Date.now(), sender: 'user', text: input, detectedLanguage: '' };
+    const userText = input;
+    const userMessage = { id: Date.now(), sender: 'user', text: userText, detectedLanguage: '' };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await chatWithAI(userMessage.text);
+      const response = await chatWithAI(userText);
       setMessages((prev) => [
         ...prev,
         {
@@ -59,6 +78,77 @@ const AIAssistant = () => {
     }
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const tempImageUrl = URL.createObjectURL(file);
+    const userMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: "Uploaded an image for diagnosis.",
+      imageUrl: tempImageUrl
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const result = await analyzeCropImage(file);
+      const botResponse = `${result.message}\n\n**🌿 Organic Treatment:**\n${result.analysis.treatment_organic}\n\n**🧪 Chemical Treatment:**\n${result.analysis.treatment_chemical}`;
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: botResponse,
+          isDiagnosis: true
+        }
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: "Vision Analysis failed. Please check your network connection.",
+          isError: true
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const startVoiceRecording = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Your browser does not support Voice Recognition.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'am-ET'; // Using Amharic as default for local farmers
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsRecording(true);
+    recognition.onend = () => setIsRecording(false);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setIsRecording(false);
+    };
+
+    recognition.start();
+  };
+
   const getLanguageLabel = (code) => {
     switch (code) {
       case 'am': return 'Amharic';
@@ -74,26 +164,60 @@ const AIAssistant = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl h-[85vh] bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.37)] flex flex-col"
+        className="w-full max-w-4xl h-[85vh] bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.37)] flex flex-col relative"
       >
+        {/* Weather Alert Push Notification */}
+        <AnimatePresence>
+          {weatherAlert && showAlertMessage && (
+            <motion.div
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className={`absolute top-4 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-lg rounded-2xl shadow-2xl p-4 flex items-start gap-4 backdrop-blur-md border ${
+                weatherAlert.urgency === 'High' 
+                  ? 'bg-red-500/80 border-red-400 text-white' 
+                  : weatherAlert.urgency === 'Medium'
+                  ? 'bg-orange-500/80 border-orange-400 text-white'
+                  : 'bg-green-500/80 border-green-400 text-white'
+              }`}
+            >
+              <div className="flex-shrink-0 mt-1">
+                {weatherAlert.icon === 'rain' ? <CloudRain className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-lg flex items-center gap-2">
+                  Smart Alert: {weatherAlert.type}
+                </h4>
+                <p className="text-sm opacity-90 mt-1">{weatherAlert.message}</p>
+              </div>
+              <button 
+                onClick={() => setShowAlertMessage(false)}
+                className="p-1 hover:bg-white/20 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Header */}
-        <div className="p-6 border-b border-white/10 bg-gradient-to-r from-blue-600/20 to-purple-600/20 flex items-center justify-between">
+        <div className="p-6 border-b border-white/10 bg-gradient-to-r from-green-600/20 to-blue-600/20 flex items-center justify-between z-10">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                <MessageCircle className="w-7 h-7 text-white" />
+              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.5)]">
+                <Zap className="w-7 h-7 text-white" />
               </div>
-              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1e1b4b] rounded-full"></span>
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 border-2 border-[#1e1b4b] rounded-full"></span>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                AgriLink AI <Zap className="w-5 h-5 text-yellow-400" />
+                AgriLink Smart Advisor
               </h1>
-              <p className="text-sm text-blue-200">Multilingual Ecosystem Assistant</p>
+              <p className="text-sm text-green-200">Vision Diagnostics & Voice Enabled (Amharic)</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 text-white border border-white/20 shadow-inner">
-            <Globe className="w-4 h-4" /> Auto-Detect
+            <Globe className="w-4 h-4" /> Multilingual
           </div>
         </div>
 
@@ -106,10 +230,10 @@ const AIAssistant = () => {
               key={msg.id}
               className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`flex max-w-[75%] gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div className={`flex max-w-[85%] gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 {msg.sender === 'bot' && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <MessageCircle className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <Zap className="w-4 h-4 text-white" />
                   </div>
                 )}
                 
@@ -123,6 +247,11 @@ const AIAssistant = () => {
                         : 'bg-white/10 backdrop-blur-md text-slate-100 border border-white/10 rounded-tl-sm'
                     }`}
                   >
+                    {msg.imageUrl && (
+                      <div className="mb-2">
+                        <img src={msg.imageUrl} alt="Crop Upload" className="max-w-[200px] rounded-lg border border-white/20" />
+                      </div>
+                    )}
                     <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                   </div>
                   
@@ -143,12 +272,12 @@ const AIAssistant = () => {
               className="flex justify-start"
             >
               <div className="flex max-w-[75%] gap-3 text-white">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <MessageCircle className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                   <Zap className="w-4 h-4 text-white" />
                 </div>
                 <div className="px-5 py-4 rounded-2xl rounded-tl-sm bg-white/10 backdrop-blur-md border border-white/10 shadow-lg flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
-                  <span className="text-sm text-slate-300">Processing input...</span>
+                  <Loader2 className="w-5 h-5 animate-spin text-green-400" />
+                  <span className="text-sm text-slate-300">Evaluating data...</span>
                 </div>
               </div>
             </motion.div>
@@ -158,25 +287,64 @@ const AIAssistant = () => {
 
         {/* Input Area */}
         <div className="p-5 border-t border-white/10 bg-black/20">
-          <form onSubmit={handleSend} className="relative flex items-center">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything..."
-              className="w-full bg-white/5 border border-white/20 rounded-full py-4 pl-6 pr-14 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner"
+          <form onSubmit={handleSend} className="relative flex items-center gap-2">
+            
+            {/* Vision / Image Upload */}
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              ref={fileInputRef}
+              onChange={handleFileUpload}
             />
             <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 rounded-full text-white transition-colors duration-200 shadow-[0_0_10px_rgba(37,99,235,0.4)]"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-green-400 transition-colors border border-white/20 shadow-inner group relative"
+              title="Upload Crop Photo for Diagnosis"
             >
-              <Send className="w-4 h-4 ml-0.5" />
+              <Camera className="w-5 h-5" />
             </button>
+
+            {/* Voice Recording */}
+            <button
+              type="button"
+              onClick={startVoiceRecording}
+              className={`p-3 rounded-full transition-colors border shadow-inner ${
+                isRecording 
+                  ? 'bg-red-500/80 border-red-400 text-white animate-pulse' 
+                  : 'bg-white/10 hover:bg-white/20 border-white/20 text-orange-400'
+              }`}
+              title="Hold to Speak (Amharic)"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={isRecording ? "Listening..." : "Ask or describe your issue..."}
+                className="w-full bg-white/5 border border-white/20 rounded-full py-4 pl-6 pr-14 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all shadow-inner"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-green-600 hover:bg-green-500 disabled:bg-green-600/50 rounded-full text-white transition-colors duration-200 shadow-[0_0_10px_rgba(34,197,94,0.4)]"
+              >
+                <Send className="w-4 h-4 ml-0.5" />
+              </button>
+            </div>
           </form>
-          <p className="text-center text-[11px] text-slate-400 mt-3 font-medium">
-            AI can make mistakes. Consider verifying critical agricultural information.
-          </p>
+          <div className="flex justify-between items-center mt-3 px-2">
+             <p className="text-[11px] text-slate-400 font-medium tracking-wide">
+              AgriLink Pro • Integrated with Meteorologic Data & Vision AI
+            </p>
+            <div className="flex gap-2">
+              <span className="text-[10px] uppercase font-bold text-green-400/80 bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20">Amharic Voice Enabled</span>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
