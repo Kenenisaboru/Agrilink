@@ -1,7 +1,6 @@
 import React from 'react';
 import Sidebar from '../../components/common/Sidebar';
 import Navbar from '../../components/common/Navbar';
-import Footer from '../../components/Footer';
 
 const FarmerLayout = ({ children }) => {
   return (
@@ -12,7 +11,6 @@ const FarmerLayout = ({ children }) => {
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
-        <Footer />
       </div>
     </div>
   );
