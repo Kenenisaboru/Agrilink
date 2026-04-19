@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, Leaf, Calendar, CheckCircle2, ChevronRight, Cpu, Activity } from 'lucide-react';
 import { predictPrice, getRecommendations } from '../services/aiApi';
 
-const CROPS = ['Maize', 'Wheat', 'Teff', 'Chat', 'Coffee'];
+const CROPS = ['Maize', 'Wheat', 'Teff', 'Chat', 'Coffee', 'Sorghum', 'Barley', 'Onion', 'Potato'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const PricePrediction = () => {
@@ -174,16 +174,19 @@ const PricePrediction = () => {
                         <TrendingUp className="w-32 h-32 text-green-900" />
                       </div>
                       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <p className="text-green-800 font-semibold uppercase tracking-wider text-sm flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4" /> Prediction Complete
                           </p>
                           <h3 className="text-4xl font-black text-slate-900">
                             {predictionResult.predicted_price_etb} <span className="text-xl text-slate-500 font-medium">ETB</span>
                           </h3>
+                          <p className="text-sm font-semibold text-slate-600">
+                            {predictionResult.crop?.charAt(0).toUpperCase() + predictionResult.crop?.slice(1)} · {predictionResult.location}
+                          </p>
                         </div>
-                        <div className="bg-white/60 backdrop-blur rounded-xl p-4 md:max-w-xs border border-white">
-                          <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                        <div className="bg-white/60 backdrop-blur rounded-xl p-4 md:max-w-sm border border-white w-full">
+                          <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-line">
                             {predictionResult.explanation}
                           </p>
                         </div>
