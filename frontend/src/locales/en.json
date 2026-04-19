@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "login": "Login",
+    "register": "Join Agrilink",
+    "dashboard": "Dashboard",
+    "logout": "Logout"
+  },
+  "buyerDashboard": {
+    "heroTitle": "Fresh Produce from",
+    "heroSubtitle": "Local Farms",
+    "searchPlaceholder": "Search for vegetables, fruits, or location...",
+    "filterAll": "All",
+    "filterVegetables": "Vegetables",
+    "filterFruits": "Fruits",
+    "filterGrains": "Grains",
+    "filterTubers": "Tubers",
+    "moreFilters": "More Filters",
+    "aiDealsOnly": "AI Deals Only",
+    "sortNewest": "Sort: Newest",
+    "sortPriceAsc": "Price: Low to High",
+    "sortPriceDesc": "Price: High to Low",
+    "addToCart": "Add to Cart",
+    "reviews": "reviews",
+    "categoryProduce": "Produce",
+    "noResults": "No results found",
+    "adjustSearch": "Try adjusting your search or filters.",
+    "cartSubtotal": "Subtotal",
+    "checkoutNow": "Checkout Now",
+    "yourBasket": "Your Basket"
+  }
+}

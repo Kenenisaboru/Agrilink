@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "ዋና ገጽ",
+    "about": "ስለ እኛ",
+    "login": "ግባ",
+    "register": "አግሪሊንክን ይቀላቀሉ",
+    "dashboard": "ማረፊያ ገጽ",
+    "logout": "ውጣ"
+  },
+  "buyerDashboard": {
+    "heroTitle": "ትኩስ ምርት ከ",
+    "heroSubtitle": "አካባቢዎ አርሶ አደሮች",
+    "searchPlaceholder": "አትክልቶችን፣ ፍራፍሬዎችን ወይም ቦታን ይፈልጉ...",
+    "filterAll": "ሁሉም",
+    "filterVegetables": "አትክልቶች",
+    "filterFruits": "ፍራፍሬዎች",
+    "filterGrains": "ጥራጥሬዎች",
+    "filterTubers": "ስራስሮች",
+    "moreFilters": "ተጨማሪ ማጣሪያዎች",
+    "aiDealsOnly": "ጥሩ ዋጋዎች ብቻ",
+    "sortNewest": "አዲስ",
+    "sortPriceAsc": "ዋጋ: ከዝቅተኛ ወደ ከፍተኛ",
+    "sortPriceDesc": "ዋጋ: ከከፍተኛ ወደ ዝቅተኛ",
+    "addToCart": "ወደ ቅርጫት ጨምር",
+    "reviews": "ግምገማዎች",
+    "categoryProduce": "ምርት",
+    "noResults": "ምንም አልተገኘም",
+    "adjustSearch": "እባክዎ ፍለጋዎን ያስተካክሉ።",
+    "cartSubtotal": "አጠቃላይ ድምር",
+    "checkoutNow": "አሁን ክፈል",
+    "yourBasket": "የእርስዎ ቅርጫት"
+  }
+}

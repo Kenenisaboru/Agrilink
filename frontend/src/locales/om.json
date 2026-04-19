@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "Fuula Duraa",
+    "about": "Waa'ee keenya",
+    "login": "Seeni",
+    "register": "Agrilinktti Makami",
+    "dashboard": "Daashboordii",
+    "logout": "Bahi"
+  },
+  "buyerDashboard": {
+    "heroTitle": "Oomisha Haaraa",
+    "heroSubtitle": "Qotee Bultoota Naannoo",
+    "searchPlaceholder": "Kuduraalee, muduraalee ykn iddoo barbaadi...",
+    "filterAll": "Hunda",
+    "filterVegetables": "Kuduraalee",
+    "filterFruits": "Muduraalee",
+    "filterGrains": "Midhaan",
+    "filterTubers": "Hundee",
+    "moreFilters": "Filtara Dabalataa",
+    "aiDealsOnly": "Gatiin Gaarii Qofa",
+    "sortNewest": "Haaraa",
+    "sortPriceAsc": "Gatii: Xiqqaa gara Guddaa",
+    "sortPriceDesc": "Gatii: Guddaa gara Xiqqaa",
+    "addToCart": "Gara Karatitti Dabali",
+    "reviews": "yaada",
+    "categoryProduce": "Oomisha",
+    "noResults": "Homtuu Hin Argamne",
+    "adjustSearch": "Mee filannoo kee sirreessi.",
+    "cartSubtotal": "Ida'ama",
+    "checkoutNow": "Amma Kaffali",
+    "yourBasket": "Karaticha Kee"
+  }
+}
