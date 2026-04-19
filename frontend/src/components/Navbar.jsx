@@ -69,8 +69,8 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="bg-agriGreen p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-green-200/50">
-            <Leaf className="text-white w-6 h-6" />
+          <div className="p-1 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-green-200/50 overflow-hidden bg-white w-12 h-12 flex items-center justify-center border border-gray-100">
+            <img src="/logo.png" alt="AgriLink Logo" className="w-full h-full object-contain" />
           </div>
           <span className={cn(
             "text-2xl font-black tracking-tighter transition-colors",
