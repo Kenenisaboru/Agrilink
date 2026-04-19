@@ -161,7 +161,7 @@ const FarmerDashboard = () => {
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center gap-3"
+          className="flex flex-wrap items-center gap-3 w-full md:w-auto"
         >
           {/* 🔔 Notification Bell */}
           <div className="relative">
@@ -344,9 +344,9 @@ const FarmerDashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
-                    className="flex items-center justify-between p-5 rounded-2xl bg-gray-50/50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-md transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-gray-50/50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-md transition-all gap-4"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                         order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
                       }`}>
@@ -368,7 +368,7 @@ const FarmerDashboard = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <p className="font-black text-agriGreen text-lg">{order.totalPrice?.toLocaleString()} <span className="text-xs text-gray-400">ETB</span></p>
                       <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
                         order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
@@ -407,9 +407,9 @@ const FarmerDashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 + i * 0.1 }}
-                    className="flex items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-transparent hover:border-agriGreen/20 hover:bg-white hover:shadow-xl hover:shadow-green-100/20 transition-all cursor-pointer group"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-transparent hover:border-agriGreen/20 hover:bg-white hover:shadow-xl hover:shadow-green-100/20 transition-all cursor-pointer group gap-4"
                   >
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 md:gap-6">
                       <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform overflow-hidden">
                         <img src={getCropImage(crop)} alt={crop.name} className="w-full h-full object-cover" />
                       </div>
@@ -421,7 +421,7 @@ const FarmerDashboard = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <div className="font-black text-2xl text-gray-900">{crop.pricePerUnit} <span className="text-xs text-gray-400">ETB</span></div>
                       <div className="text-[10px] font-black text-agriGreen bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest mt-1">
                         {crop.quantity} {crop.unit || 'kg'} STOCK
