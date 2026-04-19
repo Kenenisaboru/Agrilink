@@ -119,7 +119,7 @@ const requestPayment = async (req, res) => {
     if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid payment amount' });
 
     // --- 2. Database Checks ---
-    const order = await Order.findById(orderId).session(session);
+    const order = await Order.findById(orderId).populate('farmer').session(session);
     if (!order) {
       await session.abortTransaction();
       return res.status(404).json({ message: 'Order not found' });
@@ -149,11 +149,28 @@ const requestPayment = async (req, res) => {
     await payment.save({ session });
     await session.commitTransaction();
 
-    // --- 4. Handle DEMO vs LIVE ---
+    // --- 4. Handle DEMO vs LIVE & Calculate Split ---
+    
+    // FinTech Split Mathematics 🧮
+    const farmer = order.farmer;
+    const commissionRate = farmer.commissionRate || 0.05; // 5% default
+    const agrilinkCut = amount * commissionRate;
+    const farmerCut = amount - agrilinkCut;
 
     if (mode === 'DEMO') {
       // Simulate Chapa Initialization for Development
-      console.log(`[DEMO MODE] Initializing fake payment for ref: ${tx_ref}`);
+      console.log('');
+      console.log('╔═══════════════════════════════════════════════╗');
+      console.log(`║ 🏦 [DEMO MODE] CHAPA SPLIT PAYMENT ROUTING    ║`);
+      console.log('╠═══════════════════════════════════════════════╣');
+      console.log(`║ Total Transaction  : ${amount} ETB`);
+      if (farmer.chapaSubaccountId) {
+        console.log(`║ └─➜ Farmer Payout  : ${farmerCut} ETB sent to [${farmer.chapaSubaccountId}]`);
+        console.log(`║ └─➜ Agrilink Cut   : ${agrilinkCut} ETB (${commissionRate * 100}% Commission rate)`);
+      } else {
+        console.log(`║ └─➜ NO SUBACCOUNT  : Agrilink holding ${amount} ETB manually.`);
+      }
+      console.log('╚═══════════════════════════════════════════════╝\n');
       
       return res.status(200).json({
         message: 'DEMO Payment Initialized',
@@ -182,6 +199,13 @@ const requestPayment = async (req, res) => {
       return_url: `http://localhost:5173/payment/verify/${tx_ref}`,
       customization: { title: "Agrilink Payment", description: `Order ${orderId}` }
     };
+
+    // Dynamically inject Chapa Subaccount Split Routing if registered
+    if (farmer && farmer.chapaSubaccountId) {
+      payload["subaccounts[id]"] = farmer.chapaSubaccountId;
+      payload["subaccounts[split_type]"] = "flat";
+      payload["subaccounts[split_value]"] = farmerCut.toString();
+    }
 
     const response = await fetch(CHAPA_URL, {
       method: 'POST',
