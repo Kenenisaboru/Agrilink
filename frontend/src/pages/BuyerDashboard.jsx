@@ -20,10 +20,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCropImage } from '../utils/cropUtils';
+import { useTranslation } from 'react-i18next';
 
 const BuyerDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [crops, setCrops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -113,13 +115,13 @@ const BuyerDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl lg:text-6xl font-black mb-6 leading-tight"
           >
-            Fresh Produce from <br /> <span className="text-agriLight">Local Farms</span>
+            {t('buyerDashboard.heroTitle', 'Fresh Produce from')} <br /> <span className="text-agriLight">{t('buyerDashboard.heroSubtitle', 'Local Farms')}</span>
           </motion.h1>
           <div className="relative group">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors" />
             <input 
               type="text"
-              placeholder="Search for vegetables, fruits, or location..."
+              placeholder={t('buyerDashboard.searchPlaceholder', 'Search for vegetables, fruits, or location...')}
               className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl py-5 pl-16 pr-6 outline-none focus:bg-white focus:text-gray-900 transition-all text-lg font-medium placeholder:text-gray-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -155,7 +157,7 @@ const BuyerDashboard = () => {
               className="w-4 h-4 rounded text-agriGreen focus:ring-agriGreen border-gray-300"
             />
             <Zap className="w-4 h-4 text-green-500" />
-            AI Deals Only
+            {t('buyerDashboard.aiDealsOnly', 'AI Deals Only')}
           </label>
           <div className="w-px h-6 bg-gray-200"></div>
           <select 
@@ -163,9 +165,9 @@ const BuyerDashboard = () => {
             onChange={(e) => setSortBy(e.target.value)}
             className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer pr-4"
           >
-            <option value="newest">Sort: Newest</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
+            <option value="newest">{t('buyerDashboard.sortNewest', 'Sort: Newest')}</option>
+            <option value="price_asc">{t('buyerDashboard.sortPriceAsc', 'Price: Low to High')}</option>
+            <option value="price_desc">{t('buyerDashboard.sortPriceDesc', 'Price: High to Low')}</option>
           </select>
         </div>
       </div>
