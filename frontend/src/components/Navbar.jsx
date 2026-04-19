@@ -10,10 +10,12 @@ import {
   LogOut, 
   MessageSquare, 
   LayoutDashboard, 
-  Package
+  Package,
+  Globe
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useTranslation } from 'react-i18next';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -21,6 +23,7 @@ function cn(...inputs) {
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -34,11 +37,11 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: Leaf },
-    { name: 'About', path: '/#about', icon: Leaf },
+    { name: t('nav.home', 'Home'), path: '/', icon: Leaf },
+    { name: t('nav.about', 'About'), path: '/#about', icon: Leaf },
     ...(user ? [
       { 
-        name: 'Dashboard', 
+        name: t('nav.dashboard', 'Dashboard'), 
         path: `/dashboard/${user.role?.toLowerCase() || 'user'}`,
         icon: LayoutDashboard 
       },
@@ -52,6 +55,10 @@ const Navbar = () => {
       { name: 'Orders', path: '/dashboard/farmer/orders', icon: Package }
     );
   }
+
+  const changeLanguage = (e) => {
+    i18n.changeLanguage(e.target.value);
+  };
 
   return (
     <nav
@@ -106,6 +113,19 @@ const Navbar = () => {
             )
           ))}
           
+          <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+            <Globe className="w-4 h-4 text-gray-400" />
+            <select 
+              value={i18n.language} 
+              onChange={changeLanguage}
+              className="bg-transparent text-sm font-bold text-gray-600 outline-none cursor-pointer"
+            >
+              <option value="en">EN</option>
+              <option value="am">አማ</option>
+              <option value="om">ORO</option>
+            </select>
+          </div>
+
           {user ? (
             <div className="flex items-center gap-4">
               <div className="h-8 w-px bg-gray-200" />
@@ -129,13 +149,13 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center gap-4">
               <Link to="/login" className="text-sm font-bold text-gray-600 hover:text-agriGreen transition-colors">
-                Sign In
+                {t('nav.login', 'Sign In')}
               </Link>
               <Link 
                 to="/register" 
                 className="btn-primary py-2 shadow-none"
               >
-                Join Now
+                {t('nav.register', 'Join Now')}
               </Link>
             </div>
           )}
