@@ -6,7 +6,7 @@ import {
   BarChart3, Lightbulb, ChevronRight, User, ThumbsUp, ThumbsDown, Bell, Trash2, Check
 } from 'lucide-react';
 import { chatWithAI, analyzeCropImage, getWeatherAlert, submitFeedback, clearChatHistory } from '../services/aiApi';
-import PriceAlertPanel from './PriceAlertPanel';
+import PriceAlertPanel from '../components/PriceAlertPanel';
 
 // ─── Quick Action Prompts ────────────────────────────────────────────────────
 const FARMER_QUICK_PROMPTS = [

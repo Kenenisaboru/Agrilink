@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Plus, X, TrendingUp, TrendingDown, Clock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { createPriceAlert, getUserAlerts, checkAlerts, dismissAlert } from '../../services/aiApi';
+import { Bell, Plus, X, TrendingUp, TrendingDown, Clock, CheckCircle2,AlertCircle, Loader2 } from 'lucide-react';
+import { createPriceAlert, getUserAlerts, checkAlerts, dismissAlert } from '../services/aiApi';
 
 const CROPS = ['Maize', 'Wheat', 'Teff', 'Chat', 'Coffee', 'Sorghum', 'Barley', 'Onion', 'Potato'];
 
