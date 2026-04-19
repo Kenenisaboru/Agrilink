@@ -1,0 +1,32 @@
+services:
+  # 🟢 AgriLink Core Backend (Node.js)
+  - type: web
+    name: agrilink-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false # Set this in Render Dashboard
+      - key: JWT_SECRET
+        sync: false # Set this in Render Dashboard
+      - key: CHAPA_SECRET_KEY
+        sync: false # Set this in Render Dashboard
+
+  # 🤖 AgriLink AI Microservice (Flask)
+  - type: web
+    name: agrilink-ai
+    env: python
+    plan: free
+    rootDir: flask_ai
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
