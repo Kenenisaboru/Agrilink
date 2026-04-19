@@ -107,13 +107,13 @@ const BuyerDashboard = () => {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 space-y-12">
       {/* Hero Search Section */}
-      <section className="relative rounded-[3rem] overflow-hidden bg-agriDark p-12 lg:p-20 text-white">
+      <section className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-agriDark p-6 md:p-12 lg:p-20 text-white">
         <div className="absolute top-0 right-0 w-96 h-96 bg-agriGreen/20 rounded-full -mr-20 -mt-20 blur-3xl" />
         <div className="relative z-10 max-w-2xl">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl lg:text-6xl font-black mb-6 leading-tight"
+            className="text-3xl md:text-4xl lg:text-6xl font-black mb-6 leading-tight"
           >
             {t('buyerDashboard.heroTitle', 'Fresh Produce from')} <br /> <span className="text-agriLight">{t('buyerDashboard.heroSubtitle', 'Local Farms')}</span>
           </motion.h1>
@@ -148,8 +148,8 @@ const BuyerDashboard = () => {
           ))}
         </div>
         
-        <div className="flex items-center gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm shrink-0">
-          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm shrink-0 w-full md:w-auto">
+          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
             <input 
               type="checkbox" 
               checked={showOnlyDeals} 
