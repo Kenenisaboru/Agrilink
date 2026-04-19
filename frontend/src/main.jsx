@@ -4,7 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import App from './App.jsx'
 import './index.css'
+import './i18n'; // Import i18n configuration
 import { AuthProvider } from './context/AuthContext.jsx'
+import { registerSW } from 'virtual:pwa-register';
+
+// Register PWA service worker
+if ('serviceWorker' in navigator) {
+  registerSW({ immediate: true });
+}
 
 window.onerror = function(message, source, lineno, colno, error) {
   document.body.innerHTML = `
