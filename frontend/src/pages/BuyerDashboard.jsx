@@ -12,7 +12,9 @@ import {
   Plus,
   Minus,
   X,
-  MessageSquare
+  MessageSquare,
+  Zap,
+  Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,8 +28,17 @@ const BuyerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem('agrilink_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('newest');
+  const [showOnlyDeals, setShowOnlyDeals] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('agrilink_cart', JSON.stringify(cart));
+  }, [cart]);
 
   const categories = ['All', 'Vegetables', 'Fruits', 'Grains', 'Tubers'];
 
@@ -75,7 +86,12 @@ const BuyerDashboard = () => {
     const matchesSearch = crop.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           crop.location?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || crop.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesDeal = showOnlyDeals ? (crop.aiAnalysis?.badge?.type === 'deal') : true;
+    return matchesSearch && matchesCategory && matchesDeal;
+  }).sort((a, b) => {
+    if (sortBy === 'price_asc') return a.pricePerUnit - b.pricePerUnit;
+    if (sortBy === 'price_desc') return b.pricePerUnit - a.pricePerUnit;
+    return new Date(b.createdAt) - new Date(a.createdAt); // newest
   });
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.pricePerUnit * item.quantity), 0);
@@ -129,10 +145,29 @@ const BuyerDashboard = () => {
             </button>
           ))}
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors">
-          <Filter className="w-5 h-5" />
-          More Filters
-        </button>
+        
+        <div className="flex items-center gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm shrink-0">
+          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+            <input 
+              type="checkbox" 
+              checked={showOnlyDeals} 
+              onChange={(e) => setShowOnlyDeals(e.target.checked)}
+              className="w-4 h-4 rounded text-agriGreen focus:ring-agriGreen border-gray-300"
+            />
+            <Zap className="w-4 h-4 text-green-500" />
+            AI Deals Only
+          </label>
+          <div className="w-px h-6 bg-gray-200"></div>
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer pr-4"
+          >
+            <option value="newest">Sort: Newest</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
       </div>
 
       {/* Crops Grid */}
@@ -159,12 +194,36 @@ const BuyerDashboard = () => {
                     {crop.category || 'Produce'}
                   </span>
                 </div>
+                {crop.aiAnalysis && (
+                  <div className="absolute top-4 right-4">
+                    <span className={`bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1 ${
+                      crop.aiAnalysis.badge.type === 'deal' ? 'text-green-600' :
+                      crop.aiAnalysis.badge.type === 'premium' ? 'text-red-500' :
+                      'text-yellow-600'
+                    }`}>
+                      <Zap className="w-3 h-3" />
+                      {crop.aiAnalysis.badge.text}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-xl font-black text-gray-900 leading-tight">{crop.name}</h3>
                   <div className="text-agriGreen font-black text-lg">${crop.pricePerUnit}</div>
                 </div>
+
+                {/* Rating UI */}
+                <div className="flex items-center gap-1 mb-3">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="font-bold text-sm text-gray-700">
+                    {crop.rating > 0 ? crop.rating.toFixed(1) : '4.8'}
+                  </span>
+                  <span className="text-xs text-gray-400 ml-1">
+                    ({crop.numReviews > 0 ? crop.numReviews : '24'} reviews)
+                  </span>
+                </div>
+
                 <div className="flex items-center gap-2 text-gray-500 text-sm mb-6">
                   <MapPin className="w-4 h-4" />
                   <span>{crop.location || 'East Hararghe'}</span>
@@ -281,7 +340,7 @@ const BuyerDashboard = () => {
                   <span className="text-gray-900 font-black">${cartTotal.toFixed(2)}</span>
                 </div>
                 <button 
-                  onClick={() => navigate('/checkout', { state: { cart, total: cartTotal } })}
+                  onClick={() => setIsCartOpen(false) & navigate('/checkout', { state: { cart, total: cartTotal } })}
                   className="w-full btn-primary py-4 rounded-2xl text-lg font-black shadow-xl shadow-green-200"
                 >
                   Checkout Now

@@ -1,4 +1,5 @@
 const Crop = require('../models/Crop');
+const { analyzePrice } = require('../utils/priceAnalyzer');
 
 // @desc    Get all available crops (with optional filters)
 // @route   GET /api/crops
@@ -14,8 +15,16 @@ const getCrops = async (req, res) => {
 
     const crops = await Crop.find(filter)
       .populate('farmer', 'name location phone mpesaNumber')
-      .sort({ createdAt: -1 });
-    res.json(crops);
+      .sort({ createdAt: -1 })
+      .lean(); // Use lean() to get plain JS objects
+
+    // Attach AI Pricing Analysis to each crop
+    const cropsWithAI = crops.map(crop => ({
+      ...crop,
+      aiAnalysis: analyzePrice(crop.name, crop.pricePerUnit)
+    }));
+
+    res.json(cropsWithAI);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
