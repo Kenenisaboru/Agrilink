@@ -45,6 +45,17 @@ const userSchema = new mongoose.Schema({
   cbeAccountNumber: {
     type: String,
   },
+  // Chapa Subaccount ID for Split Payments (e.g., 'SUB_xxxxx')
+  chapaSubaccountId: {
+    type: String,
+  },
+  // Agrilink's commission cut on this farmer's sales (default: 5%)
+  commissionRate: {
+    type: Number,
+    default: 0.05,
+    min: 0,
+    max: 1,
+  },
   // Virtual wallet balance in ETB
   balance: {
     type: Number,
