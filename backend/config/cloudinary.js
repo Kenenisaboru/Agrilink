@@ -32,7 +32,6 @@ if (cloudinaryEnabled) {
   upload = multer({ storage: storage });
   console.log('✅ Cloudinary storage enabled');
 } else {
-  // Fallback: store images in memory (base64) or local disk
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, 'uploads/');
@@ -42,9 +41,8 @@ if (cloudinaryEnabled) {
     }
   });
 
-  // Use memory storage so image is available as buffer but won't crash
-  upload = multer({ storage: multer.memoryStorage() });
-  console.log('⚠️  Cloudinary not configured — using memory storage (images will not persist)');
+  upload = multer({ storage: storage });
+  console.log('📂 Local storage enabled (images will be saved in /uploads)');
 }
 
 module.exports = { cloudinary, upload };
