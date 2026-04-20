@@ -172,9 +172,10 @@ const requestPayment = async (req, res) => {
       }
       console.log('╚═══════════════════════════════════════════════╝\n');
       
+      const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
       return res.status(200).json({
         message: 'DEMO Payment Initialized',
-        checkoutUrl: `http://localhost:5173/payment/verify/${tx_ref}?demo=true`,
+        checkoutUrl: `${FRONTEND_URL}/payment/verify/${tx_ref}?demo=true`,
         paymentId: payment._id,
         tx_ref: tx_ref,
         mode: 'DEMO'
@@ -196,7 +197,7 @@ const requestPayment = async (req, res) => {
       first_name: buyer.name.split(' ')[0] || 'Buyer',
       last_name: buyer.name.split(' ')[1] || 'Agrilink',
       tx_ref: tx_ref,
-      return_url: `http://localhost:5173/payment/verify/${tx_ref}`,
+      return_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/verify/${tx_ref}`,
       customization: { title: "Agrilink Payment", description: `Order ${orderId}` }
     };
 
