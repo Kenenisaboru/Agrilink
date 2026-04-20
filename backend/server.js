@@ -22,15 +22,28 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 // Helper to check if origin is allowed
 const isOriginAllowed = (origin) => {
-  if (!origin) return true; // Allow non-browser requests
+  if (!origin) return true; 
   if (allowedOrigins.includes(origin)) return true;
-  if (origin.endsWith('.vercel.app')) return true; // Automatically allow all Vercel previews
+  if (origin.endsWith('.vercel.app')) return true;
+  
+  // Allow local network IPs in development
+  if (process.env.NODE_ENV !== 'production') {
+    if (origin.startsWith('http://192.168.') || origin.startsWith('http://10.') || origin.startsWith('http://172.')) {
+      return true;
+    }
+  }
   return false;
 };
 
 const io = socketio(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   }
