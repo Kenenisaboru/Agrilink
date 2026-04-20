@@ -64,7 +64,13 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 Created uploads directory');
+}
+app.use('/uploads', express.static(uploadsDir));
 app.use('/uploads', express.static('uploads')); // Fallback for root level uploads folder
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
