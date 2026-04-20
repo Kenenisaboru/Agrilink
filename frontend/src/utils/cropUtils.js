@@ -4,8 +4,13 @@ export const getCropImage = (crop) => {
       return crop.image;
     }
     // Prefix relative paths with the backend URL and normalize slashes
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    return `${baseUrl}/${crop.image.replace(/\\/g, '/')}`;
+    let baseUrl = import.meta.env.VITE_API_URL || '';
+    if (baseUrl && baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+    
+    const imagePath = crop.image.replace(/\\/g, '/');
+    const fullPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    
+    return baseUrl ? `${baseUrl}${fullPath}` : fullPath;
   }
 
 
@@ -25,7 +30,7 @@ export const getCropImage = (crop) => {
   };
 
   // Keyword overrides
-  if (name.includes('coffee') || name.includes('buna') || name.includes('cofe')) {
+  if (name.includes('coffee') || name.includes('buna') || name.includes('cofe') || name.includes('coffe')) {
     return categoryImages['Cash Crop'];
   }
   if (name.includes('maize') || name.includes('bokolo') || name.includes('corn')) {
