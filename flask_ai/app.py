@@ -2,13 +2,15 @@ import json
 import os
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
-from modules.chatbot import get_chat_response, clear_history, get_history_length
+from modules.chatbot import get_chat_response, clear_history, get_history_length, detect_language
 from modules.model import predict_price
 from modules.recommendation import get_recommendations
 from modules.vision import analyze_crop_image
 from modules.weather import get_weather_alert
 from modules.alerts import create_alert, check_alerts, dismiss_alert, get_user_alerts
-from modules.cache import cache
+from modules.matching import find_best_matches, get_market_insights, generate_connection_suggestion
+from modules.cache import cache, TTL_CHAT_RESPONSE
+from modules.translate import translate_message
 
 app = Flask(__name__)
 CORS(app)
@@ -27,15 +29,20 @@ def chat_endpoint():
 
     user_message = data['message']
     session_id = data.get('session_id', 'default')
+    voice_mode = data.get('voice_mode', False)
+    user_context = data.get('user_context', {})
 
-    # get_chat_response now returns (text, language, history_length)
-    response_text, language, history_len = get_chat_response(user_message, session_id)
+    # get_chat_response now returns (text, language, history_length, metadata)
+    response_text, language, history_len, metadata = get_chat_response(
+        user_message, session_id, voice_mode, user_context
+    )
 
     return jsonify({
         'response': response_text,
         'detected_language': language,
         'session_id': session_id,
-        'conversation_turn': history_len // 2   # number of full exchanges
+        'conversation_turn': history_len // 2,   # number of full exchanges
+        'metadata': metadata
     })
 
 
@@ -112,6 +119,61 @@ def weather_alert_endpoint():
     location = request.args.get('location', 'East Hararghe')
     alert = get_weather_alert(location)
     return jsonify({"alert": alert})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BUYER-FARMER MATCHING
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/matching/find', methods=['POST'])
+def matching_endpoint():
+    data = request.json
+    if not data or 'user_type' not in data:
+        return jsonify({'error': 'user_type (farmer/buyer) is required'}), 400
+
+    user_type = data['user_type']
+    crop = data.get('crop')
+    location = data.get('location', 'East Hararghe')
+    limit = data.get('limit', 5)
+
+    matches = find_best_matches(user_type, crop, location, limit)
+    return jsonify({
+        'matches': matches,
+        'user_type': user_type,
+        'crop': crop,
+        'location': location
+    })
+
+
+@app.route('/api/matching/insights', methods=['GET'])
+def market_insights_endpoint():
+    crop = request.args.get('crop')
+    location = request.args.get('location', 'East Hararghe')
+    
+    insights = get_market_insights(crop, location)
+    return jsonify(insights)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VOICE LANGUAGE DETECTION
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/voice/detect-language', methods=['POST'])
+def detect_language_endpoint():
+    data = request.json
+    if not data or 'text' not in data:
+        return jsonify({'error': 'Text is required'}), 400
+
+    text = data['text']
+    detected_lang = detect_language(text)
+    
+    return jsonify({
+        'text': text,
+        'detected_language': detected_lang,
+        'language_name': {
+            'en': 'English',
+            'am': 'Amharic', 
+            'om': 'Afaan Oromo'
+        }.get(detected_lang, 'Unknown')
+    })
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -222,7 +284,33 @@ def cache_clear_endpoint():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# GEMINI TRANSLATION ENGINE — Agricultural-aware multilingual translation
+# Supports: English ↔ Amharic ↔ Afaan Oromo
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/translate', methods=['POST'])
+def translate_endpoint():
+    """Translate a message between English, Amharic, and Afaan Oromo using Gemini."""
+    data = request.json
+    if not data or 'message' not in data:
+        return jsonify({'error': 'message is required'}), 400
+    if 'sender_language' not in data or 'receiver_language' not in data:
+        return jsonify({'error': 'sender_language and receiver_language are required'}), 400
+
+    result = translate_message(
+        message=data['message'],
+        sender_language=data['sender_language'],
+        receiver_language=data['receiver_language']
+    )
+
+    if 'error' in result and 'translated_text' not in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # HEALTH CHECK
+
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/api/health', methods=['GET'])
 def health_check():
