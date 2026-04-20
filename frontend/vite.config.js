@@ -37,10 +37,19 @@ export default defineConfig({
     })
   ],
   server: {
+    host: true,
+    hmr: {
+      host: '192.168.137.230',
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
+      },
+      '/flask-api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/flask-api/, '/api'),
       },
     },
   },
