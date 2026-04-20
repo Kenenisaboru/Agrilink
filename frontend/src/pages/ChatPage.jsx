@@ -2,23 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { translateMessage } from '../services/aiApi';
 import { 
-  Send, 
-  User, 
-  MessageSquare, 
-  Search, 
-  ArrowLeft, 
-  MoreHorizontal,
-  Loader2,
-  Circle,
-  Phone,
-  Video,
-  Info
+  Send, User, MessageSquare, Search, ArrowLeft, MoreHorizontal,
+  Loader2, Circle, Phone, Video, Info, Languages, ChevronDown, Check
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5555');
+
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'am', label: 'አማርኛ', flag: '🇪🇹' },
+  { code: 'om', label: 'Afaan Oromo', flag: '🌿' },
+];
 
 const ChatPage = () => {
   const { user } = useAuth();
@@ -40,17 +38,19 @@ const ChatPage = () => {
   const [typingUser, setTypingUser] = useState(null);
   const typingTimeoutRef = useRef(null);
 
+  // Translation state
+  const [myLanguage, setMyLanguage] = useState('en');
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const [translating, setTranslating] = useState({}); // { msgId: true/false }
+  const [translations, setTranslations] = useState({}); // { msgId: "translated text" }
+
   useEffect(() => {
-    if (user?._id) {
-      socket.emit('join', user._id);
-    }
+    if (user?._id) socket.emit('join', user._id);
 
     socket.on('message', (msg) => {
-      // If message is for current open chat
       if (recipient && (msg.sender._id === recipient._id || msg.sender === recipient._id)) {
         setMessages((prev) => [...prev, msg]);
       }
-      // Update history/sidebar even if chat not open
       fetchHistory();
     });
 
@@ -74,7 +74,7 @@ const ChatPage = () => {
       const { data } = await axios.get('/api/messages/conversations/list', config);
       setHistory(data);
     } catch (err) {
-      console.error("Error fetching history:", err);
+      console.error('Error fetching history:', err);
     }
   };
 
@@ -91,7 +91,7 @@ const ChatPage = () => {
           const { data } = await axios.get(`/api/messages/${recipient._id}`, config);
           setMessages(data);
         } catch (err) {
-          console.error("Error fetching chat:", err);
+          console.error('Error fetching chat:', err);
         } finally {
           setLoading(false);
         }
@@ -107,27 +107,58 @@ const ChatPage = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !recipient) return;
-
     socket.emit('sendMessage', {
       senderId: user._id,
       receiverId: recipient._id,
-      content: newMessage
+      content: newMessage,
     });
-
     setNewMessage('');
   };
 
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    if (recipient) {
-      socket.emit('typing', { senderId: user._id, receiverId: recipient._id });
+    if (recipient) socket.emit('typing', { senderId: user._id, receiverId: recipient._id });
+  };
+
+  // Detect language of a message (basic heuristic)
+  const detectMsgLanguage = (text) => {
+    if (/[\u1200-\u137F]/.test(text)) return 'am';
+    const oromoWords = ['akkam', 'gabaa', 'oti', 'lafa', 'qonnaan', 'yeroo', 'garuu'];
+    if (oromoWords.some(w => text.toLowerCase().includes(w))) return 'om';
+    return 'en';
+  };
+
+  // Translate a single message
+  const handleTranslate = async (msg) => {
+    const msgId = msg._id || msg.createdAt;
+    if (translations[msgId] || translating[msgId]) return;
+
+    const senderLang = detectMsgLanguage(msg.content);
+    if (senderLang === myLanguage) {
+      setTranslations(prev => ({ ...prev, [msgId]: '(Same language — no translation needed)' }));
+      return;
+    }
+
+    setTranslating(prev => ({ ...prev, [msgId]: true }));
+    try {
+      const result = await translateMessage(msg.content, senderLang, myLanguage);
+      setTranslations(prev => ({ ...prev, [msgId]: result.translated_text }));
+    } catch {
+      setTranslations(prev => ({ ...prev, [msgId]: '⚠️ Translation failed. Please try again.' }));
+    } finally {
+      setTranslating(prev => ({ ...prev, [msgId]: false }));
     }
   };
 
+  const isOwnMessage = (msg) =>
+    msg.sender === user._id || msg.sender?._id === user._id;
+
+  const currentLang = LANGUAGES.find(l => l.code === myLanguage);
+
   return (
     <div className="h-[calc(100vh-140px)] flex gap-6 overflow-hidden">
-      {/* Sidebar - Contacts List */}
-      <motion.div 
+      {/* Sidebar */}
+      <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         className="hidden lg:flex w-96 flex-col bg-white rounded-[3rem] border border-gray-100 shadow-sm overflow-hidden"
@@ -141,41 +172,41 @@ const ChatPage = () => {
           </div>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors" />
-            <input 
-              type="text" 
-              placeholder="Search conversations..." 
+            <input
+              type="text"
+              placeholder="Search conversations..."
               className="w-full pl-12 pr-4 py-4 bg-gray-50 border-0 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-agriGreen/10 transition-all outline-none"
             />
           </div>
         </div>
-        
+
         <div className="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
           {history.length > 0 ? history.map((contact) => (
-            <div 
+            <div
               key={contact._id}
               onClick={() => setRecipient(contact)}
               className={cn(
                 "p-4 rounded-[2rem] cursor-pointer transition-all flex items-center gap-4 group border",
-                recipient?._id === contact._id 
-                  ? "bg-agriGreen text-white shadow-xl shadow-green-100 border-transparent" 
+                recipient?._id === contact._id
+                  ? "bg-agriGreen text-white shadow-xl shadow-green-100 border-transparent"
                   : "hover:bg-gray-50 border-transparent hover:border-gray-100"
               )}
             >
               <div className="relative">
                 <div className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                  recipient?._id === contact._id ? "bg-white/20" : "bg-gray-100 text-gray-400 group-hover:bg-agriGreen/10 group-hover:text-agriGreen"
+                  recipient?._id === contact._id
+                    ? "bg-white/20"
+                    : "bg-gray-100 text-gray-400 group-hover:bg-agriGreen/10 group-hover:text-agriGreen"
                 )}>
                   <User className="w-6 h-6" />
                 </div>
               </div>
               <div className="flex-grow">
-                <div className="flex justify-between items-start">
-                  <p className={cn(
-                    "font-black text-lg tracking-tight leading-none mb-1",
-                    recipient?._id === contact._id ? "text-white" : "text-gray-900"
-                  )}>{contact.name}</p>
-                </div>
+                <p className={cn(
+                  "font-black text-lg tracking-tight leading-none mb-1",
+                  recipient?._id === contact._id ? "text-white" : "text-gray-900"
+                )}>{contact.name}</p>
                 <p className={cn(
                   "text-xs font-medium truncate max-w-[150px]",
                   recipient?._id === contact._id ? "text-white/80" : "text-gray-500"
@@ -191,14 +222,14 @@ const ChatPage = () => {
       </motion.div>
 
       {/* Main Chat Area */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="flex-grow flex flex-col bg-white rounded-[3rem] border border-gray-100 shadow-sm overflow-hidden relative"
       >
         {!recipient ? (
           <div className="flex-grow flex flex-col items-center justify-center text-center p-12">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="w-32 h-32 bg-agriGreen/5 rounded-[3rem] flex items-center justify-center text-agriGreen mb-8 shadow-inner border border-agriGreen/10"
@@ -213,7 +244,7 @@ const ChatPage = () => {
         ) : (
           <>
             {/* Chat Header */}
-            <div className="px-10 py-6 border-b border-gray-50 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="px-10 py-5 border-b border-gray-50 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-5">
                 <Link to="/dashboard" className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
                   <ArrowLeft className="w-6 h-6" />
@@ -237,7 +268,51 @@ const ChatPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+
+              {/* Right controls: Language Picker + Actions */}
+              <div className="flex items-center gap-2">
+                {/* Language Picker */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLangPicker(!showLangPicker)}
+                    className="flex items-center gap-2 px-4 py-2 bg-agriGreen/5 hover:bg-agriGreen/10 border border-agriGreen/20 rounded-2xl text-sm font-bold text-gray-700 transition-all"
+                    title="Set your language for auto-translation"
+                  >
+                    <Languages className="w-4 h-4 text-agriGreen" />
+                    <span>{currentLang?.flag} {currentLang?.label}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                  </button>
+
+                  <AnimatePresence>
+                    {showLangPicker && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                        className="absolute right-0 top-12 z-50 bg-white rounded-2xl border border-gray-100 shadow-2xl min-w-[180px] overflow-hidden"
+                      >
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-4 pt-3 pb-1">Translate messages to:</p>
+                        {LANGUAGES.map(lang => (
+                          <button
+                            key={lang.code}
+                            onClick={() => { setMyLanguage(lang.code); setShowLangPicker(false); setTranslations({}); }}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-colors text-left",
+                              myLanguage === lang.code
+                                ? "bg-agriGreen/10 text-agriGreen"
+                                : "hover:bg-gray-50 text-gray-700"
+                            )}
+                          >
+                            <span className="text-base">{lang.flag}</span>
+                            {lang.label}
+                            {myLanguage === lang.code && <Check className="w-3.5 h-3.5 ml-auto" />}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <button className="p-3 hover:bg-gray-50 rounded-2xl transition-colors text-gray-400 hover:text-agriGreen">
                   <Phone className="w-5 h-5" />
                 </button>
@@ -251,37 +326,86 @@ const ChatPage = () => {
             </div>
 
             {/* Message Feed */}
-            <div className="flex-grow overflow-y-auto p-10 space-y-8 bg-gray-50/30 custom-scrollbar">
+            <div className="flex-grow overflow-y-auto p-10 space-y-4 bg-gray-50/30 custom-scrollbar">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="w-10 h-10 animate-spin text-agriGreen" />
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div className="flex justify-center">
                     <span className="bg-white/80 px-4 py-1.5 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 shadow-sm">
-                      Messaging Securely
+                      Messaging Securely · Auto-Translation Powered by Gemini AI
                     </span>
                   </div>
-                  {messages.map((msg, idx) => (
-                    <motion.div 
-                      key={idx}
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className={`flex ${msg.sender === user._id || msg.sender?._id === user._id ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[75%] p-5 rounded-[2.5rem] shadow-sm relative group ${
-                        msg.sender === user._id || msg.sender?._id === user._id
-                          ? 'bg-agriGreen text-white rounded-br-none shadow-green-100' 
-                          : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none'
-                      }`}>
-                        <p className="text-[15px] font-medium leading-relaxed">{msg.content}</p>
-                        <p className={`text-[10px] mt-2 font-black uppercase tracking-wider opacity-40 ${msg.sender === user._id || msg.sender?._id === user._id ? 'text-right' : 'text-left'}`}>
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
+
+                  {messages.map((msg, idx) => {
+                    const own = isOwnMessage(msg);
+                    const msgId = msg._id || idx;
+                    const translated = translations[msgId];
+                    const isTranslating = translating[msgId];
+
+                    return (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        className={`flex ${own ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className="flex flex-col gap-1 max-w-[75%]">
+                          {/* Message bubble */}
+                          <div className={`p-5 rounded-[2.5rem] shadow-sm relative group ${
+                            own
+                              ? 'bg-agriGreen text-white rounded-br-none shadow-green-100'
+                              : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none'
+                          }`}>
+                            <p className="text-[15px] font-medium leading-relaxed">{msg.content}</p>
+                            <p className={`text-[10px] mt-2 font-black uppercase tracking-wider opacity-40 ${own ? 'text-right' : 'text-left'}`}>
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+
+                          {/* Translate button — only for received messages */}
+                          {!own && (
+                            <div className="pl-2">
+                              {!translated ? (
+                                <button
+                                  onClick={() => handleTranslate(msg)}
+                                  disabled={isTranslating}
+                                  className="flex items-center gap-1.5 text-[11px] font-semibold text-agriGreen hover:text-green-700 transition-colors disabled:opacity-50"
+                                >
+                                  {isTranslating ? (
+                                    <><Loader2 className="w-3 h-3 animate-spin" /> Translating...</>
+                                  ) : (
+                                    <><Languages className="w-3 h-3" /> Translate to {currentLang?.label}</>
+                                  )}
+                                </button>
+                              ) : (
+                                <AnimatePresence>
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-agriGreen/5 border border-agriGreen/15 rounded-2xl px-4 py-3 mt-1"
+                                  >
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-agriGreen mb-1 flex items-center gap-1">
+                                      <Languages className="w-3 h-3" /> Gemini Translation · {currentLang?.flag} {currentLang?.label}
+                                    </p>
+                                    <p className="text-[14px] text-gray-700 font-medium leading-relaxed">{translated}</p>
+                                    <button
+                                      onClick={() => setTranslations(prev => { const n = {...prev}; delete n[msgId]; return n; })}
+                                      className="text-[10px] text-gray-400 hover:text-red-400 mt-1 font-semibold transition-colors"
+                                    >
+                                      ✕ Hide translation
+                                    </button>
+                                  </motion.div>
+                                </AnimatePresence>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                   <div ref={scrollRef}></div>
                 </div>
               )}
@@ -291,9 +415,9 @@ const ChatPage = () => {
             <form onSubmit={handleSend} className="p-8 bg-white border-t border-gray-50 relative">
               <div className="flex gap-4 items-center">
                 <div className="flex-grow relative group">
-                  <input 
-                    type="text" 
-                    placeholder="Type your message to negotiate..." 
+                  <input
+                    type="text"
+                    placeholder={`Type in ${currentLang?.label}...`}
                     className="w-full bg-gray-50 border border-gray-100 rounded-[2rem] py-5 px-8 pr-16 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen focus:bg-white transition-all font-medium"
                     value={newMessage}
                     onChange={handleTyping}
@@ -302,8 +426,8 @@ const ChatPage = () => {
                     <Info className="w-5 h-5" />
                   </div>
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={!newMessage.trim()}
                   className="bg-agriGreen hover:bg-agriDark text-white p-5 rounded-[2rem] shadow-xl shadow-green-200 hover:shadow-green-300 transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                 >
