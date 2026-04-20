@@ -15,6 +15,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import About from './pages/About';
+import AIAssistant from './pages/AIAssistant';
+import VoiceAIAssistant from './pages/VoiceAIAssistant';
 import FarmerDashboard from './pages/FarmerDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import BuyerDashboard from './pages/BuyerDashboard';
@@ -23,7 +25,6 @@ import RepresentativeDashboard from './pages/RepresentativeDashboard';
 import CropManagement from './pages/CropManagement';
 import FarmerOrders from './pages/FarmerOrders';
 import ChatPage from './pages/ChatPage';
-import AIAssistant from './pages/AIAssistant';
 import PricePrediction from './pages/PricePrediction';
 import Checkout from './pages/buyer/Checkout';
 import PaymentHistory from './pages/buyer/PaymentHistory';
@@ -84,6 +85,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/ai-assistant" element={<AIAssistant />} />
+        <Route path="/voice-ai" element={<VoiceAIAssistant />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
