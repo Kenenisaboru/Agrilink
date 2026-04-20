@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_FLASK_API_URL || 'http://192.168.137.160:5001/api';
+const API_BASE_URL = import.meta.env.VITE_FLASK_API_URL || '/flask-api';
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 export const chatWithAI = async (message, sessionId = 'default') => {
@@ -86,6 +86,21 @@ export const dismissAlert = async (alertId, userId) => {
     data: { user_id: userId }
   });
   return response.data;
+};
+
+// ─── Translation (Gemini-powered) ────────────────────────────────────────────
+export const translateMessage = async (message, senderLanguage, receiverLanguage) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/translate`, {
+      message,
+      sender_language: senderLanguage,
+      receiver_language: receiverLanguage,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Translation failed:', error.message);
+    return { translated_text: message, error: 'Translation unavailable' };
+  }
 };
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
