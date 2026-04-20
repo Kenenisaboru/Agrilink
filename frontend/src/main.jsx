@@ -37,7 +37,10 @@ window.onerror = function(message, source, lineno, colno, error) {
   console.error("Critical Render Error:", {message, source, lineno, colno, error});
 };
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const apiUrl = import.meta.env.VITE_API_URL;
+if (apiUrl && apiUrl.startsWith('http')) {
+  axios.defaults.baseURL = apiUrl;
+}
 
 const root = createRoot(document.getElementById('root'));
 
