@@ -89,3 +89,4 @@ TTL_PRICE_PREDICTION = 1800   # 30 min — prices don't change that fast
 TTL_WEATHER_ALERT    = 3600   # 60 min — weather context is stable
 TTL_RECOMMENDATIONS  = 2700   # 45 min — recommendations are semi-static
 TTL_CHAT_RESPONSE    = 300    # 5 min  — only cache very common identical queries
+TTL_MATCHING        = 600    # 10 min — matching results
