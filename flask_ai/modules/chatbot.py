@@ -8,7 +8,7 @@ from modules.knowledge_base import retrieve_context
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 # ── Conversation History Store ────────────────────────────────────────────────
 # session_id → list of {"role": "user"|"model", "parts": [{"text": "..."}]}
@@ -103,28 +103,62 @@ def detect_language(message: str, response_text: str = "") -> str:
     return "en"
 
 
-def get_chat_response(message: str, session_id: str = "default") -> tuple:
+def get_chat_response(message: str, session_id: str = "default", voice_mode: bool = False, user_context: dict = None) -> tuple:
     """
     Get an AI response with:
     - Multi-turn conversation memory (last 6 exchanges)
     - RAG-lite context injection from local knowledge base
     - TTL-based caching for identical short queries
     - Structured response format enforcement
+    - Voice mode optimization
+    - Buyer-Farmer matching intelligence
     
-    Returns: (response_text, detected_language, history_length)
+    Returns: (response_text, detected_language, history_length, metadata)
     """
     if not GEMINI_API_KEY or GEMINI_API_KEY in ("your_api_key_here", ""):
         return (
             "⚠️ AgriLink AI is not configured. Please add your GEMINI_API_KEY to the .env file.",
             "en",
-            0
+            0,
+            {"voice_mode": False, "user_type": "unknown"}
         )
+
+    # ── Enhanced System Prompt for Voice & Matching ─────────────────────
+    enhanced_prompt = SYSTEM_PROMPT
+    
+    if voice_mode:
+        enhanced_prompt += """
+
+## 🎤 VOICE INTERACTION MODE:
+- Respond in natural, conversational tone suitable for voice
+- Use shorter sentences for better speech synthesis
+- Avoid complex markdown or special characters
+- Include pronunciation guides for Ethiopian terms when helpful
+- Prioritize clear, actionable advice that works well when spoken
+"""
+
+    if user_context:
+        user_type = user_context.get('user_type', 'unknown')
+        location = user_context.get('location', 'Ethiopia')
+        enhanced_prompt += f"""
+
+## 🎯 USER CONTEXT:
+- User Type: {user_type}
+- Location: {location}
+- Voice Mode: {voice_mode}
+
+## 🤝 BUYER-FARMER MATCHING INTELLIGENCE:
+If user is looking for connections:
+- For FARMERS: Suggest best buyers for their crops based on current market demand
+- For BUYERS: Recommend reliable farmers/suppliers for their needs
+- Include contact suggestions and negotiation tips
+- Consider proximity, crop availability, and pricing trends
+"""
 
     # ── Retrieve relevant knowledge base context (RAG-lite) ────────────────
     knowledge_context = retrieve_context(message)
-
+    
     # ── Compose full message with context ──────────────────────────────────
-    # Inject knowledge into user message for Gemini to ground its answer
     full_message = message
     if knowledge_context:
         full_message = f"{message}\n\n{knowledge_context}"
@@ -136,7 +170,7 @@ def get_chat_response(message: str, session_id: str = "default") -> tuple:
     if not history:
         # New conversation: system prompt + first user message
         contents = [
-            {"role": "user", "parts": [{"text": f"{SYSTEM_PROMPT}\n\n---\n\nUser Message: {full_message}"}]}
+            {"role": "user", "parts": [{"text": f"{enhanced_prompt}\n\n---\n\nUser Message: {full_message}"}]}
         ]
     else:
         # Continuing conversation: history + new message
@@ -169,16 +203,25 @@ def get_chat_response(message: str, session_id: str = "default") -> tuple:
 
         lang = detect_language(message, ai_response)
         history_len = get_history_length(session_id)
+        
+        # Prepare metadata for enhanced features
+        metadata = {
+            "voice_mode": voice_mode,
+            "user_type": user_context.get('user_type', 'unknown') if user_context else 'unknown',
+            "language": lang,
+            "response_length": len(ai_response),
+            "has_recommendations": "recommend" in ai_response.lower() or "suggest" in ai_response.lower()
+        }
 
-        return ai_response, lang, history_len
+        return ai_response, lang, history_len, metadata
 
     except requests.exceptions.Timeout:
         offline = _get_offline_response(message)
-        return offline, "en", get_history_length(session_id)
+        return offline, "en", get_history_length(session_id), {"voice_mode": False, "user_type": "unknown", "language": "en", "response_length": len(offline), "has_recommendations": False}
     except Exception as e:
         print(f"[AgriLink Chatbot ERROR]: {str(e)}")
         offline = _get_offline_response(message)
-        return offline, "en", get_history_length(session_id)
+        return offline, "en", get_history_length(session_id), {"voice_mode": False, "user_type": "unknown", "language": "en", "response_length": len(offline), "has_recommendations": False}
 
 
 def _get_offline_response(message: str) -> str:
