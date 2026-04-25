@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/chat';
-const FLASK_AI_URL = 'http://localhost:5000/api';
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/chat`;
+const FLASK_AI_URL = import.meta.env.VITE_FLASK_API_URL || `${import.meta.env.VITE_API_URL}/api`;
 
 // Enhanced AI API service with voice and matching support
 class VoiceApiService {
