@@ -23,7 +23,18 @@ import {
   User,
   MapPin,
   Clock,
-  Eye
+  Eye,
+  BarChart3,
+  PieChart,
+  LineChart,
+  Target,
+  Award,
+  Zap,
+  Truck,
+  Star,
+  Filter,
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,13 +81,17 @@ const StatCard = ({ icon: Icon, label, value, trend, color, delay }) => (
  * - Farm intelligence cards
  */
 const FarmerDashboard = () => {
-  const [stats, setStats] = useState({ crops: 0, orders: 0, revenue: 0 });
+  const [stats, setStats] = useState({ crops: 0, orders: 0, revenue: 0, views: 0, rating: 0 });
   const [recentCrops, setRecentCrops] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('week');
+  const [salesData, setSalesData] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [customerInsights, setCustomerInsights] = useState([]);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -99,12 +114,39 @@ const FarmerDashboard = () => {
           orders: ordersRes.data.length,
           revenue: ordersRes.data
             .filter(o => o.paymentStatus === 'Paid')
-            .reduce((acc, order) => acc + (order.totalPrice || 0), 0)
+            .reduce((acc, order) => acc + (order.totalPrice || 0), 0),
+          views: cropsRes.data.reduce((acc, crop) => acc + (crop.views || 0), 0),
+          rating: cropsRes.data.length > 0 
+            ? (cropsRes.data.reduce((acc, crop) => acc + (crop.rating || 0), 0) / cropsRes.data.length).toFixed(1)
+            : 0
         });
         setRecentCrops(cropsRes.data.slice(0, 5));
         setRecentOrders(ordersRes.data.slice(0, 3));
         setNotifications(notifRes.data.notifications || []);
         setUnreadCount(notifRes.data.unreadCount || 0);
+
+        // Sample analytics data (in production, this would come from the API)
+        setSalesData([
+          { date: 'Mon', sales: 4500, orders: 5 },
+          { date: 'Tue', sales: 6200, orders: 8 },
+          { date: 'Wed', sales: 3800, orders: 4 },
+          { date: 'Thu', sales: 8900, orders: 12 },
+          { date: 'Fri', sales: 7200, orders: 9 },
+          { date: 'Sat', sales: 9500, orders: 15 },
+          { date: 'Sun', sales: 5400, orders: 7 }
+        ]);
+
+        setTopProducts([
+          { name: 'Premium Coffee', sales: 28500, orders: 35, growth: '+12%' },
+          { name: 'Organic Teff', sales: 19200, orders: 24, growth: '+8%' },
+          { name: 'Fresh Khat', sales: 16800, orders: 21, growth: '+15%' }
+        ]);
+
+        setCustomerInsights([
+          { label: 'Repeat Customers', value: '68%', trend: '+5%' },
+          { label: 'Avg Order Value', value: 'ETB 2,450', trend: '+12%' },
+          { label: 'Conversion Rate', value: '4.2%', trend: '+0.8%' }
+        ]);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
       } finally {
@@ -163,393 +205,257 @@ const FarmerDashboard = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-wrap items-center gap-3 w-full md:w-auto"
         >
-          {/* 🔔 Notification Bell */}
-          <div className="relative">
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              <Bell className="w-6 h-6 text-gray-700" />
-              {unreadCount > 0 && (
-                <motion.span 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-white"
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </motion.span>
-              )}
-            </button>
-
-            {/* Notification Dropdown */}
-            <AnimatePresence>
-              {showNotifications && (
-                <>
-                  {/* Overlay */}
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowNotifications(false)} 
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 top-16 w-[calc(100vw-2rem)] md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 z-50 overflow-hidden"
-                  >
-                    {/* Dropdown Header */}
-                    <div className="p-5 border-b border-gray-50 flex items-center justify-between">
-                      <h3 className="font-black text-gray-900 text-lg">Notifications</h3>
-                      <div className="flex items-center gap-2">
-                        {unreadCount > 0 && (
-                          <button 
-                            onClick={markAllRead}
-                            className="text-xs font-bold text-agriGreen hover:underline"
-                          >
-                            Mark all read
-                          </button>
-                        )}
-                        <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                          <X className="w-4 h-4 text-gray-400" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Notification List */}
-                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
-                      {notifications.length > 0 ? (
-                        notifications.slice(0, 10).map((notif) => (
-                          <div
-                            key={notif._id}
-                            onClick={() => markNotificationRead(notif._id)}
-                            className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
-                              !notif.isRead ? 'bg-green-50/30' : ''
-                            }`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`p-2 rounded-xl shrink-0 ${
-                                notif.type === 'NEW_ORDER' ? 'bg-green-100 text-green-600' :
-                                notif.type === 'PAYMENT_SUCCESS' ? 'bg-blue-100 text-blue-600' :
-                                'bg-gray-100 text-gray-500'
-                              }`}>
-                                {notif.type === 'NEW_ORDER' ? <ShoppingBag className="w-4 h-4" /> :
-                                 notif.type === 'PAYMENT_SUCCESS' ? <CheckCircle2 className="w-4 h-4" /> :
-                                 <Bell className="w-4 h-4" />}
-                              </div>
-                              <div className="flex-grow min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm font-black text-gray-900 truncate">{notif.title}</p>
-                                  {!notif.isRead && (
-                                    <span className="w-2 h-2 bg-agriGreen rounded-full shrink-0" />
-                                  )}
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
-                                <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-wider flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {new Date(notif.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-10 text-center">
-                          <Bell className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                          <p className="text-gray-400 font-bold text-sm">No notifications yet</p>
-                          <p className="text-gray-300 text-xs mt-1">You'll be notified when buyers order your crops</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* View All Link */}
-                    <Link 
-                      to="/dashboard/farmer/orders"
-                      onClick={() => setShowNotifications(false)}
-                      className="block p-4 text-center text-sm font-black text-agriGreen hover:bg-gray-50 transition-colors border-t border-gray-50"
-                    >
-                      View All Orders →
-                    </Link>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
+          <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100">
+            <Zap className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-bold text-green-700">AI Insights Active</span>
           </div>
-
-          <Link to="/dashboard/farmer/crops" className="btn-primary py-4 px-8 rounded-2xl shadow-xl shadow-green-200/50">
+          <Link 
+            to="/crop-management"
+            className="btn-primary px-6 py-3 rounded-2xl font-bold flex items-center gap-2"
+          >
             <Plus className="w-5 h-5" />
-            Add New Harvest
+            Add Product
           </Link>
         </motion.div>
       </header>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          icon={Leaf} 
-          label="Active Listings" 
-          value={stats.crops} 
-          trend="12%" 
-          color="bg-green-500"
-          delay={0.1}
-        />
+      {/* Enhanced Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatCard 
           icon={Package} 
-          label="Incoming Orders" 
+          label="Total Products" 
+          value={stats.crops} 
+          trend="+12%" 
+          color="bg-blue-500" 
+          delay={0.1} 
+        />
+        <StatCard 
+          icon={ShoppingBag} 
+          label="Total Orders" 
           value={stats.orders} 
-          trend={stats.orders > 0 ? `${stats.orders} new` : undefined} 
-          color="bg-blue-500"
-          delay={0.2}
+          trend="+8%" 
+          color="bg-purple-500" 
+          delay={0.2} 
         />
         <StatCard 
           icon={DollarSign} 
-          label="Total Earnings" 
-          value={`${stats.revenue.toLocaleString()} ETB`} 
-          trend="18%" 
-          color="bg-amber-500"
-          delay={0.3}
+          label="Total Revenue" 
+          value={`ETB ${stats.revenue.toLocaleString()}`} 
+          trend="+24%" 
+          color="bg-green-500" 
+          delay={0.3} 
         />
         <StatCard 
-          icon={TrendingUp} 
-          label="Market Growth" 
-          value="24.5%" 
-          color="bg-purple-500"
-          delay={0.4}
+          icon={Eye} 
+          label="Product Views" 
+          value={stats.views.toLocaleString()} 
+          trend="+18%" 
+          color="bg-amber-500" 
+          delay={0.4} 
+        />
+        <StatCard 
+          icon={Star} 
+          label="Avg Rating" 
+          value={stats.rating} 
+          trend="+0.3" 
+          color="bg-pink-500" 
+          delay={0.5} 
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-10">
-        {/* Left Column: Recent Crops + Recent Orders */}
-        <div className="lg:col-span-2 space-y-10">
-          {/* Recent Orders (NEW!) */}
-          {recentOrders.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="bg-white rounded-[3rem] border border-gray-100 p-10 shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                  <div className="w-2 h-8 bg-blue-500 rounded-full" />
-                  Recent Orders
-                </h2>
-                <Link to="/dashboard/farmer/orders" className="bg-gray-50 text-gray-900 font-black text-xs uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2">
-                  View All <ArrowRight className="w-4 h-4" />
+      {/* Sales Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Sales Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="lg:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                <LineChart className="w-5 h-5 text-agriGreen" />
+                Sales Performance
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">Revenue and orders over time</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {['week', 'month', 'year'].map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+                    timeRange === range
+                      ? 'bg-agriGreen text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {range.charAt(0).toUpperCase() + range.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Simple Bar Chart Visualization */}
+          <div className="h-64 flex items-end gap-4 px-4">
+            {salesData.map((data, index) => (
+              <motion.div
+                key={data.date}
+                initial={{ height: 0 }}
+                animate={{ height: `${(data.sales / 10000) * 100}%` }}
+                transition={{ delay: index * 0.1 }}
+                className="flex-1 flex flex-col items-center gap-2"
+              >
+                <div className="w-full bg-gradient-to-t from-agriGreen to-green-300 rounded-t-xl relative group">
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    ETB {data.sales.toLocaleString()}
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-gray-500">{data.date}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Top Products */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+        >
+          <h3 className="text-xl font-black text-gray-900 flex items-center gap-2 mb-6">
+            <Award className="w-5 h-5 text-agriGreen" />
+            Top Products
+          </h3>
+          
+          <div className="space-y-4">
+            {topProducts.map((product, index) => (
+              <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+                <div className="w-10 h-10 bg-agriGreen text-white rounded-xl flex items-center justify-center font-black">
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">{product.name}</p>
+                  <p className="text-sm text-gray-500">{product.orders} orders</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-black text-agriGreen">ETB {product.sales.toLocaleString()}</p>
+                  <p className="text-xs text-green-600 font-bold">{product.growth}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Customer Insights */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        {customerInsights.map((insight, index) => (
+          <div key={index} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <Target className="w-8 h-8 text-agriGreen" />
+              <span className="text-green-600 font-bold text-sm bg-green-50 px-3 py-1 rounded-full">
+                {insight.trend}
+              </span>
+            </div>
+            <p className="text-gray-500 text-sm mb-2">{insight.label}</p>
+            <p className="text-2xl font-black text-gray-900">{insight.value}</p>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Recent Crops Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-black text-gray-900">Recent Products</h3>
+            <Link to="/dashboard/farmer/crops" className="text-sm font-bold text-agriGreen hover:underline">
+              View All →
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {recentCrops.length > 0 ? (
+              recentCrops.map((crop) => (
+                <div key={crop._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex gap-4">
+                  <img 
+                    src={crop.image || getCropImage(crop)} 
+                    alt={crop.name}
+                    className="w-20 h-20 object-cover rounded-xl"
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900">{crop.name}</h4>
+                    <p className="text-sm text-gray-500">{crop.category}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-black text-agriGreen">ETB {crop.pricePerUnit?.toLocaleString()}</span>
+                      <span className="text-xs text-gray-400">{crop.quantity} {crop.unit} available</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+                <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">No products listed yet</p>
+                <Link to="/crop-management" className="btn-primary inline-block mt-4 px-6 py-3 rounded-xl font-bold">
+                  Add Your First Product
                 </Link>
               </div>
+            )}
+          </div>
+        </motion.div>
 
-              <div className="space-y-4">
-                {recentOrders.map((order, i) => (
-                  <motion.div 
-                    key={order._id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-gray-50/50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-md transition-all gap-4"
-                  >
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-                      }`}>
-                        {order.paymentStatus === 'Paid' ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
-                      </div>
-                      <div>
-                        <p className="font-black text-gray-900">
-                          {order.orderItems?.[0]?.name || 'Order'} 
-                          {order.orderItems?.length > 1 ? ` +${order.orderItems.length - 1} more` : ''}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <User className="w-3 h-3 text-gray-400" />
-                          <span className="text-xs text-gray-400 font-bold">{order.buyer?.name || 'Buyer'}</span>
-                          <span className="text-gray-300">•</span>
-                          <Calendar className="w-3 h-3 text-gray-400" />
-                          <span className="text-xs text-gray-400 font-bold">
-                            {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-left sm:text-right">
-                      <p className="font-black text-agriGreen text-lg">{order.totalPrice?.toLocaleString()} <span className="text-xs text-gray-400">ETB</span></p>
-                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                      }`}>
-                        {order.paymentStatus || order.status}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Recent Crops List */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white rounded-[3rem] border border-gray-100 p-10 shadow-sm overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-10">
-              <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                <div className="w-2 h-8 bg-agriGreen rounded-full" />
-                Latest Harvests
-              </h2>
-              <Link to="/dashboard/farmer/crops" className="bg-gray-50 text-gray-900 font-black text-xs uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2">
-                Management <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="space-y-4">
-              <AnimatePresence>
-                {recentCrops.length > 0 ? recentCrops.map((crop, i) => (
-                  <motion.div 
-                    key={crop._id} 
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + i * 0.1 }}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-transparent hover:border-agriGreen/20 hover:bg-white hover:shadow-xl hover:shadow-green-100/20 transition-all cursor-pointer group gap-4"
-                  >
-                    <div className="flex items-center gap-4 md:gap-6">
-                      <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform overflow-hidden">
-                        <img src={getCropImage(crop)} alt={crop.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-black text-xl text-gray-900 group-hover:text-agriGreen transition-colors">{crop.name}</h4>
-                        <p className="text-xs font-bold text-gray-400 flex items-center gap-2 mt-1 uppercase tracking-wider">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {new Date(crop.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-left sm:text-right">
-                      <div className="font-black text-2xl text-gray-900">{crop.pricePerUnit} <span className="text-xs text-gray-400">ETB</span></div>
-                      <div className="text-[10px] font-black text-agriGreen bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest mt-1">
-                        {crop.quantity} {crop.unit || 'kg'} STOCK
-                      </div>
-                    </div>
-                  </motion.div>
-                )) : (
-                  <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
-                    <div className="bg-white p-4 rounded-3xl shadow-sm inline-block mb-4">
-                      <Package className="w-8 h-8 text-gray-300" />
-                    </div>
-                    <p className="text-gray-400 font-bold">Your barn is empty. Start by listing a crop!</p>
+        {/* Recent Orders */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-black text-gray-900">Recent Orders</h3>
+            <Link to="/dashboard/farmer/orders" className="text-sm font-bold text-agriGreen hover:underline">
+              View All →
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {recentOrders.length > 0 ? (
+              recentOrders.map((order) => (
+                <div key={order._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-gray-900">Order #{order._id?.slice(-6)}</span>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      order.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                      order.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
+                      order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {order.status}
+                    </span>
                   </div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Right Column: Action Center */}
-        <div className="space-y-8">
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-agriGreen rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-green-200"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-2xl transition-transform group-hover:scale-150" />
-            <div className="flex items-center gap-3 mb-8 relative z-10">
-              <div className="bg-white/20 p-2 rounded-xl">
-                <Lightbulb className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-2xl font-black tracking-tight">Farm Intelligence</h2>
-            </div>
-            <div className="space-y-6 relative z-10">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-                <div className="flex items-center gap-2 mb-2 text-agriLight">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Harvest Alert</span>
-                </div>
-                <p className="text-sm font-medium leading-relaxed opacity-90">
-                  Optimal harvest window for coffee in Harar starts in 3 days. Prepare your listings.
-                </p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-                <div className="flex items-center gap-2 mb-2 text-agriLight">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Market Trend</span>
-                </div>
-                <p className="text-sm font-medium leading-relaxed opacity-90">
-                  Direct buyers from Addis are looking for <span className="font-black underline">high-grade beans</span>.
-                </p>
-              </div>
-              <Link to="/chat" className="flex items-center justify-between w-full bg-white text-agriGreen p-5 rounded-2xl font-black hover:shadow-xl transition-all group/btn">
-                <div className="flex items-center gap-3">
-                  <MessageSquare className="w-5 h-5" />
-                  Consult Expert
-                </div>
-                <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-gray-900 rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-gray-200"
-          >
-             <div className="flex justify-between items-start mb-6">
-                <div>
-                   <h3 className="text-xl font-black">Platform Status</h3>
-                   <p className="text-gray-400 text-xs font-medium mt-1">Verified Seller Profile</p>
-                </div>
-                <div className="bg-emerald-500/10 text-emerald-500 p-2 rounded-xl">
-                   <CheckCircle2 className="w-6 h-6" />
-                </div>
-             </div>
-             <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm font-bold">
-                   <span className="text-gray-400">Profile Rating</span>
-                   <span className="text-agriLight">4.9/5.0</span>
-                </div>
-                <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                   <div className="h-full bg-agriGreen w-[98%] rounded-full" />
-                </div>
-             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8 }}
-            className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
-                <Smartphone className="w-6 h-6" />
-              </div>
-              <h2 className="text-xl font-black text-gray-900">Payment Status</h2>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-black">TB</div>
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Telebirr</p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">{user.telebirrNumber || 'Not Linked'}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">{order.items?.length || 0} items</span>
+                    <span className="font-black text-agriGreen">ETB {order.totalPrice?.toLocaleString()}</span>
                   </div>
                 </div>
-                {user.telebirrNumber && <CheckCircle2 className="w-4 h-4 text-agriGreen" />}
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+                <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">No orders yet</p>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-[10px] font-black">CBE</div>
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">CBE Account</p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">{user.cbeAccountNumber || 'Not Linked'}</p>
-                  </div>
-                </div>
-                {user.cbeAccountNumber && <CheckCircle2 className="w-4 h-4 text-agriGreen" />}
-              </div>
-              <button className="w-full py-4 bg-gray-50 text-gray-500 font-bold rounded-2xl text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors mt-2">
-                Manage Methods
-              </button>
-            </div>
-          </motion.div>
-        </div>
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
