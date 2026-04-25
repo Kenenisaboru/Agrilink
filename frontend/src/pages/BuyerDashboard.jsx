@@ -14,7 +14,8 @@ import {
   X,
   MessageSquare,
   Zap,
-  Star
+  Star,
+  Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -183,64 +184,72 @@ const BuyerDashboard = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3, delay: idx * 0.05 }}
-              className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group"
+              className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 cursor-pointer"
             >
-              <div className="h-56 bg-gray-100 relative overflow-hidden">
+              <div className="relative h-48">
                 <img 
                   src={getCropImage(crop)} 
                   alt={crop.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4">
-                  <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-agriGreen shadow-sm">
-                    {crop.category || 'Produce'}
+                  <span className="bg-agriGreen text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                    {crop.category || 'Fresh'}
                   </span>
                 </div>
-                {crop.aiAnalysis && (
+                {crop.aiAnalysis?.badge?.type === 'deal' && (
                   <div className="absolute top-4 right-4">
-                    <span className={`bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1 ${
-                      crop.aiAnalysis.badge.type === 'deal' ? 'text-green-600' :
-                      crop.aiAnalysis.badge.type === 'premium' ? 'text-red-500' :
-                      'text-yellow-600'
-                    }`}>
+                    <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                       <Zap className="w-3 h-3" />
-                      {crop.aiAnalysis.badge.text}
+                      Deal
                     </span>
                   </div>
                 )}
+                <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 transition-colors">
+                  <Heart className="w-5 h-5 text-gray-400 hover:text-red-500" />
+                </button>
               </div>
+              
               <div className="p-6">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-black text-gray-900 leading-tight">{crop.name}</h3>
-                  <div className="text-agriGreen font-black text-lg">${crop.pricePerUnit}</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-500 line-clamp-1">{crop.location || 'East Hararghe'}</span>
                 </div>
-
-                {/* Rating UI */}
+                
+                <h3 className="font-bold text-gray-900 mb-2 group-hover:text-agriGreen transition-colors line-clamp-1">
+                  {crop.name}
+                </h3>
+                
                 <div className="flex items-center gap-1 mb-3">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span className="font-bold text-sm text-gray-700">
+                  <Star className="w-4 h-4 text-amber-400 fill-current" />
+                  <span className="text-sm font-semibold text-gray-700">
                     {crop.rating > 0 ? crop.rating.toFixed(1) : '4.8'}
                   </span>
-                  <span className="text-xs text-gray-400 ml-1">
-                    ({crop.numReviews > 0 ? crop.numReviews : '24'} reviews)
+                  <span className="text-sm text-gray-400">
+                    ({crop.numReviews > 0 ? crop.numReviews : Math.floor(Math.random() * 50) + 10} reviews)
                   </span>
                 </div>
-
-                <div className="flex items-center gap-2 text-gray-500 text-sm mb-6">
-                  <MapPin className="w-4 h-4" />
-                  <span>{crop.location || 'East Hararghe'}</span>
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="text-2xl font-black text-agriGreen">ETB {crop.pricePerUnit?.toLocaleString() || crop.price}</span>
+                    <span className="text-sm text-gray-400 line-through ml-2">
+                      ETB {(crop.pricePerUnit ? crop.pricePerUnit * 1.15 : 0).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                    </span>
+                  </div>
                 </div>
+                
                 <div className="flex gap-2">
                   <button 
                     onClick={() => addToCart(crop)}
-                    className="flex-grow btn-primary py-3 rounded-2xl flex items-center justify-center gap-2 group/btn"
+                    className="flex-grow bg-agriDark text-white py-3 rounded-xl font-bold hover:bg-agriGreen transition-colors flex items-center justify-center gap-2 group/btn"
                   >
                     <ShoppingCart className="w-5 h-5 transition-transform group-hover/btn:-translate-y-1" />
                     Add to Cart
                   </button>
                   <Link 
                     to={`/chat?userId=${crop.farmer?._id || crop.farmer}&userName=${crop.farmer?.name || 'Farmer'}`}
-                    className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl transition-colors"
+                    className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors flex items-center justify-center"
                   >
                     <MessageSquare className="w-5 h-5" />
                   </Link>
