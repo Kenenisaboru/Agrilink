@@ -3,6 +3,9 @@ const http = require('http');
 const socketio = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const socketHandler = require('./sockets/chatSocket');
 
@@ -61,6 +64,22 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// 1. Set security HTTP headers
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Allow images to be served cross-origin
+}));
+
+// 2. Limit requests from same API to prevent brute-force attacks
+const limiter = rateLimit({
+  max: 200, // Limit each IP to 200 requests per 15 minutes
+  windowMs: 15 * 60 * 1000, 
+  message: 'Too many requests from this IP, please try again in 15 minutes!'
+});
+app.use('/api', limiter);
+
+// 3. Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const path = require('path');
@@ -101,6 +120,18 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+
+const startServer = (port) => {
+  server.listen(port, () => {
+    console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`⚠️ Port ${port} is busy, trying port ${port + 1}...`);
+      startServer(port + 1);
+    } else {
+      console.error('Server error:', err);
+    }
+  });
+};
+
+startServer(Number(PORT));
