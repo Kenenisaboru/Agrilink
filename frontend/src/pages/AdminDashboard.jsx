@@ -20,7 +20,32 @@ import {
   Download,
   Settings,
   MoreHorizontal,
-  Loader2
+  Loader2,
+  Package,
+  DollarSign,
+  TrendingUp,
+  Filter,
+  RefreshCw,
+  Ban,
+  CheckCircle2,
+  X,
+  Eye,
+  Edit,
+  Trash2,
+  Zap,
+  Globe,
+  Server,
+  HardDrive,
+  Wifi,
+  Bell,
+  MessageSquare,
+  Star,
+  Calendar,
+  MapPin,
+  Phone,
+  Mail,
+  UserPlus,
+  UserMinus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -117,26 +142,66 @@ const AdminDashboard = () => {
     totalCrops: 0,
     activeOrders: 0,
     revenue: 0,
+    pendingApprovals: 0,
+    systemHealth: 98,
+    serverLoad: 45,
+    databaseSize: '2.4 GB'
   });
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [systemLogs, setSystemLogs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const [usersRes, cropsRes, ordersRes, paymentsRes] = await Promise.all([
-          axios.get('/api/auth/profile'), // This verified admin but we might need a dedicated users list
+          axios.get('/api/auth/profile'),
           axios.get('/api/crops'),
-          axios.get('/api/orders/myorders'), // For now, since admin might not have a dedicated 'all' orders yet
+          axios.get('/api/orders/myorders'),
           axios.get('/api/payments/admin/all'),
         ]);
 
         setStats({
-          totalUsers: 142, // Placeholder until a dedicated admin/users route is added
+          totalUsers: 142,
           totalCrops: cropsRes.data.length,
           activeOrders: ordersRes.data.filter(o => o.status === 'Pending').length,
           revenue: paymentsRes.data.stats?.totalRevenue || 0,
+          pendingApprovals: cropsRes.data.filter(c => !c.approved).length,
+          systemHealth: 98,
+          serverLoad: 45,
+          databaseSize: '2.4 GB'
         });
+
+        // Sample data for demonstration
+        setUsers([
+          { id: 1, name: 'Abebe Kebede', email: 'abebe@email.com', role: 'Farmer', status: 'Active', joined: '2026-01-15' },
+          { id: 2, name: 'Fatuma Ahmed', email: 'fatuma@email.com', role: 'Buyer', status: 'Active', joined: '2026-02-20' },
+          { id: 3, name: 'Kedir Jemal', email: 'kedir@email.com', role: 'Farmer', status: 'Pending', joined: '2026-03-10' },
+          { id: 4, name: 'Chaltu Tadesse', email: 'chaltu@email.com', role: 'Student', status: 'Active', joined: '2026-03-25' },
+        ]);
+
+        setProducts([
+          { id: 1, name: 'Premium Coffee', farmer: 'Abebe Kebede', price: 4500, status: 'Approved', views: 1250 },
+          { id: 2, name: 'Organic Teff', farmer: 'Fatuma Ahmed', price: 3200, status: 'Pending', views: 890 },
+          { id: 3, name: 'Fresh Khat', farmer: 'Kedir Jemal', price: 2800, status: 'Approved', views: 2100 },
+        ]);
+
+        setOrders([
+          { id: 1, buyer: 'Fatuma Ahmed', total: 8500, status: 'Processing', date: '2026-04-20' },
+          { id: 2, buyer: 'Chaltu Tadesse', total: 4200, status: 'Pending', date: '2026-04-21' },
+          { id: 3, buyer: 'Mohammed Ali', total: 12000, status: 'Delivered', date: '2026-04-19' },
+        ]);
+
+        setSystemLogs([
+          { id: 1, type: 'Info', message: 'User registration: new farmer account', time: '2 min ago' },
+          { id: 2, type: 'Success', message: 'Payment processed: ETB 8,500', time: '5 min ago' },
+          { id: 3, type: 'Warning', message: 'High server load detected', time: '10 min ago' },
+          { id: 4, type: 'Info', message: 'Product approved: Premium Coffee', time: '15 min ago' },
+        ]);
       } catch (err) {
         console.error('Error fetching admin stats:', err);
       } finally {
@@ -168,7 +233,7 @@ const AdminDashboard = () => {
           <p className="text-gray-500 font-medium">Monitoring Ethiopia's Premier Agricultural Platform</p>
         </div>
         <div className="flex bg-gray-100 p-1.5 rounded-[1.5rem]">
-          {['overview', 'security', 'logs'].map((tab) => (
+          {['overview', 'users', 'products', 'orders', 'system'].map((tab) => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -184,101 +249,355 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Enhanced Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatCard title="Total Users" value={stats.totalUsers} icon={Users} trend="12" color="blue" delay={0.1} />
-        <StatCard title="Crops Listed" value={stats.totalCrops} icon={ShoppingBag} trend="5" color="green" delay={0.2} />
+        <StatCard title="Crops Listed" value={stats.totalCrops} icon={Package} trend="5" color="green" delay={0.2} />
         <StatCard title="Active Orders" value={stats.activeOrders} icon={Clock} trend="2" color="amber" delay={0.3} />
-        <StatCard title="Total Revenue" value={`${stats.revenue.toLocaleString()} ETB`} icon={BarChart3} trend="18" color="purple" delay={0.4} />
+        <StatCard title="Total Revenue" value={`${stats.revenue.toLocaleString()} ETB`} icon={DollarSign} trend="18" color="purple" delay={0.4} />
+        <StatCard title="Pending Approvals" value={stats.pendingApprovals} icon={ShieldCheck} trend="3" color="blue" delay={0.5} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Main Management Area */}
-        <motion.div 
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Main Management Area */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+              <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                <Activity className="text-agriGreen w-6 h-6" />
+                Live Activity
+              </h2>
+              <div className="relative group w-full sm:w-64">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen w-4 h-4" />
+                <input 
+                  placeholder="Search event logs..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-0 rounded-2xl text-xs font-medium focus:ring-4 focus:ring-agriGreen/10 transition-all outline-none" 
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {systemLogs.map((log, index) => (
+                <ActivityItem 
+                  key={log.id}
+                  type={log.type} 
+                  message={log.message} 
+                  time={log.time} 
+                  status={log.type === 'Success' ? 'Success' : log.type === 'Warning' ? 'Alert' : 'Complete'} 
+                  delay={0.6 + index * 0.1} 
+                />
+              ))}
+            </div>
+          </motion.div>
+
+          {/* System Health & Controls */}
+          <div className="space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
+            >
+              <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
+                <Settings className="text-agriGreen w-6 h-6" />
+                Service Status
+              </h2>
+              <div className="space-y-8">
+                <HealthBar label="System Health" value={`${stats.systemHealth}%`} color="bg-emerald-500" icon={Activity} />
+                <HealthBar label="Server Load" value={`${stats.serverLoad}%`} color="bg-blue-500" icon={Server} />
+                <HealthBar label="Database Size" value={stats.databaseSize} color="bg-purple-500" icon={Database} />
+                <HealthBar label="API Response" value="98%" color="bg-emerald-500" icon={Globe} />
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+              className="bg-gradient-to-br from-agriGreen to-green-600 rounded-[3rem] p-10 text-white shadow-xl shadow-green-200"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <Zap className="w-6 h-6" />
+                <h2 className="text-xl font-black">Quick Actions</h2>
+              </div>
+              <div className="space-y-3">
+                <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-2xl font-bold text-sm flex items-center justify-between transition-all">
+                  <span>Backup Database</span>
+                  <Download className="w-4 h-4" />
+                </button>
+                <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-2xl font-bold text-sm flex items-center justify-between transition-all">
+                  <span>Clear Cache</span>
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+                <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-2xl font-bold text-sm flex items-center justify-between transition-all">
+                  <span>Send Notifications</span>
+                  <Bell className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'users' && (
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
+          className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
         >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-              <Activity className="text-agriGreen w-6 h-6" />
-              Live Activity
+              <Users className="text-agriGreen w-6 h-6" />
+              User Management
             </h2>
-            <div className="relative group w-full sm:w-64">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen w-4 h-4" />
-              <input 
-                placeholder="Search event logs..." 
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-0 rounded-2xl text-xs font-medium focus:ring-4 focus:ring-agriGreen/10 transition-all outline-none" 
-              />
+            <div className="flex gap-3">
+              <button className="btn-primary px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                Add User
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-4 px-4 text-xs font-black text-gray-400 uppercase tracking-widest">User</th>
+                  <th className="text-left py-4 px-4 text-xs font-black text-gray-400 uppercase tracking-widest">Role</th>
+                  <th className="text-left py-4 px-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
+                  <th className="text-left py-4 px-4 text-xs font-black text-gray-400 uppercase tracking-widest">Joined</th>
+                  <th className="text-right py-4 px-4 text-xs font-black text-gray-400 uppercase tracking-widest">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-agriGreen/10 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-agriGreen" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">{user.name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-sm font-bold text-gray-700">{user.role}</span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                        user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-sm text-gray-500">{user.joined}</span>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                          <Eye className="w-4 h-4 text-gray-400" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                          <Edit className="w-4 h-4 text-gray-400" />
+                        </button>
+                        <button className="p-2 hover:bg-red-50 rounded-xl transition-colors">
+                          <Ban className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {activeTab === 'products' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <Package className="text-agriGreen w-6 h-6" />
+              Product Moderation
+            </h2>
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-400" />
+              <select className="bg-gray-50 border-0 rounded-xl px-4 py-2 text-sm font-bold outline-none">
+                <option>All Status</option>
+                <option>Pending</option>
+                <option>Approved</option>
+                <option>Rejected</option>
+              </select>
             </div>
           </div>
 
           <div className="space-y-4">
-            <ActivityItem type="user" message="New Farmer registered from Haramaya" time="2 mins ago" status="Success" delay={0.6} />
-            <ActivityItem type="order" message="Order #5234 confirmed - 50kg Coffee" time="15 mins ago" status="Pending" delay={0.7} />
-            <ActivityItem type="payment" message="M-Pesa payment payout to Harar Farmer #22" time="1 hour ago" status="Success" delay={0.8} />
-            <ActivityItem type="system" message="Database backup completed successfully" time="3 hours ago" status="Complete" delay={0.9} />
-            <ActivityItem type="security" message="High frequency login attempts from IP 192.168.1.1" time="5 hours ago" status="Alert" delay={1.0} />
+            {products.map((product) => (
+              <div key={product.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
+                    <Package className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{product.name}</p>
+                    <p className="text-sm text-gray-500">by {product.farmer}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Eye className="w-3 h-3 text-gray-400" />
+                      <span className="text-xs text-gray-400">{product.views} views</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-black text-agriGreen">ETB {product.price.toLocaleString()}</p>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      product.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {product.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {product.status === 'Pending' && (
+                      <>
+                        <button className="p-2 bg-green-100 hover:bg-green-200 rounded-xl transition-colors">
+                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        </button>
+                        <button className="p-2 bg-red-100 hover:bg-red-200 rounded-xl transition-colors">
+                          <X className="w-4 h-4 text-red-600" />
+                        </button>
+                      </>
+                    )}
+                    <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                      <Eye className="w-4 h-4 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
+      )}
 
-        {/* System Health & Controls */}
-        <div className="space-y-8">
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
-          >
-            <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
-              <Settings className="text-agriGreen w-6 h-6" />
-              Service Status
+      {activeTab === 'orders' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <ShoppingBag className="text-agriGreen w-6 h-6" />
+              Order Management
             </h2>
-            <div className="space-y-8">
-              <HealthBar label="API Response Time" value="98%" color="bg-emerald-500" icon={Activity} />
-              <HealthBar label="Database Uptime" value="100%" color="bg-emerald-500" icon={Database} />
-              <HealthBar label="Cloud Storage" value="14%" color="bg-blue-500" icon={Cloud} />
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-5 h-5 text-gray-400" />
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Gateway</span>
+          </div>
+
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                    <ShoppingBag className="w-6 h-6 text-gray-300" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">Order #{order.id}</p>
+                    <p className="text-sm text-gray-500">by {order.buyer}</p>
+                    <p className="text-xs text-gray-400 mt-1">{order.date}</p>
+                  </div>
                 </div>
-                <span className="text-xs font-black text-emerald-600 flex items-center gap-1.5 uppercase">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  Active
-                </span>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-black text-agriGreen">ETB {order.total.toLocaleString()}</p>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                      order.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
+                      'bg-amber-100 text-amber-700'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                    <Eye className="w-4 h-4 text-gray-400" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {activeTab === 'system' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        >
+          <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm">
+            <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
+              <Server className="text-agriGreen w-6 h-6" />
+              Server Metrics
+            </h2>
+            <div className="space-y-6">
+              <HealthBar label="CPU Usage" value="45%" color="bg-blue-500" icon={Activity} />
+              <HealthBar label="Memory Usage" value="62%" color="bg-purple-500" icon={HardDrive} />
+              <HealthBar label="Disk Space" value="38%" color="bg-green-500" icon={Database} />
+              <HealthBar label="Network I/O" value="28%" color="bg-amber-500" icon={Wifi} />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm">
+            <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
+              <Shield className="text-agriGreen w-6 h-6" />
+              Security Overview
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <span className="font-bold text-gray-900">SSL Certificate</span>
+                </div>
+                <span className="text-sm font-bold text-green-600">Valid</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <span className="font-bold text-gray-900">Firewall</span>
+                </div>
+                <span className="text-sm font-bold text-green-600">Active</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                  <span className="font-bold text-gray-900">Failed Logins (24h)</span>
+                </div>
+                <span className="text-sm font-bold text-amber-600">3</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <span className="font-bold text-gray-900">Database Backups</span>
+                </div>
+                <span className="text-sm font-bold text-green-600">Automated</span>
               </div>
             </div>
-            
-            <div className="mt-12 space-y-4">
-              <button className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white font-black py-4 rounded-2xl shadow-xl shadow-gray-200 hover:bg-black transition-all text-sm group">
-                <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                Export User Report
-              </button>
-              <button className="w-full flex items-center justify-center gap-2 bg-white text-red-600 border-2 border-red-50 font-black py-4 rounded-2xl hover:bg-red-50 transition-all text-sm">
-                Maintenance Mode
-              </button>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7 }}
-            className="bg-agriDark rounded-[3rem] p-8 text-white relative overflow-hidden group"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-agriGreen opacity-20 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125" />
-            <h3 className="text-xl font-black mb-2 relative z-10">Platform Security</h3>
-            <p className="text-agriLight/70 text-sm font-medium leading-relaxed relative z-10 mb-6">
-              Enhanced SSL encryption and real-time fraud monitoring are currently protecting all transactions.
-            </p>
-            <div className="flex items-center gap-2 text-agriLight font-black text-xs uppercase tracking-widest relative z-10 cursor-pointer hover:text-white transition-colors">
-              View Security Protocols <ArrowUpRight className="w-4 h-4" />
-            </div>
-          </motion.div>
-        </div>
-      </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
