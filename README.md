@@ -112,4 +112,4 @@ VITE_FLASK_API_URL=http://your-ai-url/api
 
 ---
 
-**Made with 💚 by Antigravity for the Ethiopian Agricultural Renaissance**
+**Made with 💚 by Kenenisa Boru** — for the Ethiopian Agricultural Renaissance
