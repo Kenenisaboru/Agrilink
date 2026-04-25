@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -12,32 +13,42 @@ import StudentLayout from './layout/StudentLayout/StudentLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
-// Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import FAQ from './pages/FAQ';
-import Blog from './pages/Blog';
-import AIAssistant from './pages/AIAssistant';
-import VoiceAIAssistant from './pages/VoiceAIAssistant';
-import Products from './pages/Products';
-import Cart from './pages/Cart';
-import OrderManagement from './pages/OrderManagement';
-import FarmerDashboard from './pages/FarmerDashboard';
-import StudentDashboard from './pages/StudentDashboard';
-import BuyerDashboard from './pages/BuyerDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import RepresentativeDashboard from './pages/RepresentativeDashboard';
-import CropManagement from './pages/CropManagement';
-import FarmerOrders from './pages/FarmerOrders';
-import ChatPage from './pages/ChatPage';
-import PricePrediction from './pages/PricePrediction';
-import Checkout from './pages/buyer/Checkout';
-import PaymentHistory from './pages/buyer/PaymentHistory';
-import PaymentVerify from './pages/buyer/PaymentVerify';
-import BuyerOrders from './pages/buyer/BuyerOrders';
+// Lazy Loaded Pages for Production Performance
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Blog = lazy(() => import('./pages/Blog'));
+const AIAssistant = lazy(() => import('./pages/AIAssistant'));
+const VoiceAIAssistant = lazy(() => import('./pages/VoiceAIAssistant'));
+const Products = lazy(() => import('./pages/Products'));
+const Cart = lazy(() => import('./pages/Cart'));
+const OrderManagement = lazy(() => import('./pages/OrderManagement'));
+const FarmerDashboard = lazy(() => import('./pages/FarmerDashboard'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const BuyerDashboard = lazy(() => import('./pages/BuyerDashboard'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const RepresentativeDashboard = lazy(() => import('./pages/RepresentativeDashboard'));
+const CropManagement = lazy(() => import('./pages/CropManagement'));
+const FarmerOrders = lazy(() => import('./pages/FarmerOrders'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const PricePrediction = lazy(() => import('./pages/PricePrediction'));
+const Checkout = lazy(() => import('./pages/buyer/Checkout'));
+const PaymentHistory = lazy(() => import('./pages/buyer/PaymentHistory'));
+const PaymentVerify = lazy(() => import('./pages/buyer/PaymentVerify'));
+const BuyerOrders = lazy(() => import('./pages/buyer/BuyerOrders'));
+
+import ErrorBoundary from './components/ErrorBoundary';
+import { Loader2 } from 'lucide-react';
+
+const PageLoader = () => (
+  <div className="min-h-[70vh] flex flex-col items-center justify-center">
+    <Loader2 className="w-12 h-12 animate-spin text-agriGreen mb-4" />
+    <p className="text-gray-500 font-medium">Loading page...</p>
+  </div>
+);
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -89,10 +100,12 @@ const LayoutWrapper = ({ children }) => {
 
 export default function App() {
   return (
-    <NotificationProvider>
-      <LanguageProvider>
-        <LayoutWrapper>
-          <Routes>
+    <ErrorBoundary>
+      <NotificationProvider>
+        <LanguageProvider>
+          <LayoutWrapper>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
@@ -170,9 +183,11 @@ export default function App() {
             />
 
             <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </LayoutWrapper>
-      </LanguageProvider>
-    </NotificationProvider>
+              </Routes>
+            </Suspense>
+          </LayoutWrapper>
+        </LanguageProvider>
+      </NotificationProvider>
+    </ErrorBoundary>
   );
 }
