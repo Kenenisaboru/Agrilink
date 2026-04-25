@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { isCloudinaryConfigured } = require('../middleware/uploadMiddleware');
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -17,6 +18,18 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'An account with this email already exists' });
     }
 
+    // Handle profile picture upload
+    let profilePicture = '';
+    if (req.file) {
+      if (isCloudinaryConfigured()) {
+        // Cloudinary returns the URL in req.file.path
+        profilePicture = req.file.path;
+      } else {
+        // Local storage: build the URL
+        profilePicture = `/uploads/${req.file.filename}`;
+      }
+    }
+
     const user = await User.create({
       name,
       email,
@@ -27,6 +40,7 @@ const registerUser = async (req, res) => {
       mpesaNumber,
       telebirrNumber: telebirrNumber || phone || mpesaNumber,
       university,
+      profilePicture,
       balance: 0,
     });
 
@@ -41,6 +55,7 @@ const registerUser = async (req, res) => {
         phone: user.phone,
         telebirrNumber: user.telebirrNumber,
         cbeAccountNumber: user.cbeAccountNumber,
+        profilePicture: user.profilePicture,
         balance: user.balance,
         token,
       });
@@ -83,6 +98,7 @@ const loginUser = async (req, res) => {
       phone: user.phone || user.mpesaNumber,
       telebirrNumber: user.telebirrNumber,
       cbeAccountNumber: user.cbeAccountNumber,
+      profilePicture: user.profilePicture,
       balance: user.balance || 0,
       token,
     });
@@ -107,6 +123,7 @@ const getUserProfile = async (req, res) => {
         phone: user.phone || user.mpesaNumber,
         telebirrNumber: user.telebirrNumber,
         cbeAccountNumber: user.cbeAccountNumber,
+        profilePicture: user.profilePicture,
         balance: user.balance || 0,
         university: user.university,
         createdAt: user.createdAt,
@@ -150,6 +167,7 @@ const updateUserProfile = async (req, res) => {
       role: updatedUser.role,
       location: updatedUser.location,
       phone: updatedUser.phone,
+      profilePicture: updatedUser.profilePicture,
       balance: updatedUser.balance || 0,
       token,
     });
