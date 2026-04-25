@@ -43,7 +43,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:5555',
+        target: 'http://localhost:5556',
         changeOrigin: true,
       },
       '/flask-api': {
@@ -52,7 +52,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/flask-api/, '/api'),
       },
       '/uploads': {
-        target: 'http://localhost:5555',
+        target: 'http://localhost:5556',
         changeOrigin: true,
       },
     },
