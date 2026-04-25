@@ -111,6 +111,22 @@ const BuyerDashboard = () => {
       <section className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-agriDark p-6 md:p-12 lg:p-20 text-white">
         <div className="absolute top-0 right-0 w-96 h-96 bg-agriGreen/20 rounded-full -mr-20 -mt-20 blur-3xl" />
         <div className="relative z-10 max-w-2xl">
+          {/* User greeting with profile picture */}
+          {user && (
+            <div className="flex items-center gap-3 mb-6">
+              {user.profilePicture ? (
+                <img src={user.profilePicture} alt={user.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/30" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-black">
+                  {user.name?.[0]}
+                </div>
+              )}
+              <div>
+                <p className="text-white/70 text-sm font-medium">Welcome back,</p>
+                <p className="text-white font-bold text-lg">{user.name}</p>
+              </div>
+            </div>
+          )}
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

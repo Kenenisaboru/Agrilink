@@ -190,15 +190,24 @@ const FarmerDashboard = () => {
     <div className="max-w-7xl mx-auto space-y-10 py-8 px-4">
       {/* Welcome Header with Notification Bell */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <motion.h1 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-4xl font-black text-gray-900 tracking-tight"
-          >
-            Welcome back, <span className="text-agriGreen">{user.name}</span> 👋
-          </motion.h1>
-          <p className="text-gray-500 font-medium">Your farm at a glance. Let's grow together.</p>
+        <div className="flex items-center gap-4">
+          {user.profilePicture ? (
+            <img src={user.profilePicture} alt={user.name} className="w-16 h-16 rounded-2xl object-cover ring-4 ring-green-100 shadow-lg" />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-agriGreen/10 flex items-center justify-center text-agriGreen text-2xl font-black ring-4 ring-green-100">
+              {user.name?.[0]}
+            </div>
+          )}
+          <div className="space-y-1">
+            <motion.h1 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-4xl font-black text-gray-900 tracking-tight"
+            >
+              Welcome back, <span className="text-agriGreen">{user.name}</span> 👋
+            </motion.h1>
+            <p className="text-gray-500 font-medium">Your farm at a glance. Let's grow together.</p>
+          </div>
         </div>
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
