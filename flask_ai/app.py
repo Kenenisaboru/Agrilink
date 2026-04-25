@@ -1,5 +1,6 @@
 import json
 import os
+import hashlib
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 from modules.chatbot import get_chat_response, clear_history, get_history_length, detect_language
@@ -17,6 +18,151 @@ CORS(app)
 
 # ── Feedback log (in-memory; extend to DB in production) ─────────────────────
 _feedback_log: list = []
+
+# ── User database (in-memory; extend to DB in production) ───────────────────
+_users_db: list = []
+
+# Initialize with a demo user
+def init_demo_users():
+    if not _users_db:
+        # Demo users for testing
+        demo_users = [
+            {
+                'id': 1,
+                'email': 'farmer@agrilink.et',
+                'password': hashlib.sha256('farmer123'.encode()).hexdigest(),
+                'role': 'Farmer',
+                'name': 'Abebe Kebede'
+            },
+            {
+                'id': 2,
+                'email': 'buyer@agrilink.et',
+                'password': hashlib.sha256('buyer123'.encode()).hexdigest(),
+                'role': 'Buyer',
+                'name': 'Fatuma Ahmed'
+            },
+            {
+                'id': 3,
+                'email': 'student@agrilink.et',
+                'password': hashlib.sha256('student123'.encode()).hexdigest(),
+                'role': 'Student',
+                'name': 'Kedir Jemal'
+            },
+            {
+                'id': 4,
+                'email': 'admin@agrilink.et',
+                'password': hashlib.sha256('admin123'.encode()).hexdigest(),
+                'role': 'Admin',
+                'name': 'System Admin'
+            },
+            {
+                'id': 5,
+                'email': 'rep@agrilink.et',
+                'password': hashlib.sha256('rep123'.encode()).hexdigest(),
+                'role': 'Representative',
+                'name': 'Zeyneb Ahmed'
+            }
+        ]
+        _users_db.extend(demo_users)
+
+init_demo_users()
+
+# ── Generate JWT-like token (simplified for demo) ───────────────────────────
+def generate_token(user_id):
+    import secrets
+    return secrets.token_hex(32)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTHENTICATION ENDPOINTS
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/auth/login', methods=['POST'])
+def login_endpoint():
+    data = request.json
+    if not data or 'email' not in data or 'password' not in data:
+        return jsonify({'error': 'Email and password are required'}), 400
+
+    email = data['email']
+    password = hashlib.sha256(data['password'].encode()).hexdigest()
+
+    # Find user
+    user = None
+    for u in _users_db:
+        if u['email'] == email and u['password'] == password:
+            user = u
+            break
+
+    if not user:
+        return jsonify({'error': 'Invalid email or password'}), 401
+
+    # Generate token
+    token = generate_token(user['id'])
+
+    # Return user data with token
+    return jsonify({
+        'id': user['id'],
+        'email': user['email'],
+        'role': user['role'],
+        'name': user['name'],
+        'token': token
+    })
+
+
+@app.route('/api/auth/register', methods=['POST'])
+def register_endpoint():
+    data = request.json
+    if not data or 'email' not in data or 'password' not in data or 'role' not in data:
+        return jsonify({'error': 'Email, password, and role are required'}), 400
+
+    email = data['email']
+    password = hashlib.sha256(data['password'].encode()).hexdigest()
+    role = data['role']
+    name = data.get('name', email.split('@')[0])
+
+    # Check if user already exists
+    for u in _users_db:
+        if u['email'] == email:
+            return jsonify({'error': 'User already exists'}), 400
+
+    # Create new user
+    new_user = {
+        'id': len(_users_db) + 1,
+        'email': email,
+        'password': password,
+        'role': role,
+        'name': name
+    }
+    _users_db.append(new_user)
+
+    # Generate token
+    token = generate_token(new_user['id'])
+
+    return jsonify({
+        'id': new_user['id'],
+        'email': new_user['email'],
+        'role': new_user['role'],
+        'name': new_user['name'],
+        'token': token
+    }), 201
+
+
+@app.route('/api/auth/me', methods=['GET'])
+def me_endpoint():
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    if not token:
+        return jsonify({'error': 'No token provided'}), 401
+
+    # In production, validate token properly
+    # For demo, return first user
+    if _users_db:
+        user = _users_db[0]
+        return jsonify({
+            'id': user['id'],
+            'email': user['email'],
+            'role': user['role'],
+            'name': user['name']
+        })
+    
+    return jsonify({'error': 'Invalid token'}), 401
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CHAT ENDPOINT — with conversation memory & RAG-lite
