@@ -18,15 +18,15 @@ export const getCropImage = (crop) => {
   const name = (crop.name || '').toLowerCase();
 
   const categoryImages = {
-    'Vegetable': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Vegetables_in_basket.jpg/400px-Vegetables_in_basket.jpg',
-    'Fruit': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Culinary_fruits_front_view.jpg/400px-Culinary_fruits_front_view.jpg',
-    'Grain': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Wheat_close-up.JPG/400px-Wheat_close-up.JPG',
-    'Cereal': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Wheat_close-up.JPG/400px-Wheat_close-up.JPG',
-    'Legume': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Various_legumes.jpg/400px-Various_legumes.jpg',
-    'Oilseed': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Sunflower_seeds_on_a_white_background.jpg/400px-Sunflower_seeds_on_a_white_background.jpg',
-    'Stimulant': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Catha_edulis_001.jpg/400px-Catha_edulis_001.jpg',
-    'Cash Crop': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Roasted_coffee_beans.jpg/400px-Roasted_coffee_beans.jpg',
-    'Other': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Fresh_produce.jpg/400px-Fresh_produce.jpg'
+    'Vegetable': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400',
+    'Fruit': 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400',
+    'Grain': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400',
+    'Cereal': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400',
+    'Legume': 'https://images.unsplash.com/photo-1515589053088-75c1fc16dcc6?w=400',
+    'Oilseed': 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400',
+    'Stimulant': 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',
+    'Cash Crop': 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400',
+    'Other': 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=400'
   };
 
   // Keyword overrides
@@ -34,19 +34,19 @@ export const getCropImage = (crop) => {
     return categoryImages['Cash Crop'];
   }
   if (name.includes('maize') || name.includes('bokolo') || name.includes('corn')) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Corn_on_the_cob.jpg/400px-Corn_on_the_cob.jpg';
+    return 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400';
   }
   if (name.includes('papaya')) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Papaya_cross_section_BNC.jpg/400px-Papaya_cross_section_BNC.jpg';
+    return 'https://images.unsplash.com/photo-1617112848923-cc2234394a8a?w=400';
   }
   if (name.includes('orange')) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Ambersweet_oranges.jpg/400px-Ambersweet_oranges.jpg';
+    return 'https://images.unsplash.com/photo-1611080661282-8418bd61c5cb?w=400';
   }
   if (name.includes('tomato')) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tomato_je.jpg/400px-Tomato_je.jpg';
+    return 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400';
   }
   if (name.includes('onion')) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Onions_on_a_white_background.jpg/400px-Onions_on_a_white_background.jpg';
+    return 'https://images.unsplash.com/photo-1620574387735-3624d75b2dbc?w=400';
   }
   if (name.includes('chat') || name.includes('qat')) {
     return categoryImages['Stimulant'];
