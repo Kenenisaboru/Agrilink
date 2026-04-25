@@ -14,7 +14,8 @@ import {
   ShoppingBag,
   CheckCircle2,
   MapPin,
-  Phone
+  Phone,
+  Camera
 } from 'lucide-react';
 
 const Register = () => {
@@ -32,8 +33,22 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image must be less than 5MB');
+        return;
+      }
+      setProfilePicture(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
   const roles = [
     { id: 'Farmer', icon: Leaf, desc: 'Sell your crops directly' },
@@ -46,7 +61,15 @@ const Register = () => {
     setLoading(true);
     setError('');
     try {
-      const user = await register(formData);
+      // Build FormData to support file upload
+      const submitData = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (formData[key]) submitData.append(key, formData[key]);
+      });
+      if (profilePicture) {
+        submitData.append('profilePicture', profilePicture);
+      }
+      const user = await register(submitData);
       navigate(`/dashboard/${user.role.toLowerCase()}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -227,6 +250,42 @@ const Register = () => {
                   </div>
                 </div>
               )}
+
+              {/* Profile Picture Upload */}
+              <div className="space-y-4">
+                <label className="text-sm font-bold text-gray-700 ml-1">Profile Picture (Optional)</label>
+                <div className="flex items-center gap-6">
+                  <div className="relative group">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-4 border-gray-200 group-hover:border-agriGreen transition-colors">
+                      {previewUrl ? (
+                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-10 h-10 text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+                    <label className="absolute bottom-0 right-0 bg-agriGreen text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-green-700 transition-colors">
+                      <Camera className="w-4 h-4" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-700">Upload your photo</p>
+                    <p className="text-xs text-gray-400 mt-1">JPG, PNG or WebP. Max 5MB.</p>
+                    {profilePicture && (
+                      <p className="text-xs text-agriGreen font-bold mt-1 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> {profilePicture.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
 
               <div className="space-y-4">
                 <label className="text-sm font-bold text-gray-700 ml-1">Select Your Role</label>

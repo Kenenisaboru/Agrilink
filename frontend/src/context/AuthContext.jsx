@@ -55,7 +55,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const response = await axios.post('/api/auth/register', userData);
+    let response;
+    if (userData instanceof FormData) {
+      // File upload: send as multipart/form-data
+      response = await axios.post('/api/auth/register', userData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    } else {
+      response = await axios.post('/api/auth/register', userData);
+    }
     const data = response.data;
     setUser(data);
     return data;

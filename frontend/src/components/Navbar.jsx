@@ -130,9 +130,17 @@ const Navbar = () => {
             <div className="flex items-center gap-4">
               <div className="h-8 w-px bg-gray-200" />
               <div className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full border border-gray-100 hover:border-agriGreen/30 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-agriGreen/10 flex items-center justify-center text-agriGreen font-bold">
-                  {user.name?.[0] || <User className="w-4 h-4" />}
-                </div>
+                {user.profilePicture ? (
+                  <img 
+                    src={user.profilePicture} 
+                    alt={user.name} 
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-agriGreen/20"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-agriGreen/10 flex items-center justify-center text-agriGreen font-bold">
+                    {user.name?.[0] || <User className="w-4 h-4" />}
+                  </div>
+                )}
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-gray-900 leading-none">{user.name}</span>
                   <span className="text-[10px] text-gray-500 font-medium">{user.role}</span>
