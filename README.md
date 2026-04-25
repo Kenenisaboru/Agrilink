@@ -30,6 +30,27 @@
 
 ---
 
+## 📸 App Showcase
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%"><img src="images/photo_2026-04-16_20-04-45.jpg" alt="AgriLink Dashboard"/></td>
+      <td width="50%"><img src="images/photo_2026-04-16_20-06-28.jpg" alt="Marketplace View"/></td>
+    </tr>
+    <tr>
+      <td width="50%"><img src="images/photo_2026-04-16_20-06-32.jpg" alt="AI Chat Interface"/></td>
+      <td width="50%"><img src="images/photo_2026-04-16_20-09-18.jpg" alt="Farmer Dashboard"/></td>
+    </tr>
+    <tr>
+      <td width="50%"><img src="images/photo_2026-04-16_20-09-19.jpg" alt="Crop Management"/></td>
+      <td width="50%"><img src="images/photo_2026-04-16_20-09-25.jpg" alt="Payment Integration"/></td>
+    </tr>
+  </table>
+</div>
+
+---
+
 ## 🛠 Tech Stack
 
 | Layer | Technology |
