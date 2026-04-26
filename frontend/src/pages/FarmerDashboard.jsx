@@ -272,6 +272,59 @@ const FarmerDashboard = () => {
         />
       </div>
 
+      {/* AI Agricultural Intelligence Section */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="bg-gradient-to-br from-agriDark to-indigo-950 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-64 h-64 bg-agriGreen/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-4 max-w-xl">
+            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-black uppercase tracking-widest">AI Market Intelligence</span>
+            </div>
+            <h2 className="text-3xl font-black leading-tight">Maximize your farm's <span className="text-agriGreen">profitability</span> with real-time AI insights.</h2>
+            <p className="text-gray-300 font-medium">Our AI analyzes Harar & East Hararghe market trends to help you decide what to plant and when to sell.</p>
+            <div className="flex flex-wrap gap-4 pt-2">
+              <div className="bg-white/5 border border-white/10 p-4 rounded-2xl flex-1 min-w-[200px]">
+                <div className="flex items-center gap-2 mb-2 text-agriGreen">
+                  <TrendingUp className="w-5 h-5" />
+                  <span className="font-bold text-sm">Price Forecast</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-2">Teff prices predicted to rise by **12%** in the next 3 weeks.</p>
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))}
+                  className="text-xs font-black text-white hover:text-agriGreen transition-colors flex items-center gap-1"
+                >
+                  Analyze My Crops <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="bg-white/5 border border-white/10 p-4 rounded-2xl flex-1 min-w-[200px]">
+                <div className="flex items-center gap-2 mb-2 text-amber-400">
+                  <Lightbulb className="w-5 h-5" />
+                  <span className="font-bold text-sm">Best Crop Tip</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-2">Current season favors **White Onion** for short-term 45% ROI.</p>
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))}
+                  className="text-xs font-black text-white hover:text-agriGreen transition-colors flex items-center gap-1"
+                >
+                  See Full Report <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="shrink-0">
+            <div className="w-48 h-48 bg-agriGreen rounded-[3rem] rotate-12 flex items-center justify-center shadow-2xl shadow-green-500/20">
+              <Zap className="w-24 h-24 text-white -rotate-12" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Sales Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sales Chart */}
