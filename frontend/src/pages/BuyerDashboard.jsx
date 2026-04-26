@@ -108,7 +108,7 @@ const BuyerDashboard = () => {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 space-y-12">
       {/* Hero Search Section */}
-      <section className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-agriDark p-6 md:p-12 lg:p-20 text-white">
+      <section className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-agriDark p-6 sm:p-8 md:p-12 lg:p-20 text-white">
         <div className="absolute top-0 right-0 w-96 h-96 bg-agriGreen/20 rounded-full -mr-20 -mt-20 blur-3xl" />
         <div className="relative z-10 max-w-2xl">
           {/* User greeting with profile picture */}
@@ -135,11 +135,11 @@ const BuyerDashboard = () => {
             {t('buyerDashboard.heroTitle', 'Fresh Produce from')} <br /> <span className="text-agriLight">{t('buyerDashboard.heroSubtitle', 'Local Farms')}</span>
           </motion.h1>
           <div className="relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors" />
+            <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors" />
             <input 
               type="text"
               placeholder={t('buyerDashboard.searchPlaceholder', 'Search for vegetables, fruits, or location...')}
-              className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl py-5 pl-16 pr-6 outline-none focus:bg-white focus:text-gray-900 transition-all text-lg font-medium placeholder:text-gray-400"
+              className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl py-4 md:py-5 pl-12 md:pl-16 pr-4 md:pr-6 outline-none focus:bg-white focus:text-gray-900 transition-all text-base md:text-lg font-medium placeholder:text-gray-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -162,14 +162,14 @@ const BuyerDashboard = () => {
             </div>
             <h2 className="text-3xl font-black leading-tight">Secure the <span className="text-agriDark">best prices</span> with AI market timing.</h2>
             <p className="text-white/80 font-medium max-w-lg">Our AI tracks seasonal harvest cycles in Ethiopia to suggest when you should buy in bulk to save up to 30%.</p>
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4">
               <button 
                 onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))}
-                className="bg-white text-agriGreen px-6 py-3 rounded-xl font-black text-sm hover:bg-gray-100 transition-all flex items-center gap-2"
+                className="bg-white text-agriGreen px-6 py-3 rounded-xl font-black text-sm hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
               >
                 Get Buying Plan <ChevronRight className="w-4 h-4" />
               </button>
-              <button className="bg-agriDark/20 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-xl font-black text-sm hover:bg-white/10 transition-all">
+              <button className="bg-agriDark/20 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-xl font-black text-sm hover:bg-white/10 transition-all text-center">
                 Price Forecasts
               </button>
             </div>
@@ -209,22 +209,25 @@ const BuyerDashboard = () => {
           ))}
         </div>
         
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm shrink-0 w-full md:w-auto">
-          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
-            <input 
-              type="checkbox" 
-              checked={showOnlyDeals} 
-              onChange={(e) => setShowOnlyDeals(e.target.checked)}
-              className="w-4 h-4 rounded text-agriGreen focus:ring-agriGreen border-gray-300"
-            />
-            <Zap className="w-4 h-4 text-green-500" />
-            {t('buyerDashboard.aiDealsOnly', 'AI Deals Only')}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm shrink-0 w-full md:w-auto">
+          <label className="flex items-center justify-between sm:justify-start gap-2 cursor-pointer text-sm font-bold text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={showOnlyDeals} 
+                onChange={(e) => setShowOnlyDeals(e.target.checked)}
+                className="w-4 h-4 rounded text-agriGreen focus:ring-agriGreen border-gray-300"
+              />
+              <Zap className="w-4 h-4 text-green-500" />
+              {t('buyerDashboard.aiDealsOnly', 'AI Deals Only')}
+            </div>
           </label>
-          <div className="w-px h-6 bg-gray-200"></div>
+          <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
+          <div className="block sm:hidden h-px w-full bg-gray-100 my-1"></div>
           <select 
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer pr-4"
+            className="w-full sm:w-auto bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer pr-4 py-2 sm:py-0 px-3 sm:px-0"
           >
             <option value="newest">{t('buyerDashboard.sortNewest', 'Sort: Newest')}</option>
             <option value="price_asc">{t('buyerDashboard.sortPriceAsc', 'Price: Low to High')}</option>
@@ -299,17 +302,17 @@ const BuyerDashboard = () => {
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex flex-row gap-2">
                   <button 
                     onClick={() => addToCart(crop)}
-                    className="flex-grow bg-agriDark text-white py-3 rounded-xl font-bold hover:bg-agriGreen transition-colors flex items-center justify-center gap-2 group/btn"
+                    className="flex-grow bg-agriDark text-white py-3 rounded-xl font-bold hover:bg-agriGreen transition-colors flex items-center justify-center gap-2 group/btn text-sm sm:text-base"
                   >
-                    <ShoppingCart className="w-5 h-5 transition-transform group-hover/btn:-translate-y-1" />
-                    Add to Cart
+                    <ShoppingCart className="w-5 h-5 transition-transform group-hover/btn:-translate-y-1 shrink-0" />
+                    <span className="truncate">Add to Cart</span>
                   </button>
                   <Link 
                     to={`/chat?userId=${crop.farmer?._id || crop.farmer}&userName=${crop.farmer?.name || 'Farmer'}`}
-                    className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors flex items-center justify-center"
+                    className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors flex items-center justify-center shrink-0"
                   >
                     <MessageSquare className="w-5 h-5" />
                   </Link>
@@ -334,10 +337,10 @@ const BuyerDashboard = () => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-8 right-8 bg-agriGreen text-white p-5 rounded-full shadow-2xl shadow-green-400 z-40 flex items-center gap-3 hover:scale-110 transition-transform"
+          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-agriGreen text-white p-4 md:p-5 rounded-full shadow-2xl shadow-green-400 z-40 flex items-center gap-2 md:gap-3 hover:scale-110 transition-transform"
         >
           <div className="relative">
-            <ShoppingCart className="w-7 h-7" />
+            <ShoppingCart className="w-6 h-6 md:w-7 md:h-7" />
             <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-agriGreen">
               {cart.reduce((acc, item) => acc + item.quantity, 0)}
             </span>
