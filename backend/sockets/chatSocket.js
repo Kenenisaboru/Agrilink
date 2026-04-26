@@ -34,6 +34,18 @@ const socketHandler = (io) => {
       io.to(receiverId).emit('userTyping', { senderId });
     });
 
+    // ── LIVE GPS TRACKING ──────────────────────────────────────────────
+    // Farmer/Driver sends their location to the specific order tracking room
+    socket.on('joinTrackingRoom', (orderId) => {
+      socket.join(`tracking_${orderId}`);
+      console.log(`User joined tracking room: tracking_${orderId}`);
+    });
+
+    socket.on('shareLocation', ({ orderId, lat, lng }) => {
+      // Broadcast the coordinates to anyone watching this order
+      io.to(`tracking_${orderId}`).emit('locationUpdate', { lat, lng });
+    });
+
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
     });

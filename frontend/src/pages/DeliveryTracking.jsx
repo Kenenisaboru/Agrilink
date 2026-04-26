@@ -3,11 +3,23 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import io from 'socket.io-client';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import {
   Package, Truck, CheckCircle2, Clock, MapPin,
   Loader2, ChevronRight, Phone, User, ArrowLeft,
-  CreditCard, ShoppingBag, AlertCircle, Box, Warehouse
+  CreditCard, ShoppingBag, AlertCircle, Box, Warehouse, Navigation
 } from 'lucide-react';
+
+// Fix Leaflet marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 // ── Delivery Status Steps ───────────────────────────────────────────────────
 const STATUS_STEPS = [
@@ -50,6 +62,56 @@ const DeliveryTracking = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Live GPS Tracking States
+  const [liveLocation, setLiveLocation] = useState(null); // { lat, lng }
+  const [trackingActive, setTrackingActive] = useState(false);
+  const [socket, setSocket] = useState(null);
+
+  // Initialize Socket Connection
+  useEffect(() => {
+    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    setSocket(newSocket);
+    return () => newSocket.close();
+  }, []);
+
+  // Listen for socket location updates (For Buyers)
+  useEffect(() => {
+    if (socket && selectedOrder) {
+      socket.emit('joinTrackingRoom', selectedOrder._id);
+      
+      socket.on('locationUpdate', (data) => {
+        setLiveLocation(data);
+      });
+      
+      return () => socket.off('locationUpdate');
+    }
+  }, [socket, selectedOrder]);
+
+  // Farmer's GPS Broadcasting
+  useEffect(() => {
+    let watchId;
+    if (trackingActive && user?.role === 'Farmer' && selectedOrder && socket) {
+      if ('geolocation' in navigator) {
+        watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            setLiveLocation({ lat, lng });
+            socket.emit('shareLocation', { orderId: selectedOrder._id, lat, lng });
+          },
+          (error) => console.error('GPS Error:', error),
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+        );
+      } else {
+        alert("GPS is not supported by your browser");
+        setTrackingActive(false);
+      }
+    }
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [trackingActive, user, selectedOrder, socket]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -183,7 +245,7 @@ const DeliveryTracking = () => {
               </div>
 
               {/* Visual Timeline */}
-              <div className="relative">
+              <div className="relative mb-8">
                 {STATUS_STEPS.map((step, idx) => {
                   const StepIcon = step.icon;
                   const isCompleted = idx <= currentStepIndex;
@@ -231,6 +293,64 @@ const DeliveryTracking = () => {
                 })}
               </div>
 
+              {/* GIS Live Map Tracking */}
+              {selectedOrder.status !== 'Paid' && selectedOrder.status !== 'Cancelled' && (
+                <div className="mb-8 border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm relative">
+                  <div className="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-agriGreen animate-pulse" />
+                    <span className="text-xs font-bold text-gray-700 uppercase tracking-widest">Live GIS Tracking</span>
+                  </div>
+                  <div className="h-[250px] w-full relative z-0">
+                    <MapContainer 
+                      center={[9.0300, 38.7400]} // Center between Harar and Addis
+                      zoom={6} 
+                      scrollWheelZoom={false}
+                      className="h-full w-full"
+                    >
+                      <TileLayer
+                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                      />
+                      {/* Farmer Location (Harar approx) */}
+                      <Marker position={[9.3138, 42.1183]}>
+                        <Popup>
+                          <div className="font-bold">Farm Location</div>
+                          <div className="text-xs text-gray-500">Origin</div>
+                        </Popup>
+                      </Marker>
+                      {/* Buyer Location (Addis approx) */}
+                      <Marker position={[9.0054, 38.7636]}>
+                        <Popup>
+                          <div className="font-bold">Delivery Address</div>
+                          <div className="text-xs text-gray-500">Destination</div>
+                        </Popup>
+                      </Marker>
+                      {/* Route Line (Draws from Harar to Live Location if available, else Addis) */}
+                      <Polyline 
+                        positions={[ 
+                          [9.3138, 42.1183], 
+                          liveLocation ? [liveLocation.lat, liveLocation.lng] : [9.0054, 38.7636] 
+                        ]}
+                        color="#10b981" 
+                        weight={4}
+                        dashArray="10, 10"
+                        className={selectedOrder.status === 'Shipped' && !liveLocation ? 'animate-pulse' : ''}
+                      />
+                      {/* Moving Truck (Live GPS or Simulated) */}
+                      {selectedOrder.status === 'Shipped' && (
+                        <Marker position={liveLocation ? [liveLocation.lat, liveLocation.lng] : [9.1500, 40.5000]}> 
+                           <Popup>
+                             <div className="font-bold flex items-center gap-2 text-blue-600">
+                               <Truck className="w-4 h-4" /> {liveLocation ? 'LIVE Location' : 'In Transit (Estimated)'}
+                             </div>
+                           </Popup>
+                        </Marker>
+                      )}
+                    </MapContainer>
+                  </div>
+                </div>
+              )}
+
               {/* Farmer Action Buttons */}
               {user?.role === 'Farmer' && selectedOrder.status !== 'Delivered' && selectedOrder.status !== 'Cancelled' && (
                 <div className="mt-4 pt-6 border-t border-gray-100">
@@ -247,9 +367,21 @@ const DeliveryTracking = () => {
                       </button>
                     )}
                     {selectedOrder.status === 'Shipped' && (
-                      <button onClick={() => handleUpdateStatus('Delivered')} className="px-5 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" /> Confirm Delivery
-                      </button>
+                      <>
+                        <button onClick={() => handleUpdateStatus('Delivered')} className="px-5 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4" /> Confirm Delivery
+                        </button>
+                        
+                        <button 
+                          onClick={() => setTrackingActive(!trackingActive)} 
+                          className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 ${
+                            trackingActive ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          <Navigation className={`w-4 h-4 ${trackingActive ? 'animate-spin' : ''}`} /> 
+                          {trackingActive ? 'Stop Broadcasting GPS' : 'Start Live GPS'}
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
