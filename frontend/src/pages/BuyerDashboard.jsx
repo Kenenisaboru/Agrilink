@@ -147,6 +147,50 @@ const BuyerDashboard = () => {
         </div>
       </section>
 
+      {/* AI Smart Sourcing Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        <div className="md:col-span-2 bg-gradient-to-br from-agriGreen to-emerald-700 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+          <div className="relative z-10 space-y-4">
+            <div className="inline-flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+              <Zap className="w-4 h-4 text-amber-300" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Sourcing Intelligence</span>
+            </div>
+            <h2 className="text-3xl font-black leading-tight">Secure the <span className="text-agriDark">best prices</span> with AI market timing.</h2>
+            <p className="text-white/80 font-medium max-w-lg">Our AI tracks seasonal harvest cycles in Ethiopia to suggest when you should buy in bulk to save up to 30%.</p>
+            <div className="flex gap-4 pt-4">
+              <button 
+                onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))}
+                className="bg-white text-agriGreen px-6 py-3 rounded-xl font-black text-sm hover:bg-gray-100 transition-all flex items-center gap-2"
+              >
+                Get Buying Plan <ChevronRight className="w-4 h-4" />
+              </button>
+              <button className="bg-agriDark/20 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-xl font-black text-sm hover:bg-white/10 transition-all">
+                Price Forecasts
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center mb-6">
+              <Star className="w-6 h-6 text-amber-500" />
+            </div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">Deal of the Day</h3>
+            <p className="text-gray-500 text-sm font-medium">AI detected an oversupply of **Organic Tomatoes** in East Hararghe. Prices are **25% lower** than average.</p>
+          </div>
+          <button className="w-full mt-6 bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-agriGreen transition-all flex items-center justify-center gap-2">
+            View Deals
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      </motion.div>
+
       {/* Categories & Filter */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
