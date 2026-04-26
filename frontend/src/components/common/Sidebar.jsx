@@ -16,7 +16,9 @@ import {
   Shield,
   CreditCard,
   MessageCircle,
-  BarChart
+  BarChart,
+  MapPin,
+  Truck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -37,7 +39,8 @@ const Sidebar = ({ role }) => {
     { name: 'Orders', path: '/dashboard/farmer/orders', icon: Package },
     { name: 'Analytics', path: '/dashboard/farmer/analytics', icon: TrendingUp },
     { name: 'AI Assistant', path: '/ai-assistant', icon: MessageCircle },
-    { name: 'Smart Insights', path: '/ai-prediction', icon: BarChart },
+    { name: 'Market Map', path: '/market-heatmap', icon: MapPin },
+    { name: 'Delivery Tracking', path: '/delivery-tracking', icon: Truck },
     { name: 'Messages', path: '/chat', icon: MessageSquare },
   ];
 
@@ -46,7 +49,8 @@ const Sidebar = ({ role }) => {
     { name: 'My Orders', path: '/dashboard/buyer/orders', icon: Package },
     { name: 'Payment History', path: '/dashboard/buyer/payments', icon: CreditCard },
     { name: 'AI Assistant', path: '/ai-assistant', icon: MessageCircle },
-    { name: 'Smart Insights', path: '/ai-prediction', icon: BarChart },
+    { name: 'Market Map', path: '/market-heatmap', icon: MapPin },
+    { name: 'Delivery Tracking', path: '/delivery-tracking', icon: Truck },
     { name: 'Messages', path: '/chat', icon: MessageSquare },
   ];
 
