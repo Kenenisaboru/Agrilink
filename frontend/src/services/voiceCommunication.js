@@ -21,7 +21,8 @@ class VoiceCommunicationService {
   // Initialize voice communication
   initialize(userId) {
     try {
-      this.socket = io('http://localhost:5000', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.137.56:5557';
+      this.socket = io(apiUrl, {
         query: { userId }
       });
 
