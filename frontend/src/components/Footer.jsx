@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import AboutSection from './AboutSection';
+import GPSTracker from './GPSTracker';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -63,6 +64,7 @@ const Footer = () => {
   return (
     <>
       <AboutSection />
+      <GPSTracker />
       <footer className="bg-gray-900 text-white">
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
