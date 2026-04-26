@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Crop = require('../models/Crop');
 const Notification = require('../models/Notification');
+const { sendSMS } = require('../utils/smsService');
 const User = require('../models/User');
 
 /**
@@ -255,6 +256,13 @@ exports.updateOrderStatus = async (req, res) => {
         message: `Your order #${order._id.toString().slice(-6)} is on its way. The farmer has dispatched your fresh produce!`,
         order: order._id,
       });
+      // Send SMS to Buyer
+      if (order.buyer.phone || order.buyerPhone) {
+        await sendSMS(
+          order.buyer.phone || order.buyerPhone,
+          `AgriLink: Your order #${order._id.toString().slice(-6)} is on its way! The farmer has shipped your items.`
+        );
+      }
       console.log(`📦 [SHIPPED] Order #${order._id} marked as shipped`);
     }
 
@@ -266,6 +274,13 @@ exports.updateOrderStatus = async (req, res) => {
         message: `Your order #${order._id.toString().slice(-6)} has been marked as delivered. Enjoy your fresh produce!`,
         order: order._id,
       });
+      // Send SMS to Buyer
+      if (order.buyer.phone || order.buyerPhone) {
+        await sendSMS(
+          order.buyer.phone || order.buyerPhone,
+          `AgriLink: Order #${order._id.toString().slice(-6)} delivered successfully. Thank you for using AgriLink!`
+        );
+      }
       console.log(`✅ [DELIVERED] Order #${order._id} marked as delivered`);
     }
 
@@ -296,15 +311,6 @@ async function createFarmerNotification(order, buyer) {
 
     // Console log for demo purposes (simulates SMS/push notification)
     console.log('');
-    console.log('═══════════════════════════════════════════');
-    console.log('📱 FARMER NOTIFICATION (Simulated SMS/Push)');
-    console.log('═══════════════════════════════════════════');
-    console.log(`  To Farmer ID: ${order.farmer}`);
-    console.log(`  From Buyer:   ${buyer.name}`);
-    console.log(`  Items:        ${itemNames}`);
-    console.log(`  Total:        ${order.totalPrice} ETB`);
-    console.log(`  Delivery To:  ${order.deliveryAddress}`);
-    console.log(`  Order ID:     ${order._id}`);
     console.log('═══════════════════════════════════════════');
     console.log('');
 
