@@ -40,6 +40,7 @@ const ChatPage = () => {
 
   // Translation state
   const [myLanguage, setMyLanguage] = useState('en');
+  const [autoTranslate, setAutoTranslate] = useState(true); // Auto-translate toggle
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [translating, setTranslating] = useState({}); // { msgId: true/false }
   const [translations, setTranslations] = useState({}); // { msgId: "translated text" }
@@ -50,6 +51,22 @@ const ChatPage = () => {
     socket.on('message', (msg) => {
       if (recipient && (msg.sender._id === recipient._id || msg.sender === recipient._id)) {
         setMessages((prev) => [...prev, msg]);
+        // Auto-translate incoming messages if enabled
+        if (autoTranslate && msg.content) {
+          const msgId = msg._id || Date.now();
+          const senderLang = detectMsgLanguage(msg.content);
+          if (senderLang !== myLanguage) {
+            setTranslating(prev => ({ ...prev, [msgId]: true }));
+            translateMessage(msg.content, senderLang, myLanguage)
+              .then(result => {
+                setTranslations(prev => ({ ...prev, [msgId]: result.translated_text }));
+              })
+              .catch(() => {})
+              .finally(() => {
+                setTranslating(prev => ({ ...prev, [msgId]: false }));
+              });
+          }
+        }
       }
       fetchHistory();
     });
@@ -308,6 +325,22 @@ const ChatPage = () => {
                             {myLanguage === lang.code && <Check className="w-3.5 h-3.5 ml-auto" />}
                           </button>
                         ))}
+                        {/* Auto-Translate Toggle */}
+                        <div className="px-4 py-3 border-t border-gray-100">
+                          <label className="flex items-center justify-between cursor-pointer">
+                            <span className="text-xs font-bold text-gray-600">Auto-Translate</span>
+                            <div className={cn(
+                              "w-10 h-5 rounded-full transition-colors relative",
+                              autoTranslate ? "bg-agriGreen" : "bg-gray-300"
+                            )} onClick={() => setAutoTranslate(!autoTranslate)}>
+                              <div className={cn(
+                                "w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow",
+                                autoTranslate ? "left-5" : "left-0.5"
+                              )} />
+                            </div>
+                          </label>
+                          <p className="text-[10px] text-gray-400 mt-1">Automatically translate incoming messages</p>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
