@@ -19,6 +19,39 @@ CORS(app)
 # ── Feedback log (in-memory; extend to DB in production) ─────────────────────
 _feedback_log: list = []
 
+# ── Order tracking database (in-memory; extend to DB in production) ───────────
+_order_tracking_db: dict = {}
+
+# Initialize with demo tracking data
+def init_tracking_data():
+    if not _order_tracking_db:
+        _order_tracking_db['ORD-2026-0426-001'] = {
+            'order_id': 'ORD-2026-0426-001',
+            'destination': 'Harar, East Hararghe',
+            'current_location': 'Dire Dawa',
+            'progress': 65,
+            'estimated_arrival': '2 hours 30 minutes',
+            'driver': {
+                'name': 'Mohammed Ahmed',
+                'phone': '+251 911 234 567',
+                'rating': 4.8
+            },
+            'checkpoints': [
+                {'location': 'Addis Ababa', 'time': '8:00 AM', 'status': 'completed'},
+                {'location': 'Adama', 'time': '10:30 AM', 'status': 'completed'},
+                {'location': 'Dire Dawa', 'time': '1:00 PM', 'status': 'current'},
+                {'location': 'Harar', 'time': '3:30 PM', 'status': 'pending'}
+            ],
+            'coordinates': {
+                'lat': 9.59,
+                'lng': 41.86
+            },
+            'status': 'in_transit',
+            'updated_at': __import__('datetime').datetime.now().isoformat()
+        }
+
+init_tracking_data()
+
 # ── User database (in-memory; extend to DB in production) ───────────────────
 _users_db: list = []
 
@@ -163,6 +196,114 @@ def me_endpoint():
         })
     
     return jsonify({'error': 'Invalid token'}), 401
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GPS TRACKING ENDPOINTS
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/tracking/<order_id>', methods=['GET'])
+def get_tracking_endpoint(order_id):
+    """Get tracking information for a specific order"""
+    if order_id not in _order_tracking_db:
+        return jsonify({'error': 'Order not found'}), 404
+    
+    tracking_data = _order_tracking_db[order_id]
+    return jsonify(tracking_data)
+
+
+@app.route('/api/tracking/<order_id>/location', methods=['POST'])
+def update_location_endpoint(order_id):
+    """Update location for an order (called by driver app)"""
+    if order_id not in _order_tracking_db:
+        return jsonify({'error': 'Order not found'}), 404
+    
+    data = request.json
+    if not data or 'lat' not in data or 'lng' not in data:
+        return jsonify({'error': 'Latitude and longitude are required'}), 400
+    
+    _order_tracking_db[order_id]['coordinates'] = {
+        'lat': data['lat'],
+        'lng': data['lng']
+    }
+    _order_tracking_db[order_id]['current_location'] = data.get('location', 'Unknown')
+    _order_tracking_db[order_id]['updated_at'] = __import__('datetime').datetime.now().isoformat()
+    
+    return jsonify({'success': True, 'message': 'Location updated'})
+
+
+@app.route('/api/tracking/orders', methods=['GET'])
+def get_user_tracking_orders_endpoint():
+    """Get all active tracking orders for a user"""
+    user_id = request.args.get('user_id')
+    
+    # In production, filter by user_id
+    # For demo, return all orders
+    return jsonify({
+        'orders': list(_order_tracking_db.values())
+    })
+
+
+@app.route('/api/tracking/<order_id>/status', methods=['PUT'])
+def update_status_endpoint(order_id):
+    """Update order status and progress"""
+    if order_id not in _order_tracking_db:
+        return jsonify({'error': 'Order not found'}), 404
+    
+    data = request.json
+    if not data or 'status' not in data:
+        return jsonify({'error': 'Status is required'}), 400
+    
+    _order_tracking_db[order_id]['status'] = data['status']
+    _order_tracking_db[order_id]['progress'] = data.get('progress', _order_tracking_db[order_id]['progress'])
+    _order_tracking_db[order_id]['updated_at'] = __import__('datetime').datetime.now().isoformat()
+    
+    # Update checkpoint status based on progress
+    progress = _order_tracking_db[order_id]['progress']
+    checkpoints = _order_tracking_db[order_id]['checkpoints']
+    
+    for i, checkpoint in enumerate(checkpoints):
+        if progress >= (i + 1) * 25:
+            checkpoint['status'] = 'completed'
+        elif progress >= i * 25:
+            checkpoint['status'] = 'current'
+        else:
+            checkpoint['status'] = 'pending'
+    
+    return jsonify({'success': True, 'message': 'Status updated'})
+
+
+@app.route('/api/tracking/create', methods=['POST'])
+def create_tracking_endpoint():
+    """Create a new tracking entry for an order"""
+    data = request.json
+    if not data or 'order_id' not in data or 'destination' not in data:
+        return jsonify({'error': 'order_id and destination are required'}), 400
+    
+    order_id = data['order_id']
+    
+    if order_id in _order_tracking_db:
+        return jsonify({'error': 'Order already exists'}), 400
+    
+    _order_tracking_db[order_id] = {
+        'order_id': order_id,
+        'destination': data['destination'],
+        'current_location': data.get('origin', 'Addis Ababa'),
+        'progress': 0,
+        'estimated_arrival': data.get('estimated_arrival', 'Calculating...'),
+        'driver': data.get('driver', {
+            'name': 'Driver Assigned',
+            'phone': '+251 900 000 000',
+            'rating': 4.5
+        }),
+        'checkpoints': data.get('checkpoints', [
+            {'location': data.get('origin', 'Addis Ababa'), 'time': 'Pending', 'status': 'current'},
+            {'location': data['destination'], 'time': 'Pending', 'status': 'pending'}
+        ]),
+        'coordinates': data.get('coordinates', {'lat': 9.0, 'lng': 38.0}),
+        'status': 'pending',
+        'updated_at': __import__('datetime').datetime.now().isoformat()
+    }
+    
+    return jsonify({'success': True, 'message': 'Tracking created', 'data': _order_tracking_db[order_id]}), 201
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CHAT ENDPOINT — with conversation memory & RAG-lite
