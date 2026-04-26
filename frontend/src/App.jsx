@@ -40,6 +40,8 @@ const Checkout = lazy(() => import('./pages/buyer/Checkout'));
 const PaymentHistory = lazy(() => import('./pages/buyer/PaymentHistory'));
 const PaymentVerify = lazy(() => import('./pages/buyer/PaymentVerify'));
 const BuyerOrders = lazy(() => import('./pages/buyer/BuyerOrders'));
+const MarketHeatmap = lazy(() => import('./pages/MarketHeatmap'));
+const DeliveryTracking = lazy(() => import('./pages/DeliveryTracking'));
 
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
@@ -117,6 +119,9 @@ export default function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/orders" element={<OrderManagement />} />
+            <Route path="/market-heatmap" element={<MarketHeatmap />} />
+            <Route path="/delivery-tracking" element={<ProtectedRoute><DeliveryTracking /></ProtectedRoute>} />
+            <Route path="/delivery-tracking/:orderId" element={<ProtectedRoute><DeliveryTracking /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
