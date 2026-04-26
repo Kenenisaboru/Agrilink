@@ -12,6 +12,7 @@ import RepresentativeLayout from './layout/RepresentativeLayout/RepresentativeLa
 import StudentLayout from './layout/StudentLayout/StudentLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import AIChatbotWidget from './components/common/AIChatbotWidget';
 
 // Lazy Loaded Pages for Production Performance
 const Home = lazy(() => import('./pages/Home'));
@@ -186,6 +187,7 @@ export default function App() {
               </Routes>
             </Suspense>
           </LayoutWrapper>
+          <AIChatbotWidget />
         </LanguageProvider>
       </NotificationProvider>
     </ErrorBoundary>
