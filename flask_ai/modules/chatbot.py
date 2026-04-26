@@ -225,29 +225,71 @@ If user is looking for connections:
 
 
 def _get_offline_response(message: str) -> str:
-    """Smart fallback responses when Gemini API is unavailable."""
+    """Smart fallback responses when Gemini API is unavailable (Multi-lingual)."""
+    lang = detect_language(message)
     msg_lower = message.lower()
-    if any(w in msg_lower for w in ['maize', 'corn', 'mais']):
+    
+    if any(w in msg_lower for w in ['maize', 'corn', 'mais', 'ቦቆሎ', 'boqqoolloo']):
+        if lang == 'am':
+            return ("- 📈 **ምክር:** በቆሎ ከመሸጥዎ በፊት ዋጋውን ይከታተሉ\n"
+                    "- 📊 **ምክንያት:** በምስራቅ ሀረርጌ የበቆሎ ዋጋ በአማካይ ከ 4,000–4,800 ብር ነው\n"
+                    "- ✅ **እርምጃ:** ምርትዎን በAgriLink ላይ ያስመዝግቡ")
+        elif lang == 'om':
+            return ("- 📈 **Gorsa:** Boqqoolloo gurguruun dura gatii hordofi\n"
+                    "- 📊 **Sababa:** Gatiin boqqoolloo Harargee Bahaatti giddugaleessan 4,000–4,800 ETB dha\n"
+                    "- ✅ **Tarkaanfii:** Oomisha kee AgriLink irratti galmeessi")
         return ("- 📈 **Recommendation:** Monitor maize prices before selling\n"
                 "- 📊 **Reason:** Maize prices in East Hararghe average **4,000–4,800 ETB/quintal**, peaking May–August\n"
-                "- ✅ **Action Step:** List your maize on AgriLink to connect with verified Harar/Dire Dawa buyers")
-    elif any(w in msg_lower for w in ['teff', 'ጤፍ']):
+                "- ✅ **Action Step:** List your maize on AgriLink to connect with buyers")
+
+    elif any(w in msg_lower for w in ['teff', 'ጤፍ', 'xaafii']):
+        if lang == 'am':
+            return ("- 🌾 **ምክር:** ጤፍ በዚህ ወቅት ከፍተኛ ትርፍ ያለው ሰብል ነው\n"
+                    "- 📊 **ምክንያት:** የነጭ ጤፍ ዋጋ ከ 9,000–11,500 ብር ይደርሳል\n"
+                    "- ✅ **እርምጃ:** በበልግ ወቅት (ከየካቲት - ግንቦት) ይትከሉ")
+        elif lang == 'om':
+            return ("- 🌾 **Gorsa:** Xaafiin yeroo kana bu'aa guddaa qaba\n"
+                    "- 📊 **Sababa:** Gatiin xaafii adii 9,000–11,500 ETB dha\n"
+                    "- ✅ **Tarkaanfii:** Rooba arfaasaatti (Gur-Cam) dhaabi")
         return ("- 🌾 **Recommendation:** Teff is the most profitable crop this season\n"
                 "- 📊 **Reason:** White teff prices range **9,000–11,500 ETB/quintal** with strong export demand\n"
-                "- ✅ **Action Step:** Plant during Belg rains (Feb–May) for harvest when prices are highest")
+                "- ✅ **Action Step:** Plant during Belg rains (Feb–May)")
+
     elif any(w in msg_lower for w in ['coffee', 'buna', 'ቡና']):
+        if lang == 'am':
+            return ("- ☕ **ምክር:** ቡና የኢትዮጵያ ዋነኛ የኤክስፖርት ሰብል ነው\n"
+                    "- 📊 **ምክንያት:** አንደኛ ደረጃ የሀረሪ ቡና 550–750 ብር በኪሎ ይሸጣል\n"
+                    "- ✅ **እርምጃ:** ከጥቅምት እስከ ታህሳስ ይሰብስቡ")
+        elif lang == 'om':
+            return ("- ☕ **Gorsa:** Buni midhaan alatti ergamu keessaa isa guddaadha\n"
+                    "- 📊 **Sababa:** Buni Harargee sadarkaa 1ffaan 550–750 ETB gurgurama\n"
+                    "- ✅ **Tarkaanfii:** Onkoloolessaa hanga Muddeetti sassaabi")
         return ("- ☕ **Recommendation:** Coffee is Ethiopia's highest-value export crop\n"
                 "- 📊 **Reason:** Grade 1–2 Harari natural coffee commands **550–750 ETB/kg**\n"
-                "- ✅ **Action Step:** Harvest October–December. Use dry-process for 30–40% price premium")
-    elif any(w in msg_lower for w in ['sell', 'price', 'market', 'when']):
+                "- ✅ **Action Step:** Harvest October–December.")
+
+    elif any(w in msg_lower for w in ['sell', 'price', 'market', 'when', 'ዋጋ', 'መሸጥ', 'ገበያ', 'gurguruu', 'gatii', 'gabaa']):
+        if lang == 'am':
+            return ("- 📈 **ምክር:** ምርት ከተሰበሰበ በኋላ ለመሸጥ ከ6-10 ሳምንታት ይጠብቁ\n"
+                    "- 📊 **ምክንያት:** በምርት ወቅት ዋጋ ከ15-25% ይቀንሳል\n"
+                    "- ✅ **እርምጃ:** በየሳምንቱ የAgriLink ዋጋ ትንበያን ይከታተሉ")
+        elif lang == 'om':
+            return ("- 📈 **Gorsa:** Erga sassaabamee booda gurguruuf torbee 6-10 eegi\n"
+                    "- 📊 **Sababa:** Yeroo oomishaa gatiin 15-25% gadi bu'a\n"
+                    "- ✅ **Tarkaanfii:** Tilmaama gatii AgriLink torban torban hordofi")
         return ("- 📈 **Recommendation:** Wait 6–10 weeks after harvest before selling\n"
                 "- 📊 **Reason:** Immediate post-harvest oversupply drops prices **15–25% below** seasonal peak\n"
-                "- ✅ **Action Step:** Use AgriLink Price Prediction to track your crop weekly before committing")
-    elif any(w in msg_lower for w in ['buy', 'bulk', 'purchase']):
-        return ("- 📦 **Recommendation:** Buy in bulk during Bega season (Oct–Feb) for lowest prices\n"
-                "- 📊 **Reason:** Post-harvest supply peak compresses grain prices by **20–35%**\n"
-                "- ✅ **Action Step:** Connect with verified AgriLink farmers and negotiate forward contracts")
+                "- ✅ **Action Step:** Use AgriLink Price Prediction to track your crop weekly")
+
     else:
+        if lang == 'am':
+            return ("- 🤖 **AgriLink AI** ለኢትዮጵያ ገበያዎች የእርስዎ ብልህ የግብርና አማካሪ ነው\n"
+                    "- 📊 **የምረዳዎት ነገሮች:** የሰብል ዋጋ፣ የመሸጫ ጊዜ፣ የተባይ መከላከያ ምክር\n"
+                    "- ✅ **ይሞክሩ:** 'ጤፍ መቼ ልሽጥ?' ወይም 'የበቆሎ ዋጋ ስንት ነው?'")
+        elif lang == 'om':
+            return ("- 🤖 **AgriLink AI** gabaa Itoophiyaatiif gorsaa qonnaa ammayyaa keeti\n"
+                    "- 📊 **Waanin gargaaru:** Gatii midhaanii, yeroo gurgurtaa, gorsa dhukkuba midhaanii\n"
+                    "- ✅ **Yaali:** 'Xaafii yoomin gurgura?' ykn 'Gatiin boqqoolloo meeqa?'")
         return ("- 🤖 **AgriLink AI** is your smart farming advisor for Ethiopian markets\n"
                 "- 📊 **I can help with:** Crop pricing, sell timing, pest advice, seasonal planting\n"
-                "- ✅ **Try asking:** 'When should I sell teff?', 'Best crop now?', 'How to prevent stem borer?'")
+                "- ✅ **Try asking:** 'When should I sell teff?', 'Best crop now?'")
