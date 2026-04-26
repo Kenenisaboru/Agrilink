@@ -14,11 +14,14 @@
 
 ## 🚀 Visionary Features
 
--   **🤖 AI Smart Farming (Flask Engine)**:
+-   **🤖 AI Smart Farming (Flask & Gemini Engine)**:
     -   **Predictive Pricing**: Real-time crop price forecasts based on regional data.
-    -   **Multilingual Chatbot**: Agricultural advice in **English, Amharic, and Afaan Oromo**.
+    -   **Multilingual Chatbot**: Trilingual agricultural advice (English, Amharic, Afaan Oromo).
     -   **Crop Vision**: (Beta) AI-driven crop disease diagnosis.
+    -   **Auto-Translation Chat**: Real-time translation between farmers and buyers.
 -   **🌍 Truly Local Experience**:
+    -   **Interactive Market Heatmap**: Live map showing crop prices across 10 Ethiopian markets.
+    -   **Delivery Tracking**: Visual status timeline for orders (Processing -> Shipped -> Delivered).
     -   **Multilingual UI**: Fully translated interface (English, Amharic, Afaan Oromo).
     -   **PWA Mobile App**: "Add to Home Screen" support for offline-ready mobile usage.
 -   **💳 FinTech Split Payments**: 
@@ -69,10 +72,11 @@
 ```bash
 agrilink/
 ├── backend/            # Express.js API (Core Logic)
-├── flask_ai/           # Python/Flask AI Microservice (Diagnosis & Advice)
+├── flask_ai/           # Python/Flask AI Microservice (Gemini API Integration)
 ├── frontend/           # React/Vite PWA (Multilingual UI)
 │   ├── public/         # New Branding Icons (Ethiopian Farmer Logo)
 │   └── src/locales/    # Translations (English, Amharic, Oromo)
+├── render.yaml         # Blueprint for automated 1-click cloud deployment
 └── README.md           # Documentation
 ```
 
@@ -123,12 +127,21 @@ VITE_FLASK_API_URL=http://your-ai-url/api
 
 ---
 
-## 🌐 Deployment Roadmap
+## 🌐 Deployment
+
+The project is configured for **1-click automated deployment** using the included `render.yaml` blueprint.
+
+1. Create a [Render.com](https://render.com) account.
+2. Click **New** -> **Blueprint**.
+3. Connect this GitHub repository.
+4. Render will automatically detect the `render.yaml` file and spin up three separate services:
+   - Node.js Backend API
+   - Flask AI Microservice
+   - React Frontend Static Site
 
 | Platform | Role |
 | :--- | :--- |
-| **Vercel** | Frontend (PWA Hosting) |
-| **Render** | Backend & Flask AI Service |
+| **Render.com** | Frontend, Backend, & Flask AI Hosting |
 | **MongoDB Atlas** | Cloud Database |
 
 ---
