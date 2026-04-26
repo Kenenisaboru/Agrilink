@@ -39,7 +39,7 @@ export default defineConfig({
   server: {
     host: true,
     hmr: {
-      host: '192.168.137.230',
+      host: '192.168.137.56',
     },
     proxy: {
       '/api': {
