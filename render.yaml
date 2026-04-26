@@ -1,9 +1,8 @@
 services:
-  # 🟢 AgriLink Core Backend (Node.js)
+  # 1. Node.js Backend API
   - type: web
     name: agrilink-backend
     env: node
-    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
@@ -13,20 +12,36 @@ services:
       - key: PORT
         value: 5000
       - key: MONGO_URI
-        sync: false # Set this in Render Dashboard
+        sync: false # You must set this manually in the Render Dashboard
       - key: JWT_SECRET
-        sync: false # Set this in Render Dashboard
-      - key: CHAPA_SECRET_KEY
-        sync: false # Set this in Render Dashboard
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: '*' # Replace with your frontend URL later for security
 
-  # 🤖 AgriLink AI Microservice (Flask)
+  # 2. Flask AI Backend
   - type: web
     name: agrilink-ai
     env: python
-    plan: free
     rootDir: flask_ai
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: 3.12.0
+      - key: PORT
+        value: 5001
+      - key: GEMINI_API_KEY
+        sync: false # You must set this manually in the Render Dashboard
+
+  # 3. React/Vite Frontend
+  - type: web
+    name: agrilink-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://agrilink-backend.onrender.com # Will connect to the backend automatically
+      - key: VITE_AI_URL
+        value: https://agrilink-ai.onrender.com # Will connect to the Flask AI automatically
