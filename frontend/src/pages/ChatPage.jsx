@@ -3,14 +3,17 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { translateMessage } from '../services/aiApi';
-import { 
+import {
   Send, User, MessageSquare, Search, ArrowLeft, MoreHorizontal,
   Loader2, Circle, Phone, Video, Info, Languages, ChevronDown, Check
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5555');
+import voiceCommunication from '../services/voiceCommunication';
+
+const defaultHost = window.location.hostname || 'localhost';
+const socket = io(import.meta.env.VITE_API_URL || `http://${defaultHost}:5557`);
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -61,7 +64,7 @@ const ChatPage = () => {
               .then(result => {
                 setTranslations(prev => ({ ...prev, [msgId]: result.translated_text }));
               })
-              .catch(() => {})
+              .catch(() => { })
               .finally(() => {
                 setTranslating(prev => ({ ...prev, [msgId]: false }));
               });
@@ -118,6 +121,36 @@ const ChatPage = () => {
   }, [recipient, user]);
 
   useEffect(() => {
+    if (user?._id) {
+      voiceCommunication.initialize(user._id);
+      
+      // Setup voice communication event handlers
+      voiceCommunication.onIncomingCall = (data) => {
+        if (window.confirm(`Incoming ${data.callType} call from ${data.callerId}. Accept?`)) {
+          voiceCommunication.acceptCall(data.callId);
+        } else {
+          voiceCommunication.rejectCall(data.callId);
+        }
+      };
+
+      voiceCommunication.onCallAccepted = () => {
+        console.log('Call accepted and connected');
+      };
+
+      voiceCommunication.onRemoteStreamAdded = () => {
+        // In a real app, we would attach this to an <audio> or <video> element
+        const remoteAudio = new Audio();
+        remoteAudio.srcObject = voiceCommunication.remoteStream;
+        remoteAudio.play().catch(e => console.error('Error playing remote stream:', e));
+      };
+    }
+
+    return () => {
+      voiceCommunication.disconnect();
+    };
+  }, [user]);
+
+  useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typingUser]);
 
@@ -135,6 +168,22 @@ const ChatPage = () => {
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
     if (recipient) socket.emit('typing', { senderId: user._id, receiverId: recipient._id });
+  };
+
+  const handleVoiceCall = async () => {
+    if (!recipient) return;
+    const result = await voiceCommunication.initiateCall(recipient._id, 'voice');
+    if (!result.success) {
+      alert(`Failed to start call: ${result.error}`);
+    }
+  };
+
+  const handleVideoCall = async () => {
+    if (!recipient) return;
+    const result = await voiceCommunication.initiateCall(recipient._id, 'video');
+    if (!result.success) {
+      alert(`Failed to start call: ${result.error}`);
+    }
   };
 
   // Detect language of a message (basic heuristic)
@@ -346,10 +395,16 @@ const ChatPage = () => {
                   </AnimatePresence>
                 </div>
 
-                <button className="p-3 hover:bg-gray-50 rounded-2xl transition-colors text-gray-400 hover:text-agriGreen">
+                <button 
+                  onClick={handleVoiceCall}
+                  className="p-3 hover:bg-gray-50 rounded-2xl transition-colors text-gray-400 hover:text-agriGreen"
+                >
                   <Phone className="w-5 h-5" />
                 </button>
-                <button className="p-3 hover:bg-gray-50 rounded-2xl transition-colors text-gray-400 hover:text-agriGreen">
+                <button 
+                  onClick={handleVideoCall}
+                  className="p-3 hover:bg-gray-50 rounded-2xl transition-colors text-gray-400 hover:text-agriGreen"
+                >
                   <Video className="w-5 h-5" />
                 </button>
                 <button className="p-3 hover:bg-gray-50 rounded-2xl transition-colors text-gray-400">
@@ -387,11 +442,10 @@ const ChatPage = () => {
                       >
                         <div className="flex flex-col gap-1 max-w-[75%]">
                           {/* Message bubble */}
-                          <div className={`p-5 rounded-[2.5rem] shadow-sm relative group ${
-                            own
+                          <div className={`p-5 rounded-[2.5rem] shadow-sm relative group ${own
                               ? 'bg-agriGreen text-white rounded-br-none shadow-green-100'
                               : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none'
-                          }`}>
+                            }`}>
                             <p className="text-[15px] font-medium leading-relaxed">{msg.content}</p>
                             <p className={`text-[10px] mt-2 font-black uppercase tracking-wider opacity-40 ${own ? 'text-right' : 'text-left'}`}>
                               {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -425,7 +479,7 @@ const ChatPage = () => {
                                     </p>
                                     <p className="text-[14px] text-gray-700 font-medium leading-relaxed">{translated}</p>
                                     <button
-                                      onClick={() => setTranslations(prev => { const n = {...prev}; delete n[msgId]; return n; })}
+                                      onClick={() => setTranslations(prev => { const n = { ...prev }; delete n[msgId]; return n; })}
                                       className="text-[10px] text-gray-400 hover:text-red-400 mt-1 font-semibold transition-colors"
                                     >
                                       ✕ Hide translation
