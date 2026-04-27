@@ -21,7 +21,10 @@ class VoiceCommunicationService {
   // Initialize voice communication
   initialize(userId) {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.137.56:5557';
+      // Use dynamic host detection to avoid hardcoded IPs
+      const defaultHost = window.location.hostname || 'localhost';
+      const apiUrl = import.meta.env.VITE_API_URL || `http://${defaultHost}:5557`;
+      
       this.socket = io(apiUrl, {
         query: { userId }
       });
