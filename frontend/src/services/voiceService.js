@@ -103,7 +103,10 @@ class VoiceService {
         if (options.onStart) options.onStart();
       };
 
+      let isResolved = false;
+
       this.recognition.onresult = (event) => {
+        isResolved = true;
         const results = Array.from(event.results).map(result => ({
           transcript: result[0].transcript,
           confidence: result[0].confidence,
@@ -119,11 +122,20 @@ class VoiceService {
       };
 
       this.recognition.onerror = (event) => {
+        isResolved = true;
         reject(new Error(`Speech recognition error: ${event.error}`));
       };
 
       this.recognition.onend = () => {
         if (options.onEnd) options.onEnd();
+        if (!isResolved) {
+          resolve({
+            results: [],
+            transcript: '',
+            confidence: 0,
+            detectedLanguage: this.currentLanguage
+          });
+        }
       };
 
       this.recognition.start();
