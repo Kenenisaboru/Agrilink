@@ -46,6 +46,54 @@ const socketHandler = (io) => {
       io.to(`tracking_${orderId}`).emit('locationUpdate', { lat, lng });
     });
 
+    // ── VOICE COMMUNICATION (WebRTC) ───────────────────────────────────
+    socket.on('initiate-call', (data) => {
+      const { targetUserId, callType, offer, callerId } = data;
+      console.log(`Call initiated: ${callerId} -> ${targetUserId} (${callType})`);
+      io.to(targetUserId).emit('incoming-call', {
+        callerId,
+        callType,
+        offer,
+        callId: `call_${Date.now()}`
+      });
+    });
+
+    socket.on('accept-call', (data) => {
+      const { targetUserId, answer, callId } = data;
+      console.log(`Call accepted by ${socket.id}, notifying ${targetUserId}`);
+      io.to(targetUserId).emit('call-accepted', { answer, callId });
+    });
+
+    socket.on('reject-call', (data) => {
+      const { targetUserId, reason, callId } = data;
+      io.to(targetUserId).emit('call-rejected', { reason, callId });
+    });
+
+    socket.on('ice-candidate', (data) => {
+      const { targetUserId, candidate } = data;
+      io.to(targetUserId).emit('ice-candidate', { candidate });
+    });
+
+    socket.on('offer', (data) => {
+      const { targetUserId, offer } = data;
+      io.to(targetUserId).emit('offer', { offer });
+    });
+
+    socket.on('answer', (data) => {
+      const { targetUserId, answer } = data;
+      io.to(targetUserId).emit('answer', { answer });
+    });
+
+    socket.on('end-call', (data) => {
+      const { targetUserId, reason, callId } = data;
+      io.to(targetUserId).emit('call-ended', { reason, callId });
+    });
+
+    socket.on('voice-activity', (data) => {
+      const { targetUserId, isActive } = data;
+      io.to(targetUserId).emit('voice-activity', { isActive });
+    });
+
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
     });
