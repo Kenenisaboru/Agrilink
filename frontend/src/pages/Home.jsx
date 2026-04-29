@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Leaf, 
@@ -49,6 +50,7 @@ const FeatureCard = ({ icon: Icon, title, description, delay }) => (
 );
 
 const Home = () => {
+  const { t } = useTranslation();
   const [cartCount, setCartCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -185,7 +187,7 @@ const Home = () => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-100 text-agriGreen text-sm font-bold mb-8"
             >
               <Zap className="w-4 h-4" />
-              <span>The Future of Ethiopian Agriculture</span>
+              <span>{t('hero.badge', 'The Future of Ethiopian Agriculture')}</span>
             </motion.div>
             
             <motion.h1
@@ -194,7 +196,7 @@ const Home = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-6xl lg:text-7xl font-black text-gray-900 leading-[1.1] tracking-tighter mb-8"
             >
-              Connecting <span className="text-agriGreen">Farmers</span> with <span className="text-amber-600">Innovation</span>
+              {t('hero.title1', 'Connecting')} <span className="text-agriGreen">{t('hero.titleFarmers', 'Farmers')}</span> {t('hero.titleWith', 'with')} <span className="text-amber-600">{t('hero.titleInnovation', 'Innovation')}</span>
             </motion.h1>
             
             <motion.p
@@ -203,7 +205,7 @@ const Home = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-xl text-gray-600 mb-12 leading-relaxed max-w-2xl mx-auto"
             >
-              Empowering East Hararghe's agricultural landscape through a revolutionary platform for farmers, students, and buyers.
+              {t('hero.subtitle', "Empowering East Hararghe's agricultural landscape through a revolutionary platform for farmers, students, and buyers.")}
             </motion.p>
             
             <motion.div
@@ -213,11 +215,11 @@ const Home = () => {
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
               <Link to="/register" className="btn-primary px-10 py-4 text-lg w-full sm:w-auto">
-                Get Started Now
+                {t('hero.cta', 'Get Started Now')}
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <a href="#about" className="px-10 py-4 text-lg font-bold text-gray-600 hover:text-agriGreen transition-colors flex items-center gap-2">
-                Learn More
+                {t('hero.learnMore', 'Learn More')}
                 <ChevronRight className="w-5 h-5" />
               </a>
             </motion.div>
@@ -231,10 +233,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
             {[
-              { label: 'Active Farmers', value: '2,500+' },
-              { label: 'Student Experts', value: '450+' },
-              { label: 'Tons Produced', value: '15.2k' },
-              { label: 'Happy Buyers', value: '1,200+' },
+              { label: t('stats.activeFarmers', 'Active Farmers'), value: '2,500+' },
+              { label: t('stats.studentExperts', 'Student Experts'), value: '450+' },
+              { label: t('stats.tonsProduced', 'Tons Produced'), value: '15.2k' },
+              { label: t('stats.happyBuyers', 'Happy Buyers'), value: '1,200+' },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -257,10 +259,10 @@ const Home = () => {
           <div className="flex flex-col lg:flex-row items-end justify-between mb-20 gap-8 text-center lg:text-left">
             <div className="max-w-2xl mx-auto lg:mx-0">
               <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-6 tracking-tight">
-                Designed for the <span className="text-agriGreen">Modern Ecosystem</span>
+                {t('features.sectionTitle', 'Designed for the')} <span className="text-agriGreen">{t('features.sectionHighlight', 'Modern Ecosystem')}</span>
               </h2>
               <p className="text-lg text-gray-600">
-                A comprehensive suite of tools built specifically for the needs of the East Hararghe agricultural community.
+                {t('features.sectionSubtitle', 'A comprehensive suite of tools built specifically for the needs of the East Hararghe agricultural community.')}
               </p>
             </div>
           </div>
@@ -268,20 +270,20 @@ const Home = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard 
               icon={Globe}
-              title="Market Access"
-              description="Direct connection between local farmers and bulk buyers, ensuring fair pricing and reduced waste."
+              title={t('features.marketAccess', 'Market Access')}
+              description={t('features.marketAccessDesc', 'Direct connection between local farmers and bulk buyers, ensuring fair pricing and reduced waste.')}
               delay={0.1}
             />
             <FeatureCard 
               icon={Users}
-              title="Expert Guidance"
-              description="Connect with agriculture students and experts for real-time advice and modern farming techniques."
+              title={t('features.expertGuidance', 'Expert Guidance')}
+              description={t('features.expertGuidanceDesc', 'Connect with agriculture students and experts for real-time advice and modern farming techniques.')}
               delay={0.2}
             />
             <FeatureCard 
               icon={LineChart}
-              title="Yield Analytics"
-              description="Track your crop performance and market trends with advanced data visualization tools."
+              title={t('features.yieldAnalytics', 'Yield Analytics')}
+              description={t('features.yieldAnalyticsDesc', 'Track your crop performance and market trends with advanced data visualization tools.')}
               delay={0.3}
             />
           </div>
@@ -293,10 +295,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight">
-              Browse by <span className="text-agriGreen">Category</span>
+              {t('categories.sectionTitle', 'Browse by')} <span className="text-agriGreen">{t('categories.sectionHighlight', 'Category')}</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore our wide range of agricultural products from trusted farmers across East Hararghe
+              {t('categories.sectionSubtitle', 'Explore our wide range of agricultural products from trusted farmers across East Hararghe')}
             </p>
           </div>
           
@@ -313,7 +315,7 @@ const Home = () => {
                 <div className={`bg-gradient-to-br ${category.color} rounded-3xl p-6 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300`}>
                   <div className="text-5xl mb-4">{category.icon}</div>
                   <h3 className="text-white font-bold text-lg mb-2">{category.name}</h3>
-                  <p className="text-white/80 text-sm">{category.count} Products</p>
+                  <p className="text-white/80 text-sm">{category.count} {t('categories.products', 'Products')}</p>
                 </div>
               </motion.div>
             ))}
@@ -327,14 +329,14 @@ const Home = () => {
           <div className="flex flex-col lg:flex-row items-end justify-between mb-16 gap-8">
             <div>
               <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight">
-                Featured <span className="text-agriGreen">Products</span>
+                {t('featuredProducts.sectionTitle', 'Featured')} <span className="text-agriGreen">{t('featuredProducts.sectionHighlight', 'Products')}</span>
               </h2>
               <p className="text-lg text-gray-600">
-                Premium quality products from our verified farmers
+                {t('featuredProducts.sectionSubtitle', 'Premium quality products from our verified farmers')}
               </p>
             </div>
             <Link to="/products" className="flex items-center gap-2 text-agriGreen font-bold hover:gap-4 transition-all">
-              View All Products <ArrowRight className="w-5 h-5" />
+              {t('featuredProducts.viewAll', 'View All Products')} <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
           
@@ -389,7 +391,7 @@ const Home = () => {
                   
                   <button className="w-full bg-agriDark text-white py-3 rounded-xl font-bold hover:bg-agriGreen transition-colors flex items-center justify-center gap-2">
                     <ShoppingCart className="w-5 h-5" />
-                    Add to Cart
+                    {t('featuredProducts.addToCart', 'Add to Cart')}
                   </button>
                 </div>
               </motion.div>
@@ -403,10 +405,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-black mb-4 tracking-tight">
-              What Our <span className="text-agriGreen">Users Say</span>
+              {t('testimonials.sectionTitle', 'What Our')} <span className="text-agriGreen">{t('testimonials.sectionHighlight', 'Users Say')}</span>
             </h2>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Hear from farmers and buyers who have transformed their businesses with AgriLink
+              {t('testimonials.sectionSubtitle', 'Hear from farmers and buyers who have transformed their businesses with AgriLink')}
             </p>
           </div>
           
@@ -453,14 +455,14 @@ const Home = () => {
           <div className="flex flex-col lg:flex-row items-end justify-between mb-16 gap-8">
             <div>
               <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight">
-                Agricultural <span className="text-agriGreen">News</span>
+                {t('news.sectionTitle', 'Agricultural')} <span className="text-agriGreen">{t('news.sectionHighlight', 'News')}</span>
               </h2>
               <p className="text-lg text-gray-600">
-                Stay updated with the latest market trends and agricultural insights
+                {t('news.sectionSubtitle', 'Stay updated with the latest market trends and agricultural insights')}
               </p>
             </div>
             <Link to="/news" className="flex items-center gap-2 text-agriGreen font-bold hover:gap-4 transition-all">
-              View All News <ArrowRight className="w-5 h-5" />
+              {t('news.viewAll', 'View All News')} <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
           
@@ -503,7 +505,7 @@ const Home = () => {
                     </p>
                     
                     <div className="flex items-center gap-2 text-agriGreen font-bold text-sm">
-                      Read More <ChevronRight className="w-4 h-4" />
+                      {t('news.readMore', 'Read More')} <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
@@ -524,15 +526,15 @@ const Home = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400 rounded-full blur-3xl opacity-50 -mr-20 -mt-20" />
           <div className="relative z-10 text-center lg:text-left">
             <h2 className="text-4xl lg:text-6xl font-black text-white mb-6 leading-tight">
-              Ready to Transform <br /> Your Harvest?
+              {t('cta.title', 'Ready to Transform')} <br /> {t('cta.titleBreak', 'Your Harvest?')}
             </h2>
             <p className="text-amber-50 text-xl font-medium max-w-xl">
-              Join thousands of farmers and buyers already using AgriLink to grow their business and the community.
+              {t('cta.subtitle', 'Join thousands of farmers and buyers already using AgriLink to grow their business and the community.')}
             </p>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-4">
             <Link to="/register" className="bg-white text-amber-600 px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-50 transition-colors shadow-xl shadow-amber-900/20 text-center">
-              Join the Movement
+              {t('cta.button', 'Join the Movement')}
             </Link>
           </div>
         </motion.div>
