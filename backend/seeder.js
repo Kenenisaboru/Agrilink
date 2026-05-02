@@ -36,8 +36,14 @@ const importData = async () => {
     // Add East Hararghe Market Prices
     await MarketPrice.insertMany(marketPriceData);
 
-    // Add Users
-    const createdUsers = await User.insertMany(usersData);
+    // Add Users using a manual loop to absolutely guarantee the pre('save') hook runs!
+    const createdUsers = [];
+    for (const userData of usersData) {
+      const user = new User(userData);
+      await user.save();
+      createdUsers.push(user);
+    }
+    
     const demoFarmer = createdUsers.find(user => user.role === 'Farmer');
 
     // Add Dummy Crops
