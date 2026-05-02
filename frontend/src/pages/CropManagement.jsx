@@ -109,6 +109,17 @@ const CropManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Strict numerical validations
+    if (Number(formData.pricePerUnit) <= 0) {
+      alert('Price per unit must be greater than zero.');
+      return;
+    }
+    if (Number(formData.quantity) <= 0) {
+      alert('Quantity must be greater than zero.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const data = new FormData();
