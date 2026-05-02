@@ -38,9 +38,6 @@ export default defineConfig({
   ],
   server: {
     host: true,
-    hmr: {
-      host: '192.168.137.56',
-    },
     proxy: {
       '/api': {
         target: 'http://localhost:5557',
