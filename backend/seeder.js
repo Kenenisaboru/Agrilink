@@ -18,14 +18,36 @@ const marketPriceData = [
   { cropName: 'Onion (Qullubbii)', region: 'Haramaya', currentPrice: 4000, previousPrice: 3800, unit: 'Quintal' }
 ];
 
+const Crop = require('./models/Crop');
+
+const usersData = [
+  { name: 'Admin User', email: 'admin@agrilink.com', password: 'password123', role: 'Admin', location: 'Harar', phone: '+251911000000' },
+  { name: 'Demo Farmer', email: 'farmer@agrilink.com', password: 'password123', role: 'Farmer', location: 'Haramaya', phone: '+251922000000', balance: 5000 },
+  { name: 'Demo Buyer', email: 'buyer@agrilink.com', password: 'password123', role: 'Buyer', location: 'Dire Dawa', phone: '+251933000000' },
+  { name: 'Demo Student', email: 'student@agrilink.com', password: 'password123', role: 'Student', location: 'Haramaya University', university: 'Haramaya University', phone: '+251944000000' }
+];
+
 const importData = async () => {
   try {
-    await MarketPrice.deleteMany(); // Clear existing
+    await MarketPrice.deleteMany(); // Clear existing prices
+    await User.deleteMany(); // Clear existing users
+    await Crop.deleteMany(); // Clear existing crops
     
     // Add East Hararghe Market Prices
     await MarketPrice.insertMany(marketPriceData);
 
-    console.log('East Hararghe Market Data Imported Successfully!');
+    // Add Users
+    const createdUsers = await User.insertMany(usersData);
+    const demoFarmer = createdUsers.find(user => user.role === 'Farmer');
+
+    // Add Dummy Crops
+    const cropsData = [
+      { farmer: demoFarmer._id, name: 'Premium Coffee (Buna)', category: 'Cash Crop', quantity: 10, unit: 'Quintal', pricePerUnit: 15000, location: 'Dire Dawa', description: 'High quality export-grade coffee.', image: '/images/coffee.jpg' },
+      { farmer: demoFarmer._id, name: 'Fresh Maize (Bokolo)', category: 'Grain', quantity: 50, unit: 'Quintal', pricePerUnit: 4500, location: 'Haramaya', description: 'Freshly harvested maize.', image: '/images/maize.jpg' }
+    ];
+    await Crop.insertMany(cropsData);
+
+    console.log('Database Seeded Successfully with Market Data, Users, and Crops!');
     process.exit();
   } catch (error) {
     console.error(`Error with data import: ${error}`);
