@@ -60,6 +60,15 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    // Strict Ethiopian Phone Validation
+    const phoneRegex = /^(?:\+251|0)(?:9|7)\d{8}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      setError('Please enter a valid Ethiopian phone number (e.g. +2519... or 09...)');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Build FormData to support file upload
       const submitData = new FormData();

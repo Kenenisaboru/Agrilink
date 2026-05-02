@@ -107,6 +107,26 @@ npm install
 npm run dev -- --host
 ```
 
+### 4️⃣ Seed Demo Data
+To instantly populate the database with demo users, market prices, and crops:
+```bash
+cd backend
+node seeder.js
+```
+
+---
+
+## 🔑 Demo Accounts
+
+For quick evaluation, use the following credentials after running the seeder (Password for all is `password123`):
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | admin@agrilink.com | `password123` |
+| **Farmer** | farmer@agrilink.com | `password123` |
+| **Buyer** | buyer@agrilink.com | `password123` |
+| **Student** | student@agrilink.com | `password123` |
+
 ---
 
 ## 🔐 Environment Variables
