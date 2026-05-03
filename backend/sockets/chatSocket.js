@@ -1,12 +1,40 @@
 const Message = require('../models/Message');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const socketHandler = (io) => {
+  // Authenticate WebSocket connections with JWT
+  io.use(async (socket, next) => {
+    try {
+      const token = socket.handshake.auth.token || socket.handshake.query.token;
+      if (!token) {
+        return next(new Error('Authentication required'));
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select('-password');
+      if (!user) {
+        return next(new Error('User not found'));
+      }
+      socket.userId = user._id.toString();
+      socket.userName = user.name;
+      next();
+    } catch (err) {
+      console.error('Socket auth error:', err.message);
+      next(new Error('Invalid token'));
+    }
+  });
+
   io.on('connection', (socket) => {
-    console.log('New WebSocket Connection:', socket.id);
+    console.log(`WebSocket Connected: ${socket.userName} (${socket.userId})`);
+
+    // Auto-join user's private room on connection
+    socket.join(socket.userId);
 
     socket.on('join', (userId) => {
-      socket.join(userId);
-      console.log(`User ${userId} joined their private room.`);
+      // Only allow users to join their own room
+      if (userId === socket.userId) {
+        socket.join(userId);
+      }
     });
 
     socket.on('sendMessage', async ({ senderId, receiverId, content }) => {
