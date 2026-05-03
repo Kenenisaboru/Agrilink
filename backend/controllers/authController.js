@@ -73,6 +73,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(`🔑 Login attempt for: ${email}`);
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Please provide email and password' });
@@ -80,15 +81,25 @@ const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
-    if (!user || !(await user.matchPassword(password))) {
+    if (!user) {
+      console.log(`❌ Login failed: User not found (${email})`);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      console.log(`❌ Login failed: Incorrect password for ${email}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     if (!user.isActive) {
+      console.log(`🚫 Login failed: Account deactivated for ${email}`);
       return res.status(403).json({ message: 'Your account has been deactivated. Please contact support.' });
     }
 
     const token = generateToken(user._id);
+    console.log(`✅ Login successful: ${user.name} (${user.role})`);
+    
     res.json({
       _id: user._id,
       name: user.name,
@@ -103,6 +114,7 @@ const loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
+    console.error(`🔥 Login Error: ${error.message}`);
     res.status(500).json({ message: error.message });
   }
 };
