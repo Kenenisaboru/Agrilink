@@ -13,7 +13,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import voiceCommunication from '../services/voiceCommunication';
 
 const defaultHost = window.location.hostname || 'localhost';
-const socket = io(import.meta.env.VITE_API_URL || `http://${defaultHost}:5557`);
+const SOCKET_URL = import.meta.env.VITE_API_URL || `http://${defaultHost}:5557`;
+
+// Socket will be created with auth token when user is available
+let socket = null;
+const getSocket = (token) => {
+  if (!socket && token) {
+    socket = io(SOCKET_URL, {
+      auth: { token },
+      reconnection: true,
+      reconnectionDelay: 1000,
+    });
+  }
+  return socket;
+};
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -49,9 +62,11 @@ const ChatPage = () => {
   const [translations, setTranslations] = useState({}); // { msgId: "translated text" }
 
   useEffect(() => {
-    if (user?._id) socket.emit('join', user._id);
+    const s = getSocket(user?.token);
+    if (!s) return;
+    if (user?._id) s.emit('join', user._id);
 
-    socket.on('message', (msg) => {
+    s.on('message', (msg) => {
       if (recipient && (msg.sender._id === recipient._id || msg.sender === recipient._id)) {
         setMessages((prev) => [...prev, msg]);
         // Auto-translate incoming messages if enabled
@@ -74,7 +89,7 @@ const ChatPage = () => {
       fetchHistory();
     });
 
-    socket.on('userTyping', ({ senderId }) => {
+    s.on('userTyping', ({ senderId }) => {
       if (recipient && senderId === recipient._id) {
         setTypingUser(senderId);
         clearTimeout(typingTimeoutRef.current);
@@ -83,8 +98,8 @@ const ChatPage = () => {
     });
 
     return () => {
-      socket.off('message');
-      socket.off('userTyping');
+      s.off('message');
+      s.off('userTyping');
     };
   }, [user, recipient]);
 
@@ -122,7 +137,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (user?._id) {
-      voiceCommunication.initialize(user._id);
+      voiceCommunication.initialize(user._id, user.token);
       
       // Setup voice communication event handlers
       voiceCommunication.onIncomingCall = (data) => {
@@ -157,7 +172,9 @@ const ChatPage = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !recipient) return;
-    socket.emit('sendMessage', {
+    const s = getSocket(user?.token);
+    if (!s) return;
+    s.emit('sendMessage', {
       senderId: user._id,
       receiverId: recipient._id,
       content: newMessage,
@@ -167,7 +184,8 @@ const ChatPage = () => {
 
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    if (recipient) socket.emit('typing', { senderId: user._id, receiverId: recipient._id });
+    const s = getSocket(user?.token);
+    if (recipient && s) s.emit('typing', { senderId: user._id, receiverId: recipient._id });
   };
 
   const handleVoiceCall = async () => {

@@ -13,7 +13,7 @@ const cropSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Please specify crop category'],
-    enum: ['Vegetable', 'Fruit', 'Grain', 'Cash Crop', 'Other'],
+    enum: ['Vegetable', 'Fruit', 'Grain', 'Cereal', 'Legume', 'Oilseed', 'Cash Crop', 'Coffee', 'Khat', 'Spices', 'Livestock', 'Stimulant', 'Other'],
   },
   quantity: {
     type: Number,

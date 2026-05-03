@@ -68,12 +68,17 @@ const DeliveryTracking = () => {
   const [trackingActive, setTrackingActive] = useState(false);
   const [socket, setSocket] = useState(null);
 
-  // Initialize Socket Connection
+  // Initialize Socket Connection with auth
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    if (!user?.token) return;
+    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5557', {
+      auth: { token: user.token },
+      reconnection: true,
+      reconnectionDelay: 1000,
+    });
     setSocket(newSocket);
     return () => newSocket.close();
-  }, []);
+  }, [user]);
 
   // Listen for socket location updates (For Buyers)
   useEffect(() => {
