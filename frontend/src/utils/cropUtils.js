@@ -1,16 +1,21 @@
 export const getCropImage = (crop) => {
   if (crop && crop.image && crop.image !== '' && crop.image !== 'undefined' && crop.image !== 'null') {
-    if (crop.image.startsWith('http') || crop.image.startsWith('data:image')) {
-      return crop.image;
+    // If it's a dummy path from seeder, skip to fallback logic
+    if (crop.image.startsWith('/images/')) {
+      // Fall through to keyword-based fallback below
+    } else {
+      if (crop.image.startsWith('http') || crop.image.startsWith('data:image')) {
+        return crop.image;
+      }
+      // Prefix relative paths with the backend URL and normalize slashes
+      let baseUrl = import.meta.env.VITE_API_URL || '';
+      if (baseUrl && baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+      
+      const imagePath = crop.image.replace(/\\/g, '/');
+      const fullPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+      
+      return baseUrl ? `${baseUrl}${fullPath}` : fullPath;
     }
-    // Prefix relative paths with the backend URL and normalize slashes
-    let baseUrl = import.meta.env.VITE_API_URL || '';
-    if (baseUrl && baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
-    
-    const imagePath = crop.image.replace(/\\/g, '/');
-    const fullPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-    
-    return baseUrl ? `${baseUrl}${fullPath}` : fullPath;
   }
 
 
