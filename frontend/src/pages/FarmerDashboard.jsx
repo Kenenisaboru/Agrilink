@@ -218,8 +218,8 @@ const FarmerDashboard = () => {
             <Zap className="w-4 h-4 text-green-600" />
             <span className="text-sm font-bold text-green-700">AI Insights Active</span>
           </div>
-          <Link 
-            to="/crop-management"
+            <Link 
+            to="/dashboard/farmer/crops"
             className="btn-primary px-6 py-3 rounded-2xl font-bold flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
@@ -512,7 +512,7 @@ const FarmerDashboard = () => {
               <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
                 <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 font-medium">No products listed yet</p>
-                <Link to="/crop-management" className="btn-primary inline-block mt-4 px-6 py-3 rounded-xl font-bold">
+                <Link to="/dashboard/farmer/crops" className="btn-primary inline-block mt-4 px-6 py-3 rounded-xl font-bold">
                   Add Your First Product
                 </Link>
               </div>
