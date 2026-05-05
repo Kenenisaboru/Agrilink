@@ -11,8 +11,8 @@ router.get('/:id', getCropById);
 // Private routes
 // IMPORTANT: /farmer must come before /:id to avoid conflicts
 router.get('/farmer/mycrops', protect, getFarmerCrops);
-router.post('/', protect, upload.single('image'), createCrop);
-router.put('/:id', protect, upload.single('image'), updateCrop);
+router.post('/', protect, upload.array('images', 5), createCrop);
+router.put('/:id', protect, upload.array('images', 5), updateCrop);
 router.delete('/:id', protect, deleteCrop);
 
 module.exports = router;
