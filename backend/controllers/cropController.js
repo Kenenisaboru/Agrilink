@@ -73,9 +73,9 @@ const createCrop = async (req, res) => {
     
     // Handle image: use Cloudinary URL if available, else skip
     let image = req.body.image || '';
-    if (req.file) {
+    if (req.files && req.files.length > 0) {
       // Cloudinary storage sets path; memory storage has buffer
-      image = req.file.path || '';
+      image = req.files[0].path || '';
     }
 
     const crop = new Crop({
@@ -122,7 +122,7 @@ const updateCrop = async (req, res) => {
     if (pricePerUnit !== undefined) crop.pricePerUnit = Number(pricePerUnit);
     crop.location = location || crop.location;
     crop.description = description || crop.description;
-    if (req.file) crop.image = req.file.path || crop.image;
+    if (req.files && req.files.length > 0) crop.image = req.files[0].path || crop.image;
     if (isAvailable !== undefined) crop.isAvailable = isAvailable === 'true' || isAvailable === true;
 
     const updatedCrop = await crop.save();
