@@ -115,7 +115,7 @@ const BuyerDashboard = () => {
           {user && (
             <div className="flex items-center gap-3 mb-6">
               {user.profilePicture ? (
-                <img src={user.profilePicture} alt={user.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/30" />
+                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `${import.meta.env.VITE_API_URL}${user.profilePicture}`} alt={user.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/30" />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-black">
                   {user.name?.[0]}

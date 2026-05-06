@@ -132,7 +132,7 @@ const Navbar = () => {
               <div className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full border border-gray-100 hover:border-agriGreen/30 transition-colors">
                 {user.profilePicture ? (
                   <img 
-                    src={user.profilePicture} 
+                    src={user.profilePicture.startsWith('http') ? user.profilePicture : `${import.meta.env.VITE_API_URL}${user.profilePicture}`} 
                     alt={user.name} 
                     className="w-8 h-8 rounded-full object-cover ring-2 ring-agriGreen/20"
                   />

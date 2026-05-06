@@ -192,7 +192,7 @@ const FarmerDashboard = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           {user.profilePicture ? (
-            <img src={user.profilePicture} alt={user.name} className="w-16 h-16 rounded-2xl object-cover ring-4 ring-green-100 shadow-lg" />
+            <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `${import.meta.env.VITE_API_URL}${user.profilePicture}`} alt={user.name} className="w-16 h-16 rounded-2xl object-cover ring-4 ring-green-100 shadow-lg" />
           ) : (
             <div className="w-16 h-16 rounded-2xl bg-agriGreen/10 flex items-center justify-center text-agriGreen text-2xl font-black ring-4 ring-green-100">
               {user.name?.[0]}
@@ -458,7 +458,7 @@ const FarmerDashboard = () => {
                 >
                   <div className="relative h-40">
                     <img 
-                      src={crop.image || getCropImage(crop)} 
+                      src={getCropImage(crop)} 
                       alt={crop.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
