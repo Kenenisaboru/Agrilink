@@ -87,13 +87,6 @@ def init_demo_users():
                 'password': hashlib.sha256('admin123'.encode()).hexdigest(),
                 'role': 'Admin',
                 'name': 'System Admin'
-            },
-            {
-                'id': 5,
-                'email': 'rep@agrilink.et',
-                'password': hashlib.sha256('rep123'.encode()).hexdigest(),
-                'role': 'Representative',
-                'name': 'Zeyneb Ahmed'
             }
         ]
         _users_db.extend(demo_users)

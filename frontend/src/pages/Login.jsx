@@ -31,8 +31,7 @@ const Login = () => {
     { id: 'farmer', name: 'Farmer', icon: Sprout, description: 'Sell your agricultural products', color: 'from-green-500 to-emerald-600' },
     { id: 'buyer', name: 'Buyer', icon: ShoppingBag, description: 'Purchase quality products', color: 'from-blue-500 to-indigo-600' },
     { id: 'student', name: 'Student', icon: GraduationCap, description: 'Get expert guidance', color: 'from-purple-500 to-pink-600' },
-    { id: 'admin', name: 'Admin', icon: Shield, description: 'Manage the platform', color: 'from-red-500 to-orange-600' },
-    { id: 'representative', name: 'Representative', icon: Users, description: 'Connect farmers & buyers', color: 'from-amber-500 to-yellow-600' }
+    { id: 'admin', name: 'Admin', icon: Shield, description: 'Manage the platform', color: 'from-red-500 to-orange-600' }
   ];
 
   const handleLogin = async (e) => {

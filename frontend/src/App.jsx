@@ -8,7 +8,6 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import FarmerLayout from './layout/FarmerLayout/FarmerLayout';
 import BuyerLayout from './layout/BuyerLayout/BuyerLayout';
 import AdminLayout from './layout/AdminLayout/AdminLayout';
-import RepresentativeLayout from './layout/RepresentativeLayout/RepresentativeLayout';
 import StudentLayout from './layout/StudentLayout/StudentLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -31,7 +30,6 @@ const FarmerDashboard = lazy(() => import('./pages/FarmerDashboard'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const BuyerDashboard = lazy(() => import('./pages/BuyerDashboard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const RepresentativeDashboard = lazy(() => import('./pages/RepresentativeDashboard'));
 const CropManagement = lazy(() => import('./pages/CropManagement'));
 const FarmerOrders = lazy(() => import('./pages/FarmerOrders'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
@@ -182,11 +180,6 @@ export default function App() {
             <Route
               path="/dashboard/admin"
               element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>}
-            />
-
-            <Route
-              path="/dashboard/representative"
-              element={<ProtectedRoute allowedRoles={['Representative']}><RepresentativeDashboard /></ProtectedRoute>}
             />
 
             <Route path="*" element={<Navigate to="/" />} />
