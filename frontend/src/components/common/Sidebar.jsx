@@ -63,7 +63,9 @@ const Sidebar = ({ role }) => {
   const adminLinks = [
     { name: 'Command Center', path: '/dashboard/admin', icon: Shield },
     { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
-    { name: 'Platform Logs', path: '/dashboard/admin/logs', icon: Settings },
+    { name: 'Market Moderation', path: '/dashboard/admin/products', icon: Leaf },
+    { name: 'Order Logs', path: '/dashboard/admin/orders', icon: ShoppingCart },
+    { name: 'System Metrics', path: '/dashboard/admin/system', icon: Settings },
   ];
 
   const links = role === 'Farmer' ? farmerLinks : 

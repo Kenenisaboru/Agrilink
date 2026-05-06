@@ -27,6 +27,7 @@ const Products = lazy(() => import('./pages/Products'));
 const Cart = lazy(() => import('./pages/Cart'));
 const OrderManagement = lazy(() => import('./pages/OrderManagement'));
 const FarmerDashboard = lazy(() => import('./pages/FarmerDashboard'));
+const FarmerAnalytics = lazy(() => import('./pages/FarmerAnalytics'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const BuyerDashboard = lazy(() => import('./pages/BuyerDashboard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -147,12 +148,20 @@ export default function App() {
               element={<ProtectedRoute allowedRoles={['Farmer']}><CropManagement /></ProtectedRoute>}
             />
             <Route
+              path="/dashboard/farmer/analytics"
+              element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerAnalytics /></ProtectedRoute>}
+            />
+            <Route
               path="/dashboard/farmer/orders"
               element={<ProtectedRoute allowedRoles={['Farmer']}><FarmerOrders /></ProtectedRoute>}
             />
 
             <Route
               path="/dashboard/student"
+              element={<ProtectedRoute allowedRoles={['Student']}><StudentDashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="/dashboard/student/proposals"
               element={<ProtectedRoute allowedRoles={['Student']}><StudentDashboard /></ProtectedRoute>}
             />
 
@@ -166,7 +175,7 @@ export default function App() {
             />
             <Route
               path="/payment/verify/:tx_ref"
-              element={<ProtectedRoute allowedRoles={['Buyer']}><PaymentVerify /></ProtectedRoute>}
+              element={<ProtectedRoute><PaymentVerify /></ProtectedRoute>}
             />
             <Route
               path="/dashboard/buyer/orders"
@@ -179,6 +188,10 @@ export default function App() {
 
             <Route
               path="/dashboard/admin"
+              element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="/dashboard/admin/:tab"
               element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>}
             />
 
