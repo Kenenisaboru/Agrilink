@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -138,6 +139,9 @@ const HealthBar = ({ label, value, color, icon: Icon }) => (
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const { tab } = useParams();
+  const navigate = useNavigate();
+  
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCrops: 0,
@@ -148,7 +152,23 @@ const AdminDashboard = () => {
     serverLoad: 45,
     databaseSize: '2.4 GB'
   });
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  const [activeTab, setActiveTab] = useState(tab || 'overview');
+
+  // Update active tab when URL changes
+  useEffect(() => {
+    if (tab) {
+      setActiveTab(tab);
+    } else {
+      setActiveTab('overview');
+    }
+  }, [tab]);
+
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    navigate(`/dashboard/admin/${newTab === 'overview' ? '' : newTab}`);
+  };
+
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -233,18 +253,18 @@ const AdminDashboard = () => {
           </motion.h1>
           <p className="text-gray-500 font-medium">Monitoring Ethiopia's Premier Agricultural Platform</p>
         </div>
-        <div className="flex bg-gray-100 p-1.5 rounded-[1.5rem]">
-          {['overview', 'users', 'products', 'orders', 'system'].map((tab) => (
+        <div className="flex bg-gray-100 p-1.5 rounded-[1.5rem] overflow-x-auto no-scrollbar">
+          {['overview', 'users', 'products', 'orders', 'system'].map((tabName) => (
             <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tabName}
+              onClick={() => handleTabChange(tabName)}
               className={`px-6 py-2.5 rounded-2xl text-sm font-black transition-all capitalize ${
-                activeTab === tab 
+                activeTab === tabName 
                   ? 'bg-white shadow-sm text-agriGreen' 
                   : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              {tab}
+              {tabName}
             </button>
           ))}
         </div>
