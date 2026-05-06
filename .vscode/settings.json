@@ -1,3 +1,7 @@
 {
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "python.analysis.extraPaths": [
+    "./flask_ai/venv/Lib/site-packages"
+  ],
+  "python.defaultInterpreterPath": "${workspaceFolder}/flask_ai/venv/Scripts/python.exe"
 }
