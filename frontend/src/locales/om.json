@@ -25,7 +25,7 @@
     "title1": "Walquunnamsiisa",
     "titleFarmers": "Qotee Bultoota",
     "titleWith": "fi",
-    "titleInnovation": "Kalaqaa",
+    "titleBuyers": "Bitattootaa",
     "subtitle": "Bulchiinsa qonnaa Harargee Bahaa keessatti qotee bultootaaf, barattoota fi bitattootaaf meeshaa haaraa uumuu.",
     "cta": "Amma Jalqabaa",
     "learnMore": "Dabalata Baradhu"
@@ -69,10 +69,17 @@
     "organic": "Uumamaa",
     "fresh": "Haaraa"
   },
-  "testimonials": {
-    "sectionTitle": "Fayyadamtoonni",
-    "sectionHighlight": "Maal Jedhu",
-    "sectionSubtitle": "Qotee bultootaa fi bittattuu daldala isaanii AgriLink waliin jijjiiran irraa dhaga'aa"
+  "howItWorks": {
+    "sectionTitle": "Akkamitti",
+    "sectionHighlight": "Hojjeta",
+    "sectionSubtitle": "Tarkaanfii salphaa sadiin jalqabaa fi daldala qonnaa keessan har'a jijjiiruu jalqabaa",
+    "step1Title": "Herrega Keessan Uumaa",
+    "step1Desc": "Daqiiqaa 2 keessatti akka qotee bultaa, bittattuu ykn barataatti galmaa'aa. Piroofaayilii keessan qopheessaa.",
+    "step2Title": "Oomisha Tarreessaa ykn Barbaadhaa",
+    "step2Desc": "Qotee bultoonni oomisha isaanii suuraa fi gatii waliin dhiyeessu. Bitattoonni ramaddii barbaadhaa, gatii madaalaa.",
+    "step3Title": "Daldalaa fi Waliin Guddadhaa",
+    "step3Desc": "Kallattiin walquunnamaa, gatii haqa qabeessa irratti walii galaa, daldala nageenya qabuun xumuraa. Hubannoo AI argadhaa.",
+    "cta": "Imala Keessan Jalqabaa"
   },
   "news": {
     "sectionTitle": "Oduu",
