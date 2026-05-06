@@ -25,7 +25,7 @@
     "title1": "Connecting",
     "titleFarmers": "Farmers",
     "titleWith": "with",
-    "titleInnovation": "Innovation",
+    "titleBuyers": "Buyers",
     "subtitle": "Empowering East Hararghe's agricultural landscape through a revolutionary platform for farmers, students, and buyers.",
     "cta": "Get Started Now",
     "learnMore": "Learn More"
@@ -69,10 +69,17 @@
     "organic": "Organic",
     "fresh": "Fresh"
   },
-  "testimonials": {
-    "sectionTitle": "What Our",
-    "sectionHighlight": "Users Say",
-    "sectionSubtitle": "Hear from farmers and buyers who have transformed their businesses with AgriLink"
+  "howItWorks": {
+    "sectionTitle": "How It",
+    "sectionHighlight": "Works",
+    "sectionSubtitle": "Get started in three simple steps and begin transforming your agricultural business today",
+    "step1Title": "Create Your Account",
+    "step1Desc": "Sign up as a farmer, buyer, or student in under 2 minutes. Set up your profile and get verified to start trading.",
+    "step2Title": "List or Browse Products",
+    "step2Desc": "Farmers list their harvests with photos and pricing. Buyers browse categories, compare prices, and find the best deals.",
+    "step3Title": "Trade & Grow Together",
+    "step3Desc": "Connect directly, negotiate fair prices, and complete transactions securely. Get AI-powered insights to maximize your profits.",
+    "cta": "Start Your Journey"
   },
   "news": {
     "sectionTitle": "Agricultural",
