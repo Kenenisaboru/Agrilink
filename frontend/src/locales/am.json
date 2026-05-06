@@ -25,7 +25,7 @@
     "title1": "ያገናኛል",
     "titleFarmers": "ገበሬዎችን",
     "titleWith": "ከ",
-    "titleInnovation": "ፈጠራ ጋር",
+    "titleBuyers": "ገዢዎች ጋር",
     "subtitle": "ለገበሬዎች፣ ተማሪዎች እና ገዢዎች አብዮታዊ መድረክ በማቅረብ የምስራቅ ሀረርጌን የግብርና መልክዓ ምድር ማጠናከር።",
     "cta": "አሁን ይጀምሩ",
     "learnMore": "ተጨማሪ ይወቁ"
@@ -69,10 +69,17 @@
     "organic": "ኦርጋኒክ",
     "fresh": "ትኩስ"
   },
-  "testimonials": {
-    "sectionTitle": "ተጠቃሚዎቻችን",
-    "sectionHighlight": "ምን ይላሉ",
-    "sectionSubtitle": "ንግዳቸውን ከአግሪሊንክ ጋር ለውጠዋል ከሚሉ ገበሬዎችና ገዢዎች ይስሙ"
+  "howItWorks": {
+    "sectionTitle": "እንዴት",
+    "sectionHighlight": "ይሰራል",
+    "sectionSubtitle": "በሶስት ቀላል ደረጃዎች ይጀምሩ እና የግብርና ንግድዎን ዛሬ መለወጥ ይጀምሩ",
+    "step1Title": "መለያዎን ይፍጠሩ",
+    "step1Desc": "በ2 ደቂቃ ውስጥ እንደ ገበሬ፣ ገዢ ወይም ተማሪ ይመዝገቡ። መገለጫዎን ያዘጋጁ እና ማረጋገጫ ያግኙ።",
+    "step2Title": "ምርቶችን ይዘርዝሩ ወይም ያስሱ",
+    "step2Desc": "ገበሬዎች ከፎቶ እና ዋጋ ጋር ምርቶቻቸውን ያቀርባሉ። ገዢዎች ምድቦችን ያስሱ፣ ዋጋ ያወዳድሩ።",
+    "step3Title": "ይገበያዩ እና አብረው ያድጉ",
+    "step3Desc": "በቀጥታ ይገናኙ፣ ፍትሃዊ ዋጋ ይደራደሩ፣ ግብይቶችን በአስተማማኝ ያጠናቅቁ። AI ግንዛቤዎችን ያግኙ።",
+    "cta": "ጉዞዎን ይጀምሩ"
   },
   "news": {
     "sectionTitle": "የግብርና",
