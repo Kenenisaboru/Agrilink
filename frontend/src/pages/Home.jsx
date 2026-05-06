@@ -12,6 +12,9 @@ import {
   Globe,
   Zap,
   Star,
+  UserPlus,
+  Upload,
+  Handshake,
   ShoppingCart,
   Truck,
   Headphones,
@@ -120,30 +123,27 @@ const Home = () => {
     { name: 'Livestock', icon: '🐄', count: 67, color: 'from-orange-500 to-red-600' }
   ];
 
-  const testimonials = [
+  const howItWorks = [
     {
-      name: 'Abebe Kebede',
-      role: 'Coffee Farmer',
-      location: 'Harar',
-      rating: 5,
-      text: 'AgriLink transformed my business. I now sell directly to buyers and get 40% better prices for my coffee.',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100'
+      step: '01',
+      icon: UserPlus,
+      title: t('howItWorks.step1Title', 'Create Your Account'),
+      description: t('howItWorks.step1Desc', 'Sign up as a farmer, buyer, or student in under 2 minutes. Set up your profile and get verified to start trading.'),
+      color: 'from-green-500 to-emerald-600'
     },
     {
-      name: 'Fatuma Ahmed',
-      role: 'Grain Trader',
-      location: 'Dire Dawa',
-      rating: 5,
-      text: 'The platform is amazing. I can find quality products from verified farmers and track my orders in real-time.',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'
+      step: '02',
+      icon: Upload,
+      title: t('howItWorks.step2Title', 'List or Browse Products'),
+      description: t('howItWorks.step2Desc', 'Farmers list their harvests with photos and pricing. Buyers browse categories, compare prices, and find the best deals.'),
+      color: 'from-amber-500 to-orange-600'
     },
     {
-      name: 'Kedir Jemal',
-      role: 'Khat Farmer',
-      location: 'East Hararghe',
-      rating: 5,
-      text: 'Finally, a platform that understands Ethiopian agriculture. The AI assistant helps me with pricing and market insights.',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100'
+      step: '03',
+      icon: Handshake,
+      title: t('howItWorks.step3Title', 'Trade & Grow Together'),
+      description: t('howItWorks.step3Desc', 'Connect directly, negotiate fair prices, and complete transactions securely. Get AI-powered insights to maximize your profits.'),
+      color: 'from-blue-500 to-indigo-600'
     }
   ];
 
@@ -196,7 +196,7 @@ const Home = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-6xl lg:text-7xl font-black text-gray-900 leading-[1.1] tracking-tighter mb-8"
             >
-              {t('hero.title1', 'Connecting')} <span className="text-agriGreen">{t('hero.titleFarmers', 'Farmers')}</span> {t('hero.titleWith', 'with')} <span className="text-amber-600">{t('hero.titleInnovation', 'Innovation')}</span>
+              {t('hero.title1', 'Connecting')} <span className="text-agriGreen">{t('hero.titleFarmers', 'Farmers')}</span> {t('hero.titleWith', 'with')} <span className="text-amber-600">{t('hero.titleBuyers', 'Buyers')}</span>
             </motion.h1>
             
             <motion.p
@@ -400,52 +400,64 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-b from-agriDark to-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-black mb-4 tracking-tight">
-              {t('testimonials.sectionTitle', 'What Our')} <span className="text-agriGreen">{t('testimonials.sectionHighlight', 'Users Say')}</span>
+              {t('howItWorks.sectionTitle', 'How It')} <span className="text-agriGreen">{t('howItWorks.sectionHighlight', 'Works')}</span>
             </h2>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              {t('testimonials.sectionSubtitle', 'Hear from farmers and buyers who have transformed their businesses with AgriLink')}
+              {t('howItWorks.sectionSubtitle', 'Get started in three simple steps and begin transforming your agricultural business today')}
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connecting line between steps (hidden on mobile) */}
+            <div className="hidden md:block absolute top-24 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-green-500 via-amber-500 to-blue-500 opacity-30" />
+            
+            {howItWorks.map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
                 viewport={{ once: true }}
-                className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20"
+                className="relative bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
               >
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-amber-400 fill-current" />
-                  ))}
+                {/* Step number badge */}
+                <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                  <item.icon className="w-7 h-7 text-white" />
                 </div>
                 
-                <p className="text-gray-200 mb-6 leading-relaxed">
-                  "{testimonial.text}"
+                <div className="absolute top-8 right-8 text-5xl font-black text-white/10">
+                  {item.step}
+                </div>
+                
+                <h3 className="text-xl font-bold text-white mb-3">
+                  {item.title}
+                </h3>
+                
+                <p className="text-gray-300 leading-relaxed">
+                  {item.description}
                 </p>
-                
-                <div className="flex items-center gap-4">
-                  <img 
-                    src={testimonial.avatar} 
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <h4 className="font-bold text-white">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-400">{testimonial.role} · {testimonial.location}</p>
-                  </div>
-                </div>
               </motion.div>
             ))}
           </div>
+          
+          {/* CTA under steps */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Link to="/register" className="inline-flex items-center gap-2 bg-agriGreen text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-600 transition-colors shadow-lg shadow-green-900/30">
+              {t('howItWorks.cta', 'Start Your Journey')}
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 
