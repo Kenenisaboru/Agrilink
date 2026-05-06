@@ -71,6 +71,7 @@ const LayoutWrapper = ({ children }) => {
 
   const publicPaths = ['/', '/about', '/login', '/register'];
   const isPublicPath = publicPaths.includes(location.pathname);
+  const isAuthPage = ['/login', '/register'].includes(location.pathname);
 
   if (isPublicPath || !user) {
     return (
@@ -79,7 +80,7 @@ const LayoutWrapper = ({ children }) => {
         <main className="flex-grow">
           {children}
         </main>
-        <Footer />
+        <Footer minimal={isAuthPage} />
       </div>
     );
   }
