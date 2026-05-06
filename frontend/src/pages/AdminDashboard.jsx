@@ -5,6 +5,7 @@ import {
   BarChart3, 
   Users, 
   ShoppingBag, 
+  User,
   AlertCircle, 
   CheckCircle, 
   Clock, 
