@@ -36,14 +36,12 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!selectedLoginRole) {
-      setError('Please select your role to login');
-      return;
-    }
     setLoading(true);
     setError('');
     try {
       const user = await login(loginData.email, loginData.password);
+      
+      // Redirect based on the role returned by the backend
       const rolePath = user.role.toLowerCase();
       navigate(`/dashboard/${rolePath}`);
     } catch (err) {
@@ -129,31 +127,7 @@ const Login = () => {
                 <p className="text-gray-500 font-medium mt-2 text-center">Sign in to your account</p>
               </div>
 
-              {/* Login Role Selection */}
-              <div className="mb-6">
-                <label className="text-sm font-bold text-gray-700 ml-1 mb-3 block">Select Your Role</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {roles.map((role) => (
-                    <motion.button
-                      key={role.id}
-                      type="button"
-                      onClick={() => setSelectedLoginRole(role.id)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`relative p-3 rounded-2xl border-2 transition-all ${
-                        selectedLoginRole === role.id
-                          ? 'border-agriGreen bg-agriGreen/10'
-                          : 'border-gray-100 hover:border-gray-200'
-                      }`}
-                    >
-                      <role.icon className={`w-6 h-6 mx-auto mb-1 ${
-                        selectedLoginRole === role.id ? 'text-agriGreen' : 'text-gray-400'
-                      }`} />
-                      <span className="text-xs font-medium text-gray-600">{role.name}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
+
 
               {error && (
                 <motion.div
