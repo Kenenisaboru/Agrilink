@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Leaf, 
   Mail, 
@@ -9,37 +9,22 @@ import {
   ArrowRight, 
   Loader2, 
   AlertCircle, 
-  User, 
-  UserPlus,
   Sprout, 
   ShoppingBag, 
   GraduationCap,
   Shield,
   Users,
   Eye,
-  EyeOff,
-  Phone,
-  MapPin
+  EyeOff
 } from 'lucide-react';
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({ 
-    name: '', 
-    email: '', 
-    phone: '',
-    location: '',
-    password: '', 
-    confirmPassword: '',
-    role: ''
-  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedLoginRole, setSelectedLoginRole] = useState(null);
-  const [selectedRegisterRole, setSelectedRegisterRole] = useState(null);
-  const { login, register } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const roles = [
@@ -69,46 +54,67 @@ const Login = () => {
     }
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    if (!selectedRegisterRole) {
-      setError('Please select your role to register');
-      return;
-    }
-    if (registerData.password !== registerData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      const userData = {
-        ...registerData,
-        role: selectedRegisterRole
-      };
-      delete userData.confirmPassword;
-      const user = await register(userData);
-      const rolePath = user.role.toLowerCase();
-      navigate(`/dashboard/${rolePath}`);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-white to-amber-50">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-7xl"
+        className="w-full max-w-6xl"
       >
-        <div className="grid lg:grid-cols-2 gap-8 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           
-          {/* Left Side - Login */}
+          {/* Left Side - Branding */}
+          <div className="hidden lg:block">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-8"
+            >
+              <div className="flex items-center gap-4">
+                <div className="bg-agriGreen p-4 rounded-3xl shadow-xl shadow-green-200/50">
+                  <Leaf className="text-white w-10 h-10" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-black text-gray-900 tracking-tight">AgriLink</h1>
+                  <p className="text-gray-500 font-medium">East Hararghe Agricultural Platform</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-5xl font-black text-gray-900 leading-tight">
+                  Transform Your <span className="text-agriGreen">Agricultural</span> Business
+                </h2>
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  Join thousands of farmers, buyers, and experts connecting on Ethiopia's premier agricultural marketplace.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {[
+                  { icon: Users, label: '2,500+ Farmers', color: 'text-green-600' },
+                  { icon: ShoppingBag, label: '1,200+ Buyers', color: 'text-blue-600' },
+                  { icon: Shield, label: 'Secure Platform', color: 'text-purple-600' },
+                  { icon: Leaf, label: 'Premium Quality', color: 'text-amber-600' }
+                ].map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                    className="flex items-center gap-3 bg-white p-4 rounded-2xl shadow-sm"
+                  >
+                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                    <span className="font-bold text-gray-700">{stat.label}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        
+          {/* Right Side - Login Form */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="bg-white rounded-[3rem] shadow-2xl shadow-green-100/50 border border-gray-100 p-8 lg:p-12 relative overflow-hidden"
@@ -224,181 +230,15 @@ const Login = () => {
                   )}
                 </button>
               </form>
-            </div>
-          </motion.div>
 
-          {/* Right Side - Registration */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-[3rem] shadow-2xl shadow-blue-100/50 border border-gray-100 p-8 lg:p-12 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 rounded-full -mr-24 -mt-24 blur-3xl" />
-            
-            <div className="relative z-10">
-              <div className="flex flex-col items-center mb-8">
-                <div className="bg-blue-500 p-4 rounded-3xl mb-4 shadow-lg shadow-blue-200/50">
-                  <UserPlus className="text-white w-10 h-10" />
-                </div>
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Create Account</h2>
-                <p className="text-gray-500 font-medium mt-2 text-center">Join our agricultural community</p>
+              <div className="mt-8 text-center">
+                <p className="text-gray-500 font-medium">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-agriGreen font-black hover:underline underline-offset-4 decoration-2">
+                    Create account
+                  </Link>
+                </p>
               </div>
-
-              {/* Registration Role Selection */}
-              <div className="mb-6">
-                <label className="text-sm font-bold text-gray-700 ml-1 mb-3 block">Choose Your Role</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {roles.map((role) => (
-                    <motion.button
-                      key={role.id}
-                      type="button"
-                      onClick={() => setSelectedRegisterRole(role.id)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`relative p-3 rounded-2xl border-2 transition-all ${
-                        selectedRegisterRole === role.id
-                          ? 'border-blue-500 bg-blue-500/10'
-                          : 'border-gray-100 hover:border-gray-200'
-                      }`}
-                    >
-                      <role.icon className={`w-6 h-6 mx-auto mb-1 ${
-                        selectedRegisterRole === role.id ? 'text-blue-500' : 'text-gray-400'
-                      }`} />
-                      <span className="text-xs font-medium text-gray-600">{role.name}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
-                    <div className="relative group">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type="text"
-                        required
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        placeholder="John Doe"
-                        value={registerData.name}
-                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Email</label>
-                    <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type="email"
-                        required
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        placeholder="name@example.com"
-                        value={registerData.email}
-                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Phone</label>
-                    <div className="relative group">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type="tel"
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        placeholder="+251 900 000 000"
-                        value={registerData.phone}
-                        onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Location</label>
-                    <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        placeholder="East Hararghe"
-                        value={registerData.location}
-                        onChange={(e) => setRegisterData({ ...registerData, location: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
-                    <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 pl-12 pr-12 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        placeholder="••••••••"
-                        value={registerData.password}
-                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Confirm Password</label>
-                    <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        required
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 pl-12 pr-12 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        placeholder="••••••••"
-                        value={registerData.confirmPassword}
-                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" required className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500" />
-                  <span className="text-sm text-gray-600">
-                    I agree to the <a href="#" className="text-blue-500 font-bold hover:underline">Terms</a> and <a href="#" className="text-blue-500 font-bold hover:underline">Privacy Policy</a>
-                  </span>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-2xl text-lg font-black mt-4 flex items-center justify-center gap-2 transition-colors"
-                >
-                  {loading ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <>
-                      Create Account
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-              </form>
             </div>
           </motion.div>
         </div>
