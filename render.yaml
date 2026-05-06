@@ -16,7 +16,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: ALLOWED_ORIGINS
-        value: '*' # Replace with your frontend URL later for security
+        value: https://agrilink-frontend.onrender.com # Changed from '*' to actual origin for CORS credentials support
+      - key: FRONTEND_URL
+        value: https://agrilink-frontend.onrender.com # Used for payment redirects
 
   # 2. Flask AI Backend
   - type: web
@@ -43,5 +45,5 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://agrilink-backend.onrender.com # Will connect to the backend automatically
-      - key: VITE_AI_URL
-        value: https://agrilink-ai.onrender.com # Will connect to the Flask AI automatically
+      - key: VITE_FLASK_API_URL
+        value: https://agrilink-ai.onrender.com/api # Fixed env variable name and path
