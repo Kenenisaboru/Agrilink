@@ -42,12 +42,22 @@ const MethodBadge = ({ method }) => {
   return <Badge label={config.label} color={config.color} />;
 };
 
-const ProductCard = ({ product, index, onAddToCart }) => {
-  const { t } = useTranslation();
-  const hasDiscount = product.original_price > product.price_etb;
-  const discount = hasDiscount
-    ? Math.round((1 - product.price_etb / product.original_price) * 100)
-    : null;
+  const ProductCard = ({ product = {}, index, onAddToCart }) => {
+    const { t } = useTranslation();
+    const hasDiscount = product.original_price && product.price_etb && product.original_price > product.price_etb;
+    const discount = hasDiscount
+      ? Math.round((1 - (product.price_etb ?? 0) / (product.original_price ?? 1)) * 100)
+      : null;
+    const category = product.category ?? '';
+    const method = product.method ?? '';
+    const score = product.score ?? 0;
+    const location = product.location ?? '';
+    const name = product.name ?? '';
+    const rating = product.rating ?? 0;
+    const price_etb = product.price_etb ?? 0;
+    const unit = product.unit ?? '';
+
+
 
   return (
     <motion.div
@@ -59,7 +69,7 @@ const ProductCard = ({ product, index, onAddToCart }) => {
       {/* Image placeholder */}
       <div className="relative h-44 bg-gradient-to-br from-agriGreen/10 to-amber-100 flex items-center justify-center overflow-hidden">
         <span className="text-6xl select-none">
-          {categoryEmoji(product.category)}
+          {categoryEmoji(category)}
         </span>
         {/* Score overlay */}
         {product.score > 0 && (
@@ -198,7 +208,7 @@ const RecommendedProducts = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {recommendations.map((product, i) => (
             <ProductCard
-              key={product.id}
+              key={product.id ?? product._id ?? `prod-${i}`}
               product={product}
               index={i}
               onAddToCart={onAddToCart}
