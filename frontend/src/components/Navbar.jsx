@@ -61,21 +61,13 @@ const Navbar = () => {
   };
 
   return (
-    <nav
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-3",
-        scrolled ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50" : "bg-transparent"
-      )}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-100 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="p-1 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-green-200/50 overflow-hidden bg-white w-12 h-12 flex items-center justify-center border border-gray-100">
             <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="AgriLink Logo" className="w-full h-full object-contain" />
           </div>
-          <span className={cn(
-            "text-2xl font-black tracking-tighter transition-colors",
-            scrolled ? "text-agriDark" : "text-agriGreen"
-          )}>
+          <span className="text-2xl font-black tracking-tighter text-agriDark">
             Agri<span className="text-amber-600">Link</span>
           </span>
         </Link>
