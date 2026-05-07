@@ -116,7 +116,15 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="h-20 bg-white border-b border-gray-100 px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+    <nav className="h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      {/* Mobile Menu Toggle */}
+      <button 
+        onClick={() => document.dispatchEvent(new CustomEvent('toggleSidebar'))}
+        className="md:hidden p-2 -ml-2 text-gray-600 hover:text-agriGreen hover:bg-agriGreen/5 rounded-xl transition-all"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
       {/* Search Bar */}
       <div className="hidden md:flex flex-1 max-w-md relative group">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-agriGreen transition-colors w-4 h-4" />
