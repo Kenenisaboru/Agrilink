@@ -76,7 +76,7 @@ const Sidebar = ({ role }) => {
     <motion.aside
       initial={false}
       animate={{ width: isCollapsed ? '80px' : '280px' }}
-      className="h-screen bg-white border-r border-gray-100 flex flex-col relative z-40 shadow-sm"
+      className="h-screen flex-shrink-0 bg-white border-r border-gray-100 flex flex-col relative z-40 shadow-sm overflow-hidden"
     >
       {/* Brand */}
       <div className="p-6 flex items-center gap-3">
