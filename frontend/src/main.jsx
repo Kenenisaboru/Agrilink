@@ -47,7 +47,7 @@ const root = createRoot(document.getElementById('root'));
 try {
   root.render(
     <React.StrictMode>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <App />
         </AuthProvider>
