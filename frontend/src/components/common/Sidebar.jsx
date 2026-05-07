@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Leaf, 
@@ -20,7 +21,6 @@ import {
   MapPin,
   Truck
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -30,8 +30,20 @@ function cn(...inputs) {
 
 const Sidebar = ({ role }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const { logout } = useAuth();
+
+  useEffect(() => {
+    const handleToggle = () => setIsMobileOpen(prev => !prev);
+    document.addEventListener('toggleSidebar', handleToggle);
+    return () => document.removeEventListener('toggleSidebar', handleToggle);
+  }, []);
+
+  // Close on route change on mobile
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [location.pathname]);
 
   const farmerLinks = [
     { name: 'Dashboard', path: '/dashboard/farmer', icon: LayoutDashboard },
@@ -73,22 +85,47 @@ const Sidebar = ({ role }) => {
                 role === 'Student' ? studentLinks : adminLinks;
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? '80px' : '280px' }}
-      className="h-screen flex-shrink-0 bg-white border-r border-gray-100 flex flex-col relative z-40 shadow-sm overflow-hidden"
-    >
-      {/* Brand */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="bg-agriGreen p-2 rounded-xl flex-shrink-0">
-          <Leaf className="text-white w-6 h-6" />
-        </div>
-        {!isCollapsed && (
-          <span className="text-2xl font-black tracking-tighter text-agriGreen">
-            Agri<span className="text-amber-600">Link</span>
-          </span>
+    <>
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileOpen(false)}
+            className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          />
         )}
-      </div>
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ width: isCollapsed ? '80px' : '280px' }}
+        className={cn(
+          "h-screen flex-shrink-0 bg-white border-r border-gray-100 flex flex-col z-50 shadow-sm overflow-hidden",
+          "fixed md:relative top-0 left-0 transition-transform duration-300",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+      >
+        {/* Brand */}
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-agriGreen p-2 rounded-xl flex-shrink-0">
+              <Leaf className="text-white w-6 h-6" />
+            </div>
+            {!isCollapsed && (
+              <span className="text-2xl font-black tracking-tighter text-agriGreen">
+                Agri<span className="text-amber-600">Link</span>
+              </span>
+            )}
+          </div>
+          <button 
+            className="md:hidden text-gray-500 hover:text-agriGreen"
+            onClick={() => setIsMobileOpen(false)}
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
@@ -132,7 +169,8 @@ const Sidebar = ({ role }) => {
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
-    </motion.aside>
+      </motion.aside>
+    </>
   );
 };
 
