@@ -29,4 +29,4 @@ See the [README.md](./README.md) for detailed setup instructions.
 
 ---
 
-Thank you for helping us empower farmers in East Hararghe!
+Thank you for helping us empower farmers in Ethiopia!

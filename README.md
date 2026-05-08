@@ -1,4 +1,4 @@
-# 🌾 AgriLink - AI-Powered East Hararghe Marketplace
+# 🌾 AgriLink - AI-Powered Ethiopia Marketplace
 
 ![AgriLink Logo](frontend/public/logo.png)
 
@@ -8,7 +8,7 @@
 [![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 
-**AgriLink** is a production-grade, AI-powered agricultural marketplace specifically designed for the **East Hararghe** region of Ethiopia. It connects farmers, university students, and buyers through a smart, multilingual, and mobile-first platform.
+**AgriLink** is a production-grade, AI-powered agricultural marketplace specifically designed for the **Ethiopia** region of Ethiopia. It connects farmers, university students, and buyers through a smart, multilingual, and mobile-first platform.
 
 ---
 
