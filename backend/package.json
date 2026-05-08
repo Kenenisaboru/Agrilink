@@ -1,7 +1,7 @@
 {
   "name": "agrilink-backend",
   "version": "1.0.0",
-  "description": "AgriLink - East Hararghe Farmer-Student Innovation Platform Backend",
+  "description": "AgriLink - Ethiopia Farmer-Student Innovation Platform Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -18,7 +18,7 @@ const marketPriceSchema = new mongoose.Schema({
   },
   unit: {
     type: String,
-    default: 'Quintal', // default metric for East Hararghe region usually
+    default: 'Quintal', // default metric for Ethiopia region usually
   }
 }, {
   timestamps: true,

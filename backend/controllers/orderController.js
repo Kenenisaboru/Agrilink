@@ -43,7 +43,7 @@ exports.createOrder = async (req, res) => {
 
     // --- Find the farmer who owns these crops ---
     // In a real multi-vendor marketplace, one order could have items from multiple farmers.
-    // For simplicity (and since most orders in East Hararghe will be from one farmer),
+    // For simplicity (and since most orders in Ethiopia will be from one farmer),
     // we pick the farmer from the first crop item.
     let farmerId = null;
 
