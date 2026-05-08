@@ -287,7 +287,7 @@ const FarmerDashboard = () => {
               <span className="text-xs font-black uppercase tracking-widest">AI Market Intelligence</span>
             </div>
             <h2 className="text-3xl font-black leading-tight">Maximize your farm's <span className="text-agriGreen">profitability</span> with real-time AI insights.</h2>
-            <p className="text-gray-300 font-medium">Our AI analyzes Harar & East Hararghe market trends to help you decide what to plant and when to sell.</p>
+            <p className="text-gray-300 font-medium">Our AI analyzes Ethiopia market trends to help you decide what to plant and when to sell.</p>
             <div className="flex flex-wrap gap-4 pt-2">
               <div className="bg-white/5 border border-white/10 p-4 rounded-2xl flex-1 min-w-[200px]">
                 <div className="flex items-center gap-2 mb-2 text-agriGreen">
@@ -472,7 +472,7 @@ const FarmerDashboard = () => {
                   <div className="p-4">
                     <div className="flex items-center gap-1 mb-1">
                       <MapPin className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs text-gray-500 line-clamp-1">{user?.location || 'East Hararghe'}</span>
+                      <span className="text-xs text-gray-500 line-clamp-1">{user?.location || 'Ethiopia'}</span>
                     </div>
                     
                     <h3 className="font-bold text-gray-900 mb-1 group-hover:text-agriGreen transition-colors line-clamp-1 text-sm">

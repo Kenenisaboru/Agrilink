@@ -322,7 +322,7 @@ const ChatPage = () => {
             </motion.div>
             <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Your Secure <br /> Messenger</h2>
             <p className="text-gray-500 text-lg font-medium max-w-sm leading-relaxed">
-              Connect directly with the East Hararghe community to negotiate, learn, and grow.
+              Connect directly with the Ethiopia community to negotiate, learn, and grow.
             </p>
           </div>
         ) : (

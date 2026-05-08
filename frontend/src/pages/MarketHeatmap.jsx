@@ -28,7 +28,7 @@ const MARKET_DATA = [
     totalVolume: 18200, avgPrice: 5200, activity: 'High'
   },
   {
-    id: 3, name: 'Chiro', lat: 9.0833, lng: 40.8667, region: 'West Hararghe',
+    id: 3, name: 'Chiro', lat: 9.0833, lng: 40.8667, region: 'Other Regions',
     crops: [
       { name: 'Maize', price: 3800, trend: 'stable', change: '+2%', supply: 'Very High' },
       { name: 'Sorghum', price: 3100, trend: 'down', change: '-3%', supply: 'High' },
@@ -37,7 +37,7 @@ const MARKET_DATA = [
     totalVolume: 8900, avgPrice: 4100, activity: 'Medium'
   },
   {
-    id: 4, name: 'Haramaya', lat: 9.4000, lng: 42.0000, region: 'East Hararghe',
+    id: 4, name: 'Haramaya', lat: 9.4000, lng: 42.0000, region: 'Ethiopia',
     crops: [
       { name: 'Chat/Khat', price: 350, trend: 'up', change: '+18%', supply: 'Very High' },
       { name: 'Potato', price: 2200, trend: 'down', change: '-8%', supply: 'High' },

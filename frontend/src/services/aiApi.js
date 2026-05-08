@@ -14,13 +14,13 @@ export const clearChatHistory = async (sessionId) => {
 };
 
 // ─── Price Prediction ─────────────────────────────────────────────────────────
-export const predictPrice = async (crop, month, location = 'East Hararghe') => {
+export const predictPrice = async (crop, month, location = 'Ethiopia') => {
   const response = await axios.post(`${API_BASE_URL}/predict`, { crop, month, location });
   return response.data;
 };
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
-export const getRecommendations = async (userType, crop = '', location = 'East Hararghe') => {
+export const getRecommendations = async (userType, crop = '', location = 'Ethiopia') => {
   const response = await axios.post(`${API_BASE_URL}/recommend`, {
     user_type: userType, crop, location
   });
@@ -38,7 +38,7 @@ export const analyzeCropImage = async (imageFile) => {
 };
 
 // ─── Weather Alert ────────────────────────────────────────────────────────────
-export const getWeatherAlert = async (location = 'East Hararghe') => {
+export const getWeatherAlert = async (location = 'Ethiopia') => {
   const response = await axios.get(`${API_BASE_URL}/weather/alert`, { params: { location } });
   return response.data;
 };

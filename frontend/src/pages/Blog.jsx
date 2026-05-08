@@ -31,7 +31,7 @@ const Blog = () => {
   const blogPosts = [
     {
       id: 1,
-      title: 'Best Practices for Coffee Farming in East Hararghe',
+      title: 'Best Practices for Coffee Farming in Ethiopia',
       excerpt: 'Learn the essential techniques for growing premium coffee beans in the Harar region, from soil preparation to harvest timing.',
       category: 'farming',
       author: 'Dr. Abebe Kebede',

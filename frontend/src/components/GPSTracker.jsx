@@ -16,7 +16,7 @@ import {
 const GPSTracker = () => {
   const trackingData = {
     order_id: 'ORD-2026-0426-001',
-    destination: 'Harar, East Hararghe',
+    destination: 'Ethiopia',
     current_location: 'Dire Dawa',
     progress: 65,
     estimated_arrival: '2 hours 30 minutes',

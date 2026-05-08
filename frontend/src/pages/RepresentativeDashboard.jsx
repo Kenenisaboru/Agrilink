@@ -104,7 +104,7 @@ const RepresentativeDashboard = () => {
           >
             Representative <span className="text-agriGreen">Portal</span> 🏛️
           </motion.h1>
-          <p className="text-gray-500 font-medium">Managing East Hararghe's digital agriculture network.</p>
+          <p className="text-gray-500 font-medium">Managing Ethiopia's digital agriculture network.</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="btn-primary py-4 px-8 rounded-2xl shadow-xl shadow-green-200/50 flex items-center gap-2">

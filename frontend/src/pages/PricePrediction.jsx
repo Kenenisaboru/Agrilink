@@ -27,7 +27,7 @@ const PricePrediction = () => {
     
     setIsPredicting(true);
     try {
-      const response = await predictPrice(crop, month, "East Hararghe");
+      const response = await predictPrice(crop, month, "Ethiopia");
       setPredictionResult(response);
     } catch (err) {
       console.error(err);
@@ -40,7 +40,7 @@ const PricePrediction = () => {
     e.preventDefault();
     setIsRecommending(true);
     try {
-      const response = await getRecommendations(userType, recCrop, "East Hararghe");
+      const response = await getRecommendations(userType, recCrop, "Ethiopia");
       setRecommendations(response.recommendations);
     } catch (err) {
       console.error(err);

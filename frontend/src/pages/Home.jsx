@@ -82,7 +82,7 @@ const Home = () => {
       rating: 4.9,
       reviews: 89,
       image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400',
-      location: 'East Hararghe',
+      location: 'Ethiopia',
       farmer: 'Fatuma Ahmed',
       badge: 'Organic'
     },
@@ -149,7 +149,7 @@ const Home = () => {
 
   const newsItems = [
     {
-      title: 'Coffee Prices Reach Record High in East Hararghe',
+      title: 'Coffee Prices Reach Record High in Ethiopia',
       excerpt: 'Ethiopian coffee exports surge as international demand increases...',
       date: 'April 15, 2026',
       category: 'Market News',
@@ -262,7 +262,7 @@ const Home = () => {
                 {t('features.sectionTitle', 'Designed for the')} <span className="text-agriGreen">{t('features.sectionHighlight', 'Modern Ecosystem')}</span>
               </h2>
               <p className="text-lg text-gray-600">
-                {t('features.sectionSubtitle', 'A comprehensive suite of tools built specifically for the needs of the East Hararghe agricultural community.')}
+                {t('features.sectionSubtitle', 'A comprehensive suite of tools built specifically for the needs of the Ethiopia agricultural community.')}
               </p>
             </div>
           </div>
@@ -298,7 +298,7 @@ const Home = () => {
               {t('categories.sectionTitle', 'Browse by')} <span className="text-agriGreen">{t('categories.sectionHighlight', 'Category')}</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('categories.sectionSubtitle', 'Explore our wide range of agricultural products from trusted farmers across East Hararghe')}
+              {t('categories.sectionSubtitle', 'Explore our wide range of agricultural products from trusted farmers across Ethiopia')}
             </p>
           </div>
           

@@ -25,7 +25,7 @@ const BUYER_QUICK_PROMPTS = [
   { icon: '📦', label: 'Buy teff in bulk?', text: 'Is now a good time to buy teff in bulk?' },
   { icon: '📉', label: 'Lowest price month', text: 'Which month has the lowest grain prices in Ethiopia?' },
   { icon: '🔄', label: 'Cheaper crop alt.', text: 'What is a cheaper alternative to teff right now?' },
-  { icon: '🤝', label: 'Find suppliers', text: 'How do I find verified grain suppliers in East Hararghe?' },
+  { icon: '🤝', label: 'Find suppliers', text: 'How do I find verified grain suppliers in Ethiopia?' },
   { icon: '🌽', label: 'Maize supply', text: 'What is the current maize supply situation and price forecast?' },
   { icon: '☕', label: 'Buy coffee now?', text: 'Is this a good time to buy coffee in bulk for export?' },
   { icon: '👥', label: 'Find farmers', text: 'Can you connect me with reliable farmers for coffee?' },
@@ -90,7 +90,7 @@ const VoiceAIAssistant = () => {
       const contextualMessage = `[User is a ${userMode.toUpperCase()}] ${text.trim()}`;
       const response = await chatWithAI(contextualMessage, sessionId, isVoiceInput, {
         user_type: userMode,
-        location: 'East Hararghe'
+        location: 'Ethiopia'
       });
       
       const botMessage = {

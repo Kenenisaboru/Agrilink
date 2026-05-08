@@ -57,7 +57,7 @@ const Contact = () => {
     {
       icon: MapPin,
       label: 'Address',
-      value: 'Harar, East Hararghe, Ethiopia',
+      value: 'Ethiopia, Ethiopia',
       link: null
     },
     {
@@ -158,7 +158,7 @@ const Contact = () => {
               <div className="text-center">
                 <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                 <p className="text-gray-500">Interactive Map</p>
-                <p className="text-sm text-gray-400">Harar, East Hararghe</p>
+                <p className="text-sm text-gray-400">Ethiopia</p>
               </div>
             </div>
           </motion.div>

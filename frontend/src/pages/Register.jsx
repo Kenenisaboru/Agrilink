@@ -109,7 +109,7 @@ const Register = () => {
                 </div>
                 <div>
                   <h1 className="text-4xl font-black text-gray-900 tracking-tight">AgriLink</h1>
-                  <p className="text-gray-500 font-medium">East Hararghe Agricultural Platform</p>
+                  <p className="text-gray-500 font-medium">Ethiopia Agricultural Platform</p>
                 </div>
               </div>
 
@@ -146,7 +146,7 @@ const Register = () => {
                 <h4 className="text-lg font-black text-gray-900 mb-2">Why Join AgriLink?</h4>
                 <ul className="space-y-3">
                   {[
-                    'Access to wider markets across East Hararghe',
+                    'Access to wider markets across Ethiopia',
                     'Fair pricing driven by real-time data',
                     'Direct communication with buyers and experts',
                     'Secure payment systems (Telebirr, M-Pesa, CBE)'
@@ -177,7 +177,7 @@ const Register = () => {
                     <Leaf className="w-8 h-8" />
                   </div>
                   <h2 className="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight text-center">Create Account</h2>
-                  <p className="text-gray-500 font-medium mt-2 text-center leading-relaxed">Join the East Hararghe agricultural revolution</p>
+                  <p className="text-gray-500 font-medium mt-2 text-center leading-relaxed">Join the Ethiopia agricultural revolution</p>
                 </div>
 
                 {error && (
