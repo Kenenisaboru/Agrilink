@@ -56,26 +56,26 @@ CROP_SPECIFIC = {
         'buyer': [
             {"icon": "📦", "title": "Buy Teff October–December", "description": "Post-harvest Teff prices dip to 8,500–9,000 ETB/quintal. This is your best window to stock up before May–August price spikes."},
             {"icon": "🔄", "title": "Teff Alternatives", "description": "Barley (4,800 ETB/q) and Sorghum (3,800 ETB/q) provide good nutritional substitutes when Teff prices are above 10,000 ETB/quintal."},
-            {"icon": "🤝", "title": "Source from East Hararghe", "description": "East Hararghe and Arsi zones are top teff-producing regions. Direct sourcing from AgriLink farmers in these areas cuts intermediary costs by 15–20%."},
+            {"icon": "🤝", "title": "Source from Ethiopia", "description": "Ethiopia and Arsi zones are top teff-producing regions. Direct sourcing from AgriLink farmers in these areas cuts intermediary costs by 15–20%."},
         ]
     },
     'maize': {
         'farmer': [
-            {"icon": "🌽", "title": "Maize Planting Time", "description": "Plant maize with the first Kiremt rains (June) in East Hararghe. Use hybrid varieties (BH540, BHQPY545) for 30–50% higher yields. Space 75×25 cm."},
+            {"icon": "🌽", "title": "Maize Planting Time", "description": "Plant maize with the first Kiremt rains (June) in Ethiopia. Use hybrid varieties (BH540, BHQPY545) for 30–50% higher yields. Space 75×25 cm."},
             {"icon": "📈", "title": "Best Maize Selling Window", "description": "Maize prices peak June–August (4,500–5,000 ETB/quintal). Sell before the October harvest when new-season supply floods the market."},
             {"icon": "🐛", "title": "Fall Armyworm Alert", "description": "Monitor maize from 3-week stage for fall armyworm. Early spray with emamectin benzoate prevents 30–50% yield loss. Check leaves weekly."},
         ],
         'buyer': [
             {"icon": "📦", "title": "Buy Maize November–February", "description": "Maize prices hit lows of 3,700–4,200 ETB/quintal post-harvest. Buy in bulk during this window for 15–25% savings."},
             {"icon": "🔄", "title": "Sorghum as Alternative", "description": "Sorghum is 10–15% cheaper than maize with similar caloric value. Consider it for bulk animal feed or food processing needs."},
-            {"icon": "🌍", "title": "East Hararghe Suppliers", "description": "West Hararghe and Bale zones are top maize producers. Use AgriLink to connect directly with certified farmers for bulk supply."},
+            {"icon": "🌍", "title": "Ethiopia Suppliers", "description": "Other Regions and Bale zones are top maize producers. Use AgriLink to connect directly with certified farmers for bulk supply."},
         ]
     },
     'coffee': {
         'farmer': [
             {"icon": "☕", "title": "Coffee Harvest Window", "description": "Harvest Harari/Jimma coffee October–January when cherries turn deep red. Selective picking yields 20–30% better prices than strip harvesting."},
             {"icon": "📈", "title": "Coffee Export Premium", "description": "Sun-dried (natural process) specialty coffee commands 600–800 ETB/kg vs 400–450 ETB for wet-washed. Invest in proper drying beds for premium pricing."},
-            {"icon": "🌿", "title": "Shade Growing Advantage", "description": "Shade-grown coffee in East Hararghe forests produces premium beans. Shade-growing certification can increase export prices by 25–40%."},
+            {"icon": "🌿", "title": "Shade Growing Advantage", "description": "Shade-grown coffee in Ethiopia forests produces premium beans. Shade-growing certification can increase export prices by 25–40%."},
         ],
         'buyer': [
             {"icon": "📦", "title": "Buy Coffee December–February", "description": "Post-harvest coffee prices dip to 420–460 ETB/kg. Stock aromatic Harari varietals before April when export demand drives prices up."},
@@ -86,7 +86,7 @@ CROP_SPECIFIC = {
 }
 
 
-def get_recommendations(user_type, crop_interest='', location='East Hararghe'):
+def get_recommendations(user_type, crop_interest='', location='Ethiopia'):
     """
     Generate personalized, actionable AI recommendations for farmers or buyers.
     Falls back to rich static recommendations if Gemini API is unavailable.
@@ -134,7 +134,7 @@ Rules:
 - For FARMERS: focus on sell timing, planting windows, pest prevention, yield improvement
 - For BUYERS: focus on buy timing, bulk purchasing, alternative crops, supplier sourcing
 - Use specific Ethiopian crops: Teff, Maize, Wheat, Coffee, Chat, Sorghum, Barley
-- Reference local markets: Harar, Dire Dawa, East Hararghe, Addis when possible
+- Reference local markets: Harar, Dire Dawa, Ethiopia, Addis when possible
 - Return ONLY valid JSON array, no markdown, no extra text
 """
         payload = {

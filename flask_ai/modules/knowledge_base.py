@@ -33,7 +33,7 @@ KNOWLEDGE_BASE = [
         "topic": "Maize Planting Calendar",
         "content": (
             "Maize is planted at the onset of Kiremt rains (June) in Ethiopia's highlands. "
-            "In East Hararghe: plant June–July, harvest October–November. "
+            "In Ethiopia: plant June–July, harvest October–November. "
             "Common varieties: BH540, BHQPY545, Pioneer 30Y87. "
             "Plant spacing: 75cm × 25cm. Apply DAP at planting, Urea at knee-high stage."
         )
@@ -44,7 +44,7 @@ KNOWLEDGE_BASE = [
         "content": (
             "Ethiopian coffee harvest is October–January, with peak December. "
             "Harari coffee (Harar variety): drought-tolerant, natural process, "
-            "harvested in higher zones of East Hararghe. "
+            "harvested in higher zones of Ethiopia. "
             "Yirgacheffe and Sidama: December–January. "
             "Jimma/Kaffa: October–November. "
             "Specialty-grade cherry turns full red before picking. "
@@ -67,7 +67,7 @@ KNOWLEDGE_BASE = [
         "topic": "Sorghum Planting Guide",
         "content": (
             "Sorghum is drought-tolerant and planted at the onset of Kiremt in lowland Ethiopia. "
-            "East and West Hararghe, Somali Region, and Afar are key producing areas. "
+            "East and Other Regions, Somali Region, and Afar are key producing areas. "
             "Plant June–July, harvest November–December. "
             "Sorghum is 15–20% cheaper than maize as animal feed alternative."
         )
@@ -77,7 +77,7 @@ KNOWLEDGE_BASE = [
         "topic": "Chat (Khat) Production Guide",
         "content": (
             "Chat (Catha edulis) is a perennial shrub — Ethiopia's highest-value export crop after coffee. "
-            "East Hararghe (Harar, Fedis, Kombolcha zones) produces the majority of Ethiopia's chat. "
+            "Ethiopia (Harar, Fedis, Kombolcha zones) produces the majority of Ethiopia's chat. "
             "Leaves are harvested year-round but peak demand and prices are during religious celebrations. "
             "Fresh chat must reach market within 24–48 hours of harvest. "
             "Price range: 700–1,200 ETB/kg depending on grade and freshness."
@@ -113,7 +113,7 @@ KNOWLEDGE_BASE = [
         "keywords": ["maize", "corn", "price", "market", "etb"],
         "topic": "Current Maize Market Price Range",
         "content": (
-            "Maize prices in East Hararghe and Harar (2025/2026 estimates): "
+            "Maize prices in Ethiopia and Harar (2025/2026 estimates): "
             "Grade 1 (dry, clean): 4,500–5,200 ETB/quintal (Jun–Aug peak). "
             "Grade 2: 3,800–4,500 ETB/quintal. "
             "Post-harvest low: 3,500–4,000 ETB/quintal (November–January). "
@@ -187,7 +187,7 @@ KNOWLEDGE_BASE = [
         "content": (
             "Belg is Ethiopia's short rainy season: February–May. "
             "Receives 20–40% of Kiremt rainfall. "
-            "Key producing areas: Arsi, Bale, East Hararghe, Wollo. "
+            "Key producing areas: Arsi, Bale, Ethiopia, Wollo. "
             "Belg crops include: Maize, Teff, Sorghum, Potato, and vegetables. "
             "Belg-season crops reach market May–July, providing mid-year supply buffer."
         )
@@ -253,7 +253,7 @@ KNOWLEDGE_BASE = [
             "Best practices for Ethiopian agricultural commodity buyers: "
             "Buy window: October–January (Bega) for lowest prices on cereals and pulses. "
             "Negotiate forward contracts in September before harvest — lock in below-market prices. "
-            "East Hararghe: best source for Chat, Maize, Sorghum, Coffee. "
+            "Ethiopia: best source for Chat, Maize, Sorghum, Coffee. "
             "Arsi/Bale: best for Wheat and Barley. "
             "Quality verification: Grade 1 requires <12% moisture, <2% foreign matter. "
             "Use licensed warehouse receipt system (WRS) for financing and quality assurance."

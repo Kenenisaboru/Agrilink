@@ -26,7 +26,7 @@ SEASONAL_WEATHER = {
 }
 
 
-def get_weather_alert(location="East Hararghe"):
+def get_weather_alert(location="Ethiopia"):
     """
     Generate a seasonal weather alert with farming-specific advice.
     Uses Gemini for dynamic alerts, falls back to seasonal calendar data.

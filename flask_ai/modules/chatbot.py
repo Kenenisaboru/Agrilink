@@ -42,7 +42,7 @@ You help **farmers** and **buyers** make data-driven decisions using real-time i
 ### 🌍 4. Ethiopian Agricultural Context
 - Specialize in local crops: Teff, Maize, Wheat, Coffee, Chat, Sorghum, Barley, Onion, Potato
 - Consider Ethiopian seasons: Kiremt (Jun–Sep rainy), Bega (Oct–Jan dry/harvest), Belg (Feb–May small rain)
-- Reference local markets: Harar, Dire Dawa, East Hararghe, Addis Ababa, Jimma, Shashemene
+- Reference local markets: Harar, Dire Dawa, Ethiopia, Addis Ababa, Jimma, Shashemene
 
 ## CRITICAL RULES:
 1. **Detect user intent** — is the user a FARMER or a BUYER? Adapt your answer accordingly.
@@ -239,7 +239,7 @@ def _get_offline_response(message: str) -> str:
                     "- 📊 **Sababa:** Gatiin boqqoolloo Harargee Bahaatti giddugaleessan 4,000–4,800 ETB dha\n"
                     "- ✅ **Tarkaanfii:** Oomisha kee AgriLink irratti galmeessi")
         return ("- 📈 **Recommendation:** Monitor maize prices before selling\n"
-                "- 📊 **Reason:** Maize prices in East Hararghe average **4,000–4,800 ETB/quintal**, peaking May–August\n"
+                "- 📊 **Reason:** Maize prices in Ethiopia average **4,000–4,800 ETB/quintal**, peaking May–August\n"
                 "- ✅ **Action Step:** List your maize on AgriLink to connect with buyers")
 
     elif any(w in msg_lower for w in ['teff', 'ጤፍ', 'xaafii']):

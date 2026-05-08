@@ -49,7 +49,7 @@ def get_price_trend(factor):
     else:
         return "📉 Falling", "LOW — Consider holding until April-May when prices recover"
 
-def predict_price(crop, month, location="East Hararghe"):
+def predict_price(crop, month, location="Ethiopia"):
     """Predict crop price with trend analysis and actionable sell/buy advice."""
     crop = crop.lower().strip()
     month = month.capitalize().strip()

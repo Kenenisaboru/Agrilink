@@ -50,7 +50,7 @@ class AlertRecord:
 
 
 def create_alert(user_id: str, crop: str, target_price: float,
-                 condition: str = "above", location: str = "East Hararghe") -> dict:
+                 condition: str = "above", location: str = "Ethiopia") -> dict:
     """
     Create a new price alert.
     
