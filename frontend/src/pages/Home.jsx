@@ -205,7 +205,7 @@ const Home = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-xl text-gray-600 mb-12 leading-relaxed max-w-2xl mx-auto"
             >
-              {t('hero.subtitle', "Empowering East Hararghe's agricultural landscape through a revolutionary platform for farmers, students, and buyers.")}
+              {t('hero.subtitle', "Empowering Ethiopia's agricultural landscape through a revolutionary platform for farmers, students, and buyers.")}
             </motion.p>
             
             <motion.div
