@@ -72,6 +72,12 @@ const Sidebar = ({ role }) => {
     { name: 'Messages', path: '/chat', icon: MessageSquare },
   ];
 
+  const representativeLinks = [
+    { name: 'Portal', path: '/dashboard/representative', icon: LayoutDashboard },
+    { name: 'Market Map', path: '/market-heatmap', icon: MapPin },
+    { name: 'Messages', path: '/chat', icon: MessageSquare },
+  ];
+
   const adminLinks = [
     { name: 'Command Center', path: '/dashboard/admin', icon: Shield },
     { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
@@ -80,9 +86,11 @@ const Sidebar = ({ role }) => {
     { name: 'System Metrics', path: '/dashboard/admin/system', icon: Settings },
   ];
 
-  const links = role === 'Farmer' ? farmerLinks : 
-                role === 'Buyer' ? buyerLinks : 
-                role === 'Student' ? studentLinks : adminLinks;
+  const links = role === 'Farmer' ? farmerLinks :
+                role === 'Buyer' ? buyerLinks :
+                role === 'Student' ? studentLinks :
+                role === 'Representative' ? representativeLinks :
+                adminLinks;
 
   return (
     <>
