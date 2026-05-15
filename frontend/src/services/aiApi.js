@@ -19,7 +19,7 @@ export const predictPrice = async (crop, month, location = 'Ethiopia') => {
   return response.data;
 };
 
-// ─── Recommendations ──────────────────────────────────────────────────────────
+// ─── Crop/farming advisory (Flask) — NOT marketplace product recs (see docs/RECOMMENDATIONS.md)
 export const getRecommendations = async (userType, crop = '', location = 'Ethiopia') => {
   const response = await axios.post(`${API_BASE_URL}/recommend`, {
     user_type: userType, crop, location
