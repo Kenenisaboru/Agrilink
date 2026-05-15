@@ -3,6 +3,7 @@ const Crop = require('../models/Crop');
 const Notification = require('../models/Notification');
 const { sendSMS } = require('../utils/smsService');
 const User = require('../models/User');
+const { canViewOrder, canUpdateOrderStatus } = require('../utils/orderGuards');
 
 /**
  * ===========================================================
@@ -206,13 +207,7 @@ exports.getOrderById = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Ensure user can only see their own orders (buyer or farmer)
-    const userId = req.user._id.toString();
-    const isBuyer = order.buyer._id.toString() === userId;
-    const isFarmer = order.farmer._id.toString() === userId;
-    const isAdmin = req.user.role === 'Admin';
-
-    if (!isBuyer && !isFarmer && !isAdmin) {
+    if (!canViewOrder(order, req.user._id, req.user.role)) {
       return res.status(403).json({ message: 'Not authorized to view this order' });
     }
 
@@ -235,12 +230,7 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Only the farmer of this order or admin can update status
-    const userId = req.user._id.toString();
-    const isFarmer = order.farmer.toString() === userId;
-    const isAdmin = req.user.role === 'Admin';
-
-    if (!isFarmer && !isAdmin) {
+    if (!canUpdateOrderStatus(order, req.user._id, req.user.role)) {
       return res.status(403).json({ message: 'Only the seller can update order status' });
     }
 
