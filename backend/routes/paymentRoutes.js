@@ -13,10 +13,8 @@ const {
 // Public
 router.get('/methods', getPaymentMethods);
 
-// Verify Chapa Payment (can be public or private, but usually public for webhook, private for redirect if checking user context)
-// For simplicity, we'll make it unprotected so the webhook/frontend can call it without complex auth headers during redirection,
-// though ideally the frontend passes auth headers.
-router.get('/verify/:tx_ref', verifyPayment);
+// Verify payment — buyer must be authenticated and own the transaction
+router.get('/verify/:tx_ref', protect, verifyPayment);
 
 // Private (authenticated users)
 router.post('/request', protect, requestPayment);
