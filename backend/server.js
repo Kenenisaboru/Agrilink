@@ -104,6 +104,7 @@ app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/representative', require('./routes/representativeRoutes'));
 
 // Socket.io Integration
 socketHandler(io);
@@ -111,7 +112,11 @@ socketHandler(io);
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ message: err.message || 'Internal server error' });
+  const message =
+    process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : err.message || 'Internal server error';
+  res.status(500).json({ message });
 });
 
 // 404 handler
@@ -134,4 +139,8 @@ const startServer = (port) => {
   });
 };
 
-startServer(Number(PORT));
+if (require.main === module) {
+  startServer(Number(PORT));
+}
+
+module.exports = { app, server };
