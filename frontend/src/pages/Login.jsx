@@ -74,7 +74,7 @@ const Login = () => {
                 </div>
                 <div>
                   <h1 className="text-4xl font-black text-gray-900 tracking-tight">AgriLink</h1>
-                  <p className="text-gray-500 font-medium">East Hararghe Agricultural Platform</p>
+                  <p className="text-gray-500 font-medium">Ethiopia Agricultural Platform</p>
                 </div>
               </div>
 

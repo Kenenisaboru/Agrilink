@@ -85,7 +85,7 @@ const FarmerAnalytics = () => {
           conversion: '4.8%'
         });
 
-        // Mock Analytics Data for Harar/East Hararghe Region
+        // Mock Analytics Data for Harar/Ethiopia Region
         setSalesData([
           { date: 'Mon', sales: 4500, orders: 5 },
           { date: 'Tue', sales: 6200, orders: 8 },

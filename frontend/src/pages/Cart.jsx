@@ -40,7 +40,7 @@ const Cart = () => {
     phone: '',
     address: '',
     city: '',
-    region: 'East Hararghe',
+    region: 'Ethiopia',
     postalCode: ''
   });
 
@@ -73,7 +73,7 @@ const Cart = () => {
       quantity: 1,
       image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200',
       farmer: 'Fatuma Ahmed',
-      location: 'East Hararghe',
+      location: 'Ethiopia',
       unit: 'Kg'
     },
     {
@@ -443,8 +443,8 @@ const Cart = () => {
                     onChange={(e) => setShippingInfo({...shippingInfo, region: e.target.value})}
                     className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-4 outline-none focus:ring-4 focus:ring-agriGreen/10 font-medium cursor-pointer"
                   >
-                    <option value="East Hararghe">East Hararghe</option>
-                    <option value="West Hararghe">West Hararghe</option>
+                    <option value="Ethiopia">Ethiopia</option>
+                    <option value="Other Regions">Other Regions</option>
                     <option value="Addis Ababa">Addis Ababa</option>
                     <option value="Dire Dawa">Dire Dawa</option>
                     <option value="Oromia">Oromia</option>

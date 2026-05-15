@@ -41,6 +41,7 @@ const PaymentVerify = lazy(() => import('./pages/buyer/PaymentVerify'));
 const BuyerOrders = lazy(() => import('./pages/buyer/BuyerOrders'));
 const MarketHeatmap = lazy(() => import('./pages/MarketHeatmap'));
 const DeliveryTracking = lazy(() => import('./pages/DeliveryTracking'));
+const RepresentativeDashboard = lazy(() => import('./pages/RepresentativeDashboard'));
 
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
@@ -193,6 +194,10 @@ export default function App() {
             <Route
               path="/dashboard/admin/:tab"
               element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="/dashboard/representative"
+              element={<ProtectedRoute allowedRoles={['Representative', 'Admin']}><RepresentativeDashboard /></ProtectedRoute>}
             />
 
             <Route path="*" element={<Navigate to="/" />} />

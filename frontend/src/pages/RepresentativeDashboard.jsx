@@ -57,27 +57,10 @@ const RepresentativeDashboard = () => {
   useEffect(() => {
     const fetchRepData = async () => {
       try {
-        const config = {
-          headers: { Authorization: `Bearer ${user.token}` }
-        };
-        // Simulated endpoint for now
-        // const { data } = await axios.get('/api/representative/managed-users', config);
-        
-        // Mock data for initial UI implementation
-        setTimeout(() => {
-          setManagedUsers([
-            { _id: '1', name: 'Abebe Bikila', role: 'Farmer', location: 'Haramaya', status: 'Active' },
-            { _id: '2', name: 'Sara Mohammed', role: 'Buyer', location: 'Harar', status: 'Active' },
-            { _id: '3', name: 'Kassa Tessema', role: 'Farmer', location: 'Dire Dawa', status: 'Pending' },
-          ]);
-          setStats({
-            totalFarmers: 12,
-            totalBuyers: 8,
-            activeTasks: 5,
-            performance: '96%'
-          });
-          setLoading(false);
-        }, 1000);
+        const { data } = await axios.get('/api/representative/dashboard');
+        setManagedUsers(data.managedUsers || []);
+        setStats(data.stats || stats);
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching rep data:', err);
         setLoading(false);
@@ -104,7 +87,7 @@ const RepresentativeDashboard = () => {
           >
             Representative <span className="text-agriGreen">Portal</span> 🏛️
           </motion.h1>
-          <p className="text-gray-500 font-medium">Managing East Hararghe's digital agriculture network.</p>
+          <p className="text-gray-500 font-medium">Managing Ethiopia's digital agriculture network.</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="btn-primary py-4 px-8 rounded-2xl shadow-xl shadow-green-200/50 flex items-center gap-2">

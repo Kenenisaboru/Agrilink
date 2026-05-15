@@ -11,7 +11,7 @@ const PriceAlertPanel = ({ userId, isOpen, onClose }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    crop: '', targetPrice: '', condition: 'above', location: 'East Hararghe'
+    crop: '', targetPrice: '', condition: 'above', location: 'Ethiopia'
   });
   const [formError, setFormError] = useState('');
 
@@ -56,7 +56,7 @@ const PriceAlertPanel = ({ userId, isOpen, onClose }) => {
         location: form.location
       });
       if (result.error) { setFormError(result.error); return; }
-      setForm({ crop: '', targetPrice: '', condition: 'above', location: 'East Hararghe' });
+      setForm({ crop: '', targetPrice: '', condition: 'above', location: 'Ethiopia' });
       setShowForm(false);
       await loadAlerts();
     } catch (e) {

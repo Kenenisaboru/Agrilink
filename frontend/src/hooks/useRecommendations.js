@@ -1,8 +1,8 @@
 /**
  * useRecommendations
  * ==================
- * React hook that fetches personalised product recommendations
- * from the AgriLink FastAPI Recommendation Service (port 8001).
+ * React hook that fetches personalised **marketplace product** recommendations
+ * from the AgriLink FastAPI service (port 8001). See docs/RECOMMENDATIONS.md.
  *
  * Usage examples:
  *

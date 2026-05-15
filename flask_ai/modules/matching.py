@@ -28,7 +28,7 @@ FARMERS_DB = [
     {
         "id": "farmer_003",
         "name": "Kedir Jemal",
-        "location": "East Hararghe",
+        "location": "Ethiopia",
         "crops": ["maize", "wheat", "onion"],
         "rating": 4.9,
         "phone": "+251913456789",
@@ -98,7 +98,7 @@ def calculate_match_score(farmer, buyer, crop_focus=None):
     # Location proximity (25% weight)
     if farmer["location"] == buyer["location"]:
         score += 25
-    elif farmer["location"] in ["Harar", "Dire Dawa", "East Hararghe"] and buyer["location"] in ["Harar", "Dire Dawa", "East Hararghe"]:
+    elif farmer["location"] in ["Harar", "Dire Dawa", "Ethiopia"] and buyer["location"] in ["Harar", "Dire Dawa", "Ethiopia"]:
         score += 15
     
     # Verification status (20% weight)
@@ -198,8 +198,8 @@ def get_match_reason(farmer, buyer, crop=None):
     # Location proximity
     if farmer["location"] == buyer["location"]:
         reasons.append(f"Same location ({farmer['location']})")
-    elif farmer["location"] in ["Harar", "Dire Dawa", "East Hararghe"] and buyer["location"] in ["Harar", "Dire Dawa", "East Hararghe"]:
-        reasons.append("Nearby locations in East Hararghe region")
+    elif farmer["location"] in ["Harar", "Dire Dawa", "Ethiopia"] and buyer["location"] in ["Harar", "Dire Dawa", "Ethiopia"]:
+        reasons.append("Nearby locations in Ethiopia region")
     
     # Quality indicators
     if farmer["rating"] >= 4.5:
@@ -256,7 +256,7 @@ def get_market_insights(crop=None, location=None):
         "location_insights": {
             "Harar": "Strong coffee and chat market",
             "Dire Dawa": "Major trading hub, good prices",
-            "East Hararghe": "Growing agricultural zone",
+            "Ethiopia": "Growing agricultural zone",
             "Addis Ababa": "Largest consumer market"
         }
     }

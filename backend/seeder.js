@@ -33,7 +33,7 @@ const importData = async () => {
     await User.deleteMany(); // Clear existing users
     await Crop.deleteMany(); // Clear existing crops
     
-    // Add East Hararghe Market Prices
+    // Add Ethiopia Market Prices
     await MarketPrice.insertMany(marketPriceData);
 
     // Add Users using a manual loop to absolutely guarantee the pre('save') hook runs!

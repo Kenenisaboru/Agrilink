@@ -27,7 +27,7 @@ def init_tracking_data():
     if not _order_tracking_db:
         _order_tracking_db['ORD-2026-0426-001'] = {
             'order_id': 'ORD-2026-0426-001',
-            'destination': 'Harar, East Hararghe',
+            'destination': 'Ethiopia',
             'current_location': 'Dire Dawa',
             'progress': 65,
             'estimated_arrival': '2 hours 30 minutes',
@@ -348,7 +348,7 @@ def predict_endpoint():
 
     crop = data['crop']
     month = data['month']
-    location = data.get('location', 'East Hararghe')
+    location = data.get('location', 'Ethiopia')
 
     prediction, explanation = predict_price(crop, month, location)
 
@@ -373,7 +373,7 @@ def recommend_endpoint():
 
     user_type = data['user_type']
     crop = data.get('crop', '')
-    location = data.get('location', 'East Hararghe')
+    location = data.get('location', 'Ethiopia')
 
     recommendations = get_recommendations(user_type, crop, location)
     return jsonify({'recommendations': recommendations})
@@ -396,7 +396,7 @@ def vision_endpoint():
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/api/weather/alert', methods=['GET'])
 def weather_alert_endpoint():
-    location = request.args.get('location', 'East Hararghe')
+    location = request.args.get('location', 'Ethiopia')
     alert = get_weather_alert(location)
     return jsonify({"alert": alert})
 
@@ -412,7 +412,7 @@ def matching_endpoint():
 
     user_type = data['user_type']
     crop = data.get('crop')
-    location = data.get('location', 'East Hararghe')
+    location = data.get('location', 'Ethiopia')
     limit = data.get('limit', 5)
 
     matches = find_best_matches(user_type, crop, location, limit)
@@ -427,7 +427,7 @@ def matching_endpoint():
 @app.route('/api/matching/insights', methods=['GET'])
 def market_insights_endpoint():
     crop = request.args.get('crop')
-    location = request.args.get('location', 'East Hararghe')
+    location = request.args.get('location', 'Ethiopia')
     
     insights = get_market_insights(crop, location)
     return jsonify(insights)
@@ -519,7 +519,7 @@ def create_alert_endpoint():
         crop=data['crop'],
         target_price=float(data['target_price']),
         condition=data.get('condition', 'above'),
-        location=data.get('location', 'East Hararghe')
+        location=data.get('location', 'Ethiopia')
     )
     return jsonify(result)
 

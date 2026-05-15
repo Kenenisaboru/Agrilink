@@ -108,7 +108,7 @@ const BuyerOrders = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-gray-900 tracking-tight">My Orders</h1>
-          <p className="text-gray-500 font-medium mt-1">Track your purchases from East Hararghe farmers.</p>
+          <p className="text-gray-500 font-medium mt-1">Track your purchases from Ethiopia farmers.</p>
         </div>
         <div className="flex items-center gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
           {['All', 'Paid', 'Shipped', 'Delivered'].map((status) => (

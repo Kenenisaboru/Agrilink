@@ -1,5 +1,5 @@
 """
-Static product catalog for AgriLink – East Hararghe.
+Static product catalog for AgriLink – Ethiopia.
 In production, this would be fetched from MongoDB/PostgreSQL.
 """
 
@@ -29,7 +29,7 @@ PRODUCTS = [
     # ── Grains ──────────────────────────────────────────────────────────────
     {"id": "P006", "name": "Organic White Teff", "category": "grains",
      "tags": ["teff", "organic", "grain", "staple", "gluten-free"],
-     "price_etb": 9200, "unit": "quintal", "location": "East Hararghe",
+     "price_etb": 9200, "unit": "quintal", "location": "Ethiopia",
      "farmer_id": "F006", "rating": 4.9, "stock": 150},
     {"id": "P007", "name": "Brown Teff – Arsi Grade A", "category": "grains",
      "tags": ["teff", "brown", "grain", "staple", "arsi"],
@@ -37,7 +37,7 @@ PRODUCTS = [
      "farmer_id": "F007", "rating": 4.7, "stock": 200},
     {"id": "P008", "name": "Yellow Maize BH540 Hybrid", "category": "grains",
      "tags": ["maize", "hybrid", "grain", "animal-feed"],
-     "price_etb": 4200, "unit": "quintal", "location": "West Hararghe",
+     "price_etb": 4200, "unit": "quintal", "location": "Other Regions",
      "farmer_id": "F008", "rating": 4.5, "stock": 400},
     {"id": "P009", "name": "White Wheat – Bale Premium", "category": "grains",
      "tags": ["wheat", "grain", "staple", "bale"],
@@ -45,7 +45,7 @@ PRODUCTS = [
      "farmer_id": "F009", "rating": 4.6, "stock": 250},
     {"id": "P010", "name": "Sorghum Red Variety", "category": "grains",
      "tags": ["sorghum", "grain", "drought-resistant", "animal-feed"],
-     "price_etb": 3800, "unit": "quintal", "location": "East Hararghe",
+     "price_etb": 3800, "unit": "quintal", "location": "Ethiopia",
      "farmer_id": "F010", "rating": 4.4, "stock": 600},
     {"id": "P011", "name": "Highland Barley", "category": "grains",
      "tags": ["barley", "grain", "highland", "staple"],
@@ -62,7 +62,7 @@ PRODUCTS = [
      "farmer_id": "F013", "rating": 4.6, "stock": 1500},
     {"id": "P014", "name": "Onion Red – 10kg Sack", "category": "vegetables",
      "tags": ["onion", "vegetables", "staple", "bulk"],
-     "price_etb": 350, "unit": "10kg", "location": "East Hararghe",
+     "price_etb": 350, "unit": "10kg", "location": "Ethiopia",
      "farmer_id": "F014", "rating": 4.5, "stock": 800},
     {"id": "P015", "name": "Ethiopian Potato (Washed)", "category": "vegetables",
      "tags": ["potato", "vegetables", "tuber", "staple"],
@@ -84,7 +84,7 @@ PRODUCTS = [
     # ── Livestock ───────────────────────────────────────────────────────────
     {"id": "P019", "name": "Somali Sheep (Live)", "category": "livestock",
      "tags": ["sheep", "livestock", "meat", "somali-breed", "eid"],
-     "price_etb": 8500, "unit": "head", "location": "East Hararghe",
+     "price_etb": 8500, "unit": "head", "location": "Ethiopia",
      "farmer_id": "F019", "rating": 4.7, "stock": 50},
     {"id": "P020", "name": "Local Chicken (Live)", "category": "livestock",
      "tags": ["chicken", "poultry", "livestock", "local-breed"],
@@ -97,7 +97,7 @@ PRODUCTS = [
      "farmer_id": "F021", "rating": 4.9, "stock": 1000},
     {"id": "P022", "name": "Fenugreek Seeds (1kg)", "category": "spices",
      "tags": ["fenugreek", "spices", "seeds", "medicinal"],
-     "price_etb": 120, "unit": "kg", "location": "East Hararghe",
+     "price_etb": 120, "unit": "kg", "location": "Ethiopia",
      "farmer_id": "F022", "rating": 4.6, "stock": 600},
     {"id": "P023", "name": "Black Cumin (Tikur Azmud)", "category": "spices",
      "tags": ["cumin", "spices", "black-seed", "nigella", "medicinal"],

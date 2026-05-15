@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Ethiopian seasonal weather patterns per month
 SEASONAL_WEATHER = {
@@ -26,7 +26,7 @@ SEASONAL_WEATHER = {
 }
 
 
-def get_weather_alert(location="East Hararghe"):
+def get_weather_alert(location="Ethiopia"):
     """
     Generate a seasonal weather alert with farming-specific advice.
     Uses Gemini for dynamic alerts, falls back to seasonal calendar data.

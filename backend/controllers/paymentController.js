@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Crop = require('../models/Crop');
 const mongoose = require('mongoose');
+const { canVerifyPayment } = require('../utils/paymentGuards');
 
 /**
  * ===========================================================
@@ -242,7 +243,7 @@ const requestPayment = async (req, res) => {
 
 // @desc    Verify payment (Real or Demo) — Called after Chapa redirect
 // @route   GET /api/payments/verify/:tx_ref
-// @access  Public (so Chapa webhook can call it too)
+// @access  Private (buyer who owns the payment)
 const verifyPayment = async (req, res) => {
   try {
     const { tx_ref } = req.params;
@@ -250,6 +251,10 @@ const verifyPayment = async (req, res) => {
     
     const payment = await Payment.findOne({ transactionReference: tx_ref });
     if (!payment) return res.status(404).json({ message: 'Transaction record not found' });
+
+    if (!canVerifyPayment(payment.user, req.user._id, req.user.role)) {
+      return res.status(403).json({ message: 'Not authorized to verify this payment' });
+    }
 
     // Don't re-verify if already successful
     if (payment.status === 'Success') {

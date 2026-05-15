@@ -1,4 +1,4 @@
-# 🌾 AgriLink - AI-Powered East Hararghe Marketplace
+# 🌾 AgriLink - AI-Powered Ethiopia Marketplace
 
 ![AgriLink Logo](frontend/public/logo.png)
 
@@ -8,7 +8,7 @@
 [![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 
-**AgriLink** is a production-grade, AI-powered agricultural marketplace specifically designed for the **East Hararghe** region of Ethiopia. It connects farmers, university students, and buyers through a smart, multilingual, and mobile-first platform.
+**AgriLink** is a production-grade, AI-powered agricultural marketplace built for **Ethiopia**. It connects farmers, university students, and buyers through a smart, multilingual, and mobile-first platform.
 
 ---
 
@@ -72,10 +72,10 @@
 ```bash
 agrilink/
 ├── backend/            # Express.js API (Core Logic)
-├── flask_ai/           # Python/Flask AI Microservice (Gemini API Integration)
+├── flask_ai/           # Python/Flask AI Microservice (Gemini — chat, crop advice)
+├── fastapi_recommender/# FastAPI product recommendation service
 ├── frontend/           # React/Vite PWA (Multilingual UI)
-│   ├── public/         # New Branding Icons (Ethiopian Farmer Logo)
-│   └── src/locales/    # Translations (English, Amharic, Oromo)
+├── docs/RECOMMENDATIONS.md  # Which AI service to use when
 ├── render.yaml         # Blueprint for automated 1-click cloud deployment
 └── README.md           # Documentation
 ```

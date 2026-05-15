@@ -13,19 +13,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 import voiceCommunication from '../services/voiceCommunication';
 
 const defaultHost = window.location.hostname || 'localhost';
-const SOCKET_URL = import.meta.env.VITE_API_URL || `http://${defaultHost}:5557`;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || `http://${defaultHost}:5000`;
 
-// Socket will be created with auth token when user is available
 let socket = null;
-const getSocket = (token) => {
-  if (!socket && token) {
+let currentToken = null;
+
+export const getSocket = (token) => {
+  if (token && token !== currentToken) {
+    if (socket) {
+      socket.disconnect();
+    }
     socket = io(SOCKET_URL, {
       auth: { token },
       reconnection: true,
       reconnectionDelay: 1000,
     });
+    currentToken = token;
   }
   return socket;
+};
+
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+    currentToken = null;
+  }
 };
 
 const LANGUAGES = [
@@ -89,6 +102,13 @@ const ChatPage = () => {
       fetchHistory();
     });
 
+    s.on('messageSent', (msg) => {
+      if (recipient && (msg.receiver === recipient._id || msg.receiver?._id === recipient._id)) {
+        setMessages((prev) => [...prev, msg]);
+      }
+      fetchHistory();
+    });
+
     s.on('userTyping', ({ senderId }) => {
       if (recipient && senderId === recipient._id) {
         setTypingUser(senderId);
@@ -99,6 +119,7 @@ const ChatPage = () => {
 
     return () => {
       s.off('message');
+      s.off('messageSent');
       s.off('userTyping');
     };
   }, [user, recipient]);
@@ -322,7 +343,7 @@ const ChatPage = () => {
             </motion.div>
             <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Your Secure <br /> Messenger</h2>
             <p className="text-gray-500 text-lg font-medium max-w-sm leading-relaxed">
-              Connect directly with the East Hararghe community to negotiate, learn, and grow.
+              Connect directly with the Ethiopia community to negotiate, learn, and grow.
             </p>
           </div>
         ) : (

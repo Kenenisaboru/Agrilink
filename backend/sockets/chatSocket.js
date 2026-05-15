@@ -1,9 +1,14 @@
 const Message = require('../models/Message');
-const jwt = require('jsonwebtoken');
+const Order = require('../models/Order');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const {
+  assertSenderMatchesSocket,
+  canJoinTrackingRoom,
+  canShareLocation,
+} = require('../utils/socketGuards');
 
 const socketHandler = (io) => {
-  // Authenticate WebSocket connections with JWT
   io.use(async (socket, next) => {
     try {
       const token = socket.handshake.auth.token || socket.handshake.query.token;
@@ -17,6 +22,7 @@ const socketHandler = (io) => {
       }
       socket.userId = user._id.toString();
       socket.userName = user.name;
+      socket.userRole = user.role;
       next();
     } catch (err) {
       console.error('Socket auth error:', err.message);
@@ -27,11 +33,9 @@ const socketHandler = (io) => {
   io.on('connection', (socket) => {
     console.log(`WebSocket Connected: ${socket.userName} (${socket.userId})`);
 
-    // Auto-join user's private room on connection
     socket.join(socket.userId);
 
     socket.on('join', (userId) => {
-      // Only allow users to join their own room
       if (userId === socket.userId) {
         socket.join(userId);
       }
@@ -39,56 +43,93 @@ const socketHandler = (io) => {
 
     socket.on('sendMessage', async ({ senderId, receiverId, content }) => {
       try {
-        // Save message to database
+        const senderCheck = assertSenderMatchesSocket(socket.userId, senderId);
+        if (!senderCheck.ok) {
+          socket.emit('error', { message: 'Unauthorized: invalid sender' });
+          return;
+        }
+
+        if (!receiverId || !content?.trim()) {
+          socket.emit('error', { message: 'Receiver and message content are required' });
+          return;
+        }
+
+        const receiver = await User.findById(receiverId).select('_id');
+        if (!receiver) {
+          socket.emit('error', { message: 'Receiver not found' });
+          return;
+        }
+
         const newMessage = await Message.create({
-          sender: senderId,
+          sender: socket.userId,
           receiver: receiverId,
-          content,
+          content: content.trim(),
         });
 
         const populatedMessage = await newMessage.populate('sender', 'name role');
 
-        // Emit to the receiver's private room
         io.to(receiverId).emit('message', populatedMessage);
-        
-        // Also emit back to sender for confirmation/sync if needed
         socket.emit('messageSent', populatedMessage);
       } catch (error) {
         console.error('Socket sendMessage error:', error);
+        socket.emit('error', { message: 'Failed to send message' });
       }
     });
 
     socket.on('typing', ({ senderId, receiverId }) => {
-      io.to(receiverId).emit('userTyping', { senderId });
+      const senderCheck = assertSenderMatchesSocket(socket.userId, senderId);
+      if (!senderCheck.ok || !receiverId) return;
+      io.to(receiverId).emit('userTyping', { senderId: socket.userId });
     });
 
-    // ── LIVE GPS TRACKING ──────────────────────────────────────────────
-    // Farmer/Driver sends their location to the specific order tracking room
-    socket.on('joinTrackingRoom', (orderId) => {
-      socket.join(`tracking_${orderId}`);
-      console.log(`User joined tracking room: tracking_${orderId}`);
+    socket.on('joinTrackingRoom', async (orderId) => {
+      try {
+        if (!orderId) return;
+
+        const order = await Order.findById(orderId).select('buyer farmer');
+        if (!canJoinTrackingRoom(order, socket.userId, socket.userRole)) {
+          socket.emit('error', { message: 'Not authorized for this tracking room' });
+          return;
+        }
+
+        socket.join(`tracking_${orderId}`);
+        console.log(`User ${socket.userId} joined tracking room: tracking_${orderId}`);
+      } catch (error) {
+        console.error('joinTrackingRoom error:', error);
+        socket.emit('error', { message: 'Failed to join tracking room' });
+      }
     });
 
-    socket.on('shareLocation', ({ orderId, lat, lng }) => {
-      // Broadcast the coordinates to anyone watching this order
-      io.to(`tracking_${orderId}`).emit('locationUpdate', { lat, lng });
+    socket.on('shareLocation', async ({ orderId, lat, lng }) => {
+      try {
+        if (!orderId || lat == null || lng == null) return;
+
+        const order = await Order.findById(orderId).select('farmer');
+        if (!canShareLocation(order, socket.userId, socket.userRole)) {
+          socket.emit('error', { message: 'Only the farmer can share location for this order' });
+          return;
+        }
+
+        io.to(`tracking_${orderId}`).emit('locationUpdate', { lat, lng });
+      } catch (error) {
+        console.error('shareLocation error:', error);
+      }
     });
 
-    // ── VOICE COMMUNICATION (WebRTC) ───────────────────────────────────
     socket.on('initiate-call', (data) => {
       const { targetUserId, callType, offer, callerId } = data;
+      if (callerId !== socket.userId) return;
       console.log(`Call initiated: ${callerId} -> ${targetUserId} (${callType})`);
       io.to(targetUserId).emit('incoming-call', {
-        callerId,
+        callerId: socket.userId,
         callType,
         offer,
-        callId: `call_${Date.now()}`
+        callId: `call_${Date.now()}`,
       });
     });
 
     socket.on('accept-call', (data) => {
       const { targetUserId, answer, callId } = data;
-      console.log(`Call accepted by ${socket.id}, notifying ${targetUserId}`);
       io.to(targetUserId).emit('call-accepted', { answer, callId });
     });
 

@@ -5,7 +5,7 @@ const FLASK_API_URL = process.env.FLASK_API_URL || 'http://localhost:5001/api';
 /**
  * Validates and requests a price prediction from the Flask backend.
  */
-const getPricePrediction = async (crop, month, location = "East Hararghe") => {
+const getPricePrediction = async (crop, month, location = "Ethiopia") => {
     try {
         const response = await axios.post(`${FLASK_API_URL}/predict`, { crop, month, location });
         return response.data;
@@ -18,7 +18,7 @@ const getPricePrediction = async (crop, month, location = "East Hararghe") => {
 /**
  * Fetches AI recommendations based on user role from Flask.
  */
-const getRecommendations = async (userType, crop = '', location = "East Hararghe") => {
+const getRecommendations = async (userType, crop = '', location = "Ethiopia") => {
     try {
         const response = await axios.post(`${FLASK_API_URL}/recommend`, { user_type: userType, crop, location });
         return response.data;

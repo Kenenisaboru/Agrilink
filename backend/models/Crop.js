@@ -29,7 +29,7 @@ const cropSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: [true, 'Please specify exact location (e.g., East Hararghe zone format)'],
+    required: [true, 'Please specify exact location (e.g., Ethiopia zone format)'],
   },
   image: {
     type: String,

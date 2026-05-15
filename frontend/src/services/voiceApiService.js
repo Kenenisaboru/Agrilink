@@ -40,7 +40,7 @@ class VoiceApiService {
   }
 
   // Find buyer-farmer matches
-  async findMatches(userType, crop = null, location = 'East Hararghe', limit = 5) {
+  async findMatches(userType, crop = null, location = 'Ethiopia', limit = 5) {
     try {
       const response = await axios.post(`${FLASK_AI_URL}/matching/find`, {
         user_type: userType,
@@ -56,7 +56,7 @@ class VoiceApiService {
   }
 
   // Get market insights
-  async getMarketInsights(crop = null, location = 'East Hararghe') {
+  async getMarketInsights(crop = null, location = 'Ethiopia') {
     try {
       const response = await axios.get(`${FLASK_AI_URL}/matching/insights`, {
         params: { crop, location }
@@ -116,7 +116,7 @@ class VoiceApiService {
   }
 
   // Get weather alert (existing)
-  async getWeatherAlert(location = 'East Hararghe') {
+  async getWeatherAlert(location = 'Ethiopia') {
     try {
       const response = await axios.get(`${FLASK_AI_URL}/weather/alert`, {
         params: { location }
@@ -153,7 +153,7 @@ class VoiceApiService {
   }
 
   // Get price prediction (existing)
-  async getPricePrediction(crop, month, location = 'East Hararghe') {
+  async getPricePrediction(crop, month, location = 'Ethiopia') {
     try {
       const response = await axios.post(`${FLASK_AI_URL}/predict`, {
         crop,
@@ -168,7 +168,7 @@ class VoiceApiService {
   }
 
   // Get recommendations (existing)
-  async getRecommendations(userType, crop = null, location = 'East Hararghe') {
+  async getRecommendations(userType, crop = null, location = 'Ethiopia') {
     try {
       const response = await axios.post(`${FLASK_AI_URL}/recommend`, {
         user_type: userType,

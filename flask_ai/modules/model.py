@@ -7,7 +7,7 @@ from modules.cache import cache, TTL_PRICE_PREDICTION
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Base prices in ETB per Quintal (100kg), except Coffee & Chat which are per kg
 # Updated for 2025/2026 Ethiopian market estimates
@@ -49,7 +49,7 @@ def get_price_trend(factor):
     else:
         return "📉 Falling", "LOW — Consider holding until April-May when prices recover"
 
-def predict_price(crop, month, location="East Hararghe"):
+def predict_price(crop, month, location="Ethiopia"):
     """Predict crop price with trend analysis and actionable sell/buy advice."""
     crop = crop.lower().strip()
     month = month.capitalize().strip()

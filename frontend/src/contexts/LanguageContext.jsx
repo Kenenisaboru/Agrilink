@@ -18,7 +18,7 @@ const translations = {
     },
     // Hero
     hero: {
-      title: 'Connect with East Hararghe Farmers',
+      title: 'Connect with Ethiopia Farmers',
       subtitle: 'Premium agricultural products directly from the source',
       cta: 'Start Shopping',
       secondaryCta: 'Sell Your Products'

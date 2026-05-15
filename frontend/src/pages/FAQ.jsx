@@ -19,7 +19,7 @@ const FAQ = () => {
     general: [
       {
         question: 'What is AgriLink?',
-        answer: 'AgriLink is a comprehensive agricultural e-commerce platform that connects farmers directly with buyers in East Hararghe and across Ethiopia. We provide a marketplace for agricultural products, expert consultation services, and tools to help farmers succeed.'
+        answer: 'AgriLink is a comprehensive agricultural e-commerce platform that connects farmers directly with buyers in Ethiopia and across Ethiopia. We provide a marketplace for agricultural products, expert consultation services, and tools to help farmers succeed.'
       },
       {
         question: 'How do I create an account?',
@@ -31,7 +31,7 @@ const FAQ = () => {
       },
       {
         question: 'Where is AgriLink available?',
-        answer: 'AgriLink currently serves the East Hararghe region and is expanding to cover all of Ethiopia. We plan to expand to other East African countries in the future.'
+        answer: 'AgriLink currently serves the Ethiopia region and is expanding to cover all of Ethiopia. We plan to expand to other East African countries in the future.'
       }
     ],
     ordering: [
@@ -45,7 +45,7 @@ const FAQ = () => {
       },
       {
         question: 'How long does delivery take?',
-        answer: 'Delivery times vary based on your location and the product. Generally, delivery takes 2-5 business days within East Hararghe and 5-7 business days for other regions in Ethiopia.'
+        answer: 'Delivery times vary based on your location and the product. Generally, delivery takes 2-5 business days within Ethiopia and 5-7 business days for other regions in Ethiopia.'
       },
       {
         question: 'Can I track my order?',

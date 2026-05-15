@@ -182,7 +182,7 @@ const BuyerDashboard = () => {
               <Star className="w-6 h-6 text-amber-500" />
             </div>
             <h3 className="text-xl font-black text-gray-900 mb-2">Deal of the Day</h3>
-            <p className="text-gray-500 text-sm font-medium">AI detected an oversupply of **Organic Tomatoes** in East Hararghe. Prices are **25% lower** than average.</p>
+            <p className="text-gray-500 text-sm font-medium">AI detected an oversupply of **Organic Tomatoes** in Ethiopia. Prices are **25% lower** than average.</p>
           </div>
           <button className="w-full mt-6 bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-agriGreen transition-all flex items-center justify-center gap-2">
             View Deals
@@ -276,7 +276,7 @@ const BuyerDashboard = () => {
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-2">
                   <MapPin className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500 line-clamp-1">{crop.location || 'East Hararghe'}</span>
+                  <span className="text-sm text-gray-500 line-clamp-1">{crop.location || 'Ethiopia'}</span>
                 </div>
                 
                 <h3 className="font-bold text-gray-900 mb-2 group-hover:text-agriGreen transition-colors line-clamp-1">

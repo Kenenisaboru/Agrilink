@@ -30,7 +30,7 @@ from data.products import PRODUCTS
 app = FastAPI(
     title="AgriLink Recommendation API",
     description=(
-        "AI-powered product recommendation service for AgriLink – East Hararghe. "
+        "AI-powered product recommendation service for AgriLink – Ethiopia. "
         "Implements collaborative filtering, content-based filtering, and a hybrid "
         "blend using scikit-learn cosine similarity (TF-Recommenders compatible interface)."
     ),

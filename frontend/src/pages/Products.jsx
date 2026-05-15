@@ -88,7 +88,7 @@ const Products = () => {
       originalPrice: 3800,
       rating: 4.9,
       reviews: 89,
-      location: 'East Hararghe',
+      location: 'Ethiopia',
       farmer: 'Fatuma Ahmed',
       image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400',
       badge: 'Organic',

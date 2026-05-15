@@ -28,7 +28,7 @@ const AboutSection = () => {
           >
             To bridge the gap between farmers and markets, providing a comprehensive platform that 
             empowers farmers with technology, ensures fair trade, and promotes sustainable agricultural 
-            practices for a better future in East Hararghe.
+            practices for a better future in Ethiopia.
           </motion.p>
         </div>
 

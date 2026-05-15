@@ -47,7 +47,7 @@ const CropManagement = () => {
     unit: 'Kg',
     quantity: '',
     minOrder: '1',
-    location: user?.location || 'East Hararghe',
+    location: user?.location || 'Ethiopia',
     description: '',
     specifications: '',
     harvestDate: '',
@@ -267,7 +267,7 @@ const CropManagement = () => {
                         type="text" 
                         name="location" 
                         required
-                        placeholder="e.g. Harar, East Hararghe"
+                        placeholder="e.g. Ethiopia"
                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-agriGreen/10 focus:border-agriGreen transition-all font-medium"
                         value={formData.location} 
                         onChange={handleChange}
