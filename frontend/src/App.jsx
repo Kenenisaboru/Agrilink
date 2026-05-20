@@ -9,6 +9,7 @@ import FarmerLayout from './layout/FarmerLayout/FarmerLayout';
 import BuyerLayout from './layout/BuyerLayout/BuyerLayout';
 import AdminLayout from './layout/AdminLayout/AdminLayout';
 import StudentLayout from './layout/StudentLayout/StudentLayout';
+import RepresentativeLayout from './layout/RepresentativeLayout/RepresentativeLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AIChatbotWidget from './components/common/AIChatbotWidget';
