@@ -225,5 +225,5 @@ def recommend_cold_start(top_k: int = Query(6, ge=1, le=20)):
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8001))
-    print(f"🌾 AgriLink Recommender starting on port {port} ...")
+    print(f"AgriLink Recommender starting on port {port} ...")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
