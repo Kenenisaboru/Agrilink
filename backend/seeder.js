@@ -36,14 +36,8 @@ const importData = async () => {
     // Add Ethiopia Market Prices
     await MarketPrice.insertMany(marketPriceData);
 
-    // Add Users using a manual loop to absolutely guarantee the pre('save') hook runs!
-    const createdUsers = [];
-    for (const userData of usersData) {
-      const user = new User(userData);
-      await user.save();
-      createdUsers.push(user);
-    }
-    
+    // Add Users
+    const createdUsers = await User.insertMany(usersData);
     const demoFarmer = createdUsers.find(user => user.role === 'Farmer');
 
     // Add Dummy Crops
