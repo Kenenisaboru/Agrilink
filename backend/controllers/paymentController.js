@@ -112,18 +112,35 @@ const requestPayment = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { orderId, amount, paymentMethod, phoneNumber, accountNumber } = req.body;
+    const { orderId, paymentMethod, phoneNumber, accountNumber } = req.body;
     const mode = process.env.PAYMENT_MODE || 'DEMO'; // Toggle: 'LIVE' or 'DEMO'
 
     // --- 1. Validation ---
     if (!orderId) return res.status(400).json({ message: 'Order ID is required' });
-    if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid payment amount' });
+    if (!PAYMENT_METHODS[paymentMethod]) {
+      return res.status(400).json({ message: 'Unsupported payment method' });
+    }
+    if (mode === 'DEMO' && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ message: 'Demo payments are disabled in production' });
+    }
 
     // --- 2. Database Checks ---
     const order = await Order.findById(orderId).populate('farmer').session(session);
     if (!order) {
       await session.abortTransaction();
       return res.status(404).json({ message: 'Order not found' });
+    }
+    if (order.buyer.toString() !== req.user._id.toString() || req.user.role !== 'Buyer') {
+      await session.abortTransaction();
+      return res.status(403).json({ message: 'Not authorized to pay for this order' });
+    }
+    if (order.paymentStatus !== 'Unpaid' || order.status !== 'Pending') {
+      await session.abortTransaction();
+      return res.status(409).json({ message: 'This order is not awaiting payment' });
+    }
+    if (!Number.isFinite(order.totalPrice) || order.totalPrice <= 0) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: 'Order has an invalid total' });
     }
     
     const buyer = await User.findById(req.user._id).session(session);
@@ -139,7 +156,7 @@ const requestPayment = async (req, res) => {
     const payment = new Payment({
       user: req.user._id,
       order: orderId,
-      amount,
+      amount: order.totalPrice,
       paymentMethod,
       phoneNumber: phoneNumber || null,
       accountNumber: accountNumber || null,
@@ -155,8 +172,8 @@ const requestPayment = async (req, res) => {
     // FinTech Split Mathematics 🧮
     const farmer = order.farmer;
     const commissionRate = farmer.commissionRate || 0.05; // 5% default
-    const agrilinkCut = amount * commissionRate;
-    const farmerCut = amount - agrilinkCut;
+    const agrilinkCut = order.totalPrice * commissionRate;
+    const farmerCut = order.totalPrice - agrilinkCut;
 
     if (mode === 'DEMO') {
       // Simulate Chapa Initialization for Development
@@ -164,12 +181,12 @@ const requestPayment = async (req, res) => {
       console.log('╔═══════════════════════════════════════════════╗');
       console.log(`║ 🏦 [DEMO MODE] CHAPA SPLIT PAYMENT ROUTING    ║`);
       console.log('╠═══════════════════════════════════════════════╣');
-      console.log(`║ Total Transaction  : ${amount} ETB`);
+      console.log(`║ Total Transaction  : ${order.totalPrice} ETB`);
       if (farmer.chapaSubaccountId) {
         console.log(`║ └─➜ Farmer Payout  : ${farmerCut} ETB sent to [${farmer.chapaSubaccountId}]`);
         console.log(`║ └─➜ Agrilink Cut   : ${agrilinkCut} ETB (${commissionRate * 100}% Commission rate)`);
       } else {
-        console.log(`║ └─➜ NO SUBACCOUNT  : Agrilink holding ${amount} ETB manually.`);
+        console.log(`║ └─➜ NO SUBACCOUNT  : Agrilink holding ${order.totalPrice} ETB manually.`);
       }
       console.log('╚═══════════════════════════════════════════════╝\n');
       
@@ -192,7 +209,7 @@ const requestPayment = async (req, res) => {
     }
 
     const payload = {
-      amount: amount.toString(),
+      amount: order.totalPrice.toString(),
       currency: "ETB",
       email: buyer.email,
       first_name: buyer.name.split(' ')[0] || 'Buyer',
@@ -247,13 +264,24 @@ const requestPayment = async (req, res) => {
 const verifyPayment = async (req, res) => {
   try {
     const { tx_ref } = req.params;
-    const isDemoQuery = req.query.demo === 'true';
     
     const payment = await Payment.findOne({ transactionReference: tx_ref });
     if (!payment) return res.status(404).json({ message: 'Transaction record not found' });
 
     if (!canVerifyPayment(payment.user, req.user._id, req.user.role)) {
       return res.status(403).json({ message: 'Not authorized to verify this payment' });
+    }
+    if (!payment.order) {
+      return res.status(404).json({ message: 'Order not found for this payment' });
+    }
+
+    const orderRecord = await Order.findById(payment.order);
+    if (!orderRecord) return res.status(404).json({ message: 'Order not found for this payment' });
+    if (
+      orderRecord.buyer.toString() !== payment.user.toString() ||
+      Math.abs(orderRecord.totalPrice - payment.amount) >= 0.01
+    ) {
+      return res.status(409).json({ message: 'Payment does not match its order' });
     }
 
     // Don't re-verify if already successful
@@ -272,7 +300,10 @@ const verifyPayment = async (req, res) => {
     }
 
     // === DEMO MODE VERIFICATION ===
-    if (isDemoQuery || tx_ref.includes('-DEMO-')) {
+    if (payment.metadata?.mode === 'DEMO') {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({ message: 'Demo payments are disabled in production' });
+      }
       console.log(`[DEMO MODE] Verifying fake payment: ${tx_ref}`);
       
       // Simulate processing delay (1.5 seconds)
@@ -311,14 +342,22 @@ const verifyPayment = async (req, res) => {
 
     // === LIVE MODE: Real Chapa Verification ===
     const CHAPA_KEY = process.env.CHAPA_SECRET_KEY;
-    const response = await fetch(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
+    if (!CHAPA_KEY) {
+      return res.status(503).json({ message: 'Payment provider is not configured' });
+    }
+    const response = await fetch(`https://api.chapa.co/v1/transaction/verify/${encodeURIComponent(tx_ref)}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${CHAPA_KEY}` }
     });
 
     const data = await response.json();
 
-    if (data.status === 'success' && data.data.status === 'success') {
+    const paidAmount = Number(data.data?.amount);
+    const amountMatches = Number.isFinite(paidAmount) &&
+      Math.abs(paidAmount - orderRecord.totalPrice) < 0.01 &&
+      (!data.data?.currency || data.data.currency === 'ETB');
+
+    if (data.status === 'success' && data.data?.status === 'success' && amountMatches) {
       payment.status = 'Success';
       payment.metadata = data.data;
       await payment.save();
@@ -348,7 +387,10 @@ const verifyPayment = async (req, res) => {
     } else {
       payment.status = 'Failed';
       await payment.save();
-      return res.status(400).json({ success: false, message: 'Verification failed' });
+      return res.status(400).json({
+        success: false,
+        message: amountMatches ? 'Verification failed' : 'Verified payment amount does not match the order',
+      });
     }
   } catch (error) {
     console.error('Verification error:', error);
