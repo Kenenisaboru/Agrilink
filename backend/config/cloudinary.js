@@ -14,7 +14,8 @@ const cloudinaryEnabled =
   process.env.CLOUDINARY_CLOUD_NAME && 
   process.env.CLOUDINARY_CLOUD_NAME !== 'your_cloud_name' &&
   process.env.CLOUDINARY_API_KEY && 
-  process.env.CLOUDINARY_API_KEY !== 'your_api_key';
+  process.env.CLOUDINARY_API_KEY !== 'your_api_key' &&
+  process.env.CLOUDINARY_API_SECRET;
 
 let upload;
 
