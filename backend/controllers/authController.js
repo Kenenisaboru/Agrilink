@@ -2,6 +2,8 @@ const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { isCloudinaryConfigured } = require('../middleware/uploadMiddleware');
 
+const REGISTRABLE_ROLES = new Set(['Farmer', 'Student', 'Buyer']);
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -13,7 +15,24 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide name, email, password and role' });
     }
 
-    const userExists = await User.findOne({ email: email.toLowerCase() });
+    if (!REGISTRABLE_ROLES.has(role)) {
+      return res.status(400).json({ message: 'Please select a supported account type' });
+    }
+
+    if (typeof name !== 'string' || name.trim().length < 2 || name.length > 100) {
+      return res.status(400).json({ message: 'Name must be between 2 and 100 characters' });
+    }
+
+    if (typeof email !== 'string' || email.length > 254) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+      return res.status(400).json({ message: 'Password must be between 8 and 128 characters' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: 'An account with this email already exists' });
     }
@@ -31,8 +50,8 @@ const registerUser = async (req, res) => {
     }
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password,
       role,
       location,
@@ -45,7 +64,7 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.role);
       res.status(201).json({
         _id: user._id,
         name: user.name,
@@ -78,7 +97,11 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
 
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
@@ -88,7 +111,7 @@ const loginUser = async (req, res) => {
       return res.status(403).json({ message: 'Your account has been deactivated. Please contact support.' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.role);
     res.json({
       _id: user._id,
       name: user.name,
@@ -158,7 +181,7 @@ const updateUserProfile = async (req, res) => {
     }
 
     const updatedUser = await user.save();
-    const token = generateToken(updatedUser._id);
+    const token = generateToken(updatedUser._id, updatedUser.role);
 
     res.json({
       _id: updatedUser._id,
