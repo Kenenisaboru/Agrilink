@@ -4,7 +4,8 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Crop = require('../models/Crop');
 const mongoose = require('mongoose');
-const { canVerifyPayment } = require('../utils/paymentGuards');
+const { canVerifyPayment, canRequestPayment, paymentMatchesOrder } = require('../utils/paymentGuards');
+const { parsePagination, setPaginationHeaders } = require('../utils/pagination');
 
 /**
  * ===========================================================
@@ -130,13 +131,9 @@ const requestPayment = async (req, res) => {
       await session.abortTransaction();
       return res.status(404).json({ message: 'Order not found' });
     }
-    if (order.buyer.toString() !== req.user._id.toString() || req.user.role !== 'Buyer') {
+    if (!canRequestPayment(order, req.user._id, req.user.role)) {
       await session.abortTransaction();
       return res.status(403).json({ message: 'Not authorized to pay for this order' });
-    }
-    if (order.paymentStatus !== 'Unpaid' || order.status !== 'Pending') {
-      await session.abortTransaction();
-      return res.status(409).json({ message: 'This order is not awaiting payment' });
     }
     if (!Number.isFinite(order.totalPrice) || order.totalPrice <= 0) {
       await session.abortTransaction();
@@ -277,10 +274,7 @@ const verifyPayment = async (req, res) => {
 
     const orderRecord = await Order.findById(payment.order);
     if (!orderRecord) return res.status(404).json({ message: 'Order not found for this payment' });
-    if (
-      orderRecord.buyer.toString() !== payment.user.toString() ||
-      Math.abs(orderRecord.totalPrice - payment.amount) >= 0.01
-    ) {
+    if (!paymentMatchesOrder(payment, orderRecord)) {
       return res.status(409).json({ message: 'Payment does not match its order' });
     }
 
@@ -404,10 +398,17 @@ const verifyPayment = async (req, res) => {
 // @access  Private
 const getPaymentHistory = async (req, res) => {
   try {
-    const payments = await Payment.find({ user: req.user._id })
-      .populate('order', 'totalPrice status orderItems deliveryAddress')
-      .sort({ createdAt: -1 })
-      .limit(50);
+    const { page, limit, skip } = parsePagination(req.query);
+    const filter = { user: req.user._id };
+    const [payments, total] = await Promise.all([
+      Payment.find(filter)
+        .populate('order', 'totalPrice status orderItems deliveryAddress')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Payment.countDocuments(filter),
+    ]);
+    setPaginationHeaders(res, { page, limit }, total);
 
     res.json(payments);
   } catch (error) {
@@ -421,7 +422,8 @@ const getPaymentHistory = async (req, res) => {
 // @access  Private/Admin
 const getAllPayments = async (req, res) => {
   try {
-    const { status, method, startDate, endDate, page = 1, limit = 20 } = req.query;
+    const { status, method, startDate, endDate } = req.query;
+    const { page, limit, skip } = parsePagination(req.query, 20);
 
     const filter = {};
     if (status) filter.status = status;
@@ -432,14 +434,13 @@ const getAllPayments = async (req, res) => {
       if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
 
-    const skip = (page - 1) * limit;
     const [payments, total] = await Promise.all([
       Payment.find(filter)
         .populate('user', 'name email phone')
         .populate('order', 'totalPrice status')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(Number(limit)),
+        .limit(limit),
       Payment.countDocuments(filter),
     ]);
 
@@ -469,7 +470,7 @@ const getAllPayments = async (req, res) => {
 
     res.json({
       payments,
-      pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / limit) },
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
       stats: stats[0] || { totalRevenue: 0, totalTransactions: 0 },
       methodStats,
     });
