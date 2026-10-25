@@ -117,7 +117,7 @@ const FarmerAnalytics = () => {
       }
     };
 
-    if (user?.token) {
+    if (user?._id) {
       fetchAnalytics();
     }
   }, [user, timeRange]);
