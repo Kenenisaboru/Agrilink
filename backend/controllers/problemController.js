@@ -1,11 +1,17 @@
 const Problem = require('../models/Problem');
+const { parsePagination, setPaginationHeaders } = require('../utils/pagination');
 
 // @desc    Get all problems
 // @route   GET /api/problems
 // @access  Public
 const getProblems = async (req, res) => {
   try {
-    const problems = await Problem.find().populate('farmer', 'name location');
+    const { page, limit, skip } = parsePagination(req.query);
+    const [problems, total] = await Promise.all([
+      Problem.find().populate('farmer', 'name location').sort('-createdAt').skip(skip).limit(limit),
+      Problem.countDocuments(),
+    ]);
+    setPaginationHeaders(res, { page, limit }, total);
     res.json(problems);
   } catch (error) {
     res.status(500).json({ message: error.message });
