@@ -47,6 +47,8 @@ const paymentSchema = new mongoose.Schema({
   // Receipt / confirmation reference from the payment provider
   transactionReference: {
     type: String,
+    unique: true,
+    sparse: true,
   },
   // Unique receipt number for this transaction
   receiptNumber: {
@@ -75,6 +77,9 @@ const paymentSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+paymentSchema.index({ user: 1, createdAt: -1 });
+paymentSchema.index({ order: 1, status: 1 });
 
 // Generate unique receipt number before saving
 paymentSchema.pre('save', function(next) {
