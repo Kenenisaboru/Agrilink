@@ -2,6 +2,13 @@ const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const path = require('path');
 
+const imageFileFilter = (req, file, callback) => {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+    return callback(new Error('Only JPEG, PNG, and WebP images are allowed'));
+  }
+  callback(null, true);
+};
+
 // Only configure Cloudinary if credentials are provided
 const cloudinaryEnabled = 
   process.env.CLOUDINARY_CLOUD_NAME && 
@@ -29,7 +36,11 @@ if (cloudinaryEnabled) {
     }
   });
 
-  upload = multer({ storage: storage });
+  upload = multer({
+    storage,
+    fileFilter: imageFileFilter,
+    limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+  });
   console.log('✅ Cloudinary storage enabled');
 } else {
   const storage = multer.diskStorage({
@@ -41,7 +52,11 @@ if (cloudinaryEnabled) {
     }
   });
 
-  upload = multer({ storage: storage });
+  upload = multer({
+    storage,
+    fileFilter: imageFileFilter,
+    limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+  });
   console.log('📂 Local storage enabled (images will be saved in /uploads)');
 }
 
