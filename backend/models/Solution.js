@@ -27,4 +27,6 @@ const solutionSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+solutionSchema.index({ problem: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Solution', solutionSchema);
