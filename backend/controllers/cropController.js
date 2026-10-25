@@ -1,5 +1,8 @@
 const Crop = require('../models/Crop');
 const { analyzePrice } = require('../utils/priceAnalyzer');
+const { parsePagination, setPaginationHeaders } = require('../utils/pagination');
+
+const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // @desc    Get all available crops (with optional filters)
 // @route   GET /api/crops
@@ -7,16 +10,26 @@ const { analyzePrice } = require('../utils/priceAnalyzer');
 const getCrops = async (req, res) => {
   try {
     const { keyword, category, location } = req.query;
-    
+    const { page, limit, skip } = parsePagination(req.query, 50);
     const filter = { isAvailable: true };
-    if (keyword) filter.name = { $regex: keyword, $options: 'i' };
-    if (category) filter.category = category;
-    if (location) filter.location = { $regex: location, $options: 'i' };
+    if (keyword && typeof keyword === 'string' && keyword.length <= 100) {
+      filter.name = { $regex: escapeRegex(keyword), $options: 'i' };
+    }
+    if (category && typeof category === 'string') filter.category = category;
+    if (location && typeof location === 'string' && location.length <= 100) {
+      filter.location = { $regex: escapeRegex(location), $options: 'i' };
+    }
 
-    const crops = await Crop.find(filter)
-      .populate('farmer', 'name location phone mpesaNumber')
-      .sort({ createdAt: -1 })
-      .lean(); // Use lean() to get plain JS objects
+    const [crops, total] = await Promise.all([
+      Crop.find(filter)
+        .populate('farmer', 'name location phone mpesaNumber')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Crop.countDocuments(filter),
+    ]);
+    setPaginationHeaders(res, { page, limit }, total);
 
     // Attach AI Pricing Analysis to each crop
     const cropsWithAI = crops.map(crop => ({
@@ -35,7 +48,12 @@ const getCrops = async (req, res) => {
 // @access  Private (Farmer)
 const getFarmerCrops = async (req, res) => {
   try {
-    const crops = await Crop.find({ farmer: req.user._id }).sort({ createdAt: -1 });
+    const { page, limit, skip } = parsePagination(req.query);
+    const [crops, total] = await Promise.all([
+      Crop.find({ farmer: req.user._id }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Crop.countDocuments({ farmer: req.user._id }),
+    ]);
+    setPaginationHeaders(res, { page, limit }, total);
     res.json(crops);
   } catch (error) {
     res.status(500).json({ message: error.message });
