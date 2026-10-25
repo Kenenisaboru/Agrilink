@@ -16,19 +16,19 @@ const defaultHost = window.location.hostname || 'localhost';
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || `http://${defaultHost}:5000`;
 
 let socket = null;
-let currentToken = null;
+let currentUserId = null;
 
-export const getSocket = (token) => {
-  if (token && token !== currentToken) {
+export const getSocket = (userId) => {
+  if (userId && userId !== currentUserId) {
     if (socket) {
       socket.disconnect();
     }
     socket = io(SOCKET_URL, {
-      auth: { token },
+      withCredentials: true,
       reconnection: true,
       reconnectionDelay: 1000,
     });
-    currentToken = token;
+    currentUserId = userId;
   }
   return socket;
 };
@@ -37,7 +37,7 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
-    currentToken = null;
+    currentUserId = null;
   }
 };
 
@@ -75,7 +75,7 @@ const ChatPage = () => {
   const [translations, setTranslations] = useState({}); // { msgId: "translated text" }
 
   useEffect(() => {
-    const s = getSocket(user?.token);
+    const s = getSocket(user?._id);
     if (!s) return;
     if (user?._id) s.emit('join', user._id);
 
@@ -135,7 +135,7 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    if (user?.token) fetchHistory();
+    if (user?._id) fetchHistory();
   }, [user]);
 
   useEffect(() => {
@@ -158,7 +158,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (user?._id) {
-      voiceCommunication.initialize(user._id, user.token);
+      voiceCommunication.initialize(user._id);
       
       // Setup voice communication event handlers
       voiceCommunication.onIncomingCall = (data) => {
@@ -193,7 +193,7 @@ const ChatPage = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !recipient) return;
-    const s = getSocket(user?.token);
+    const s = getSocket(user?._id);
     if (!s) return;
     s.emit('sendMessage', {
       senderId: user._id,
@@ -205,7 +205,7 @@ const ChatPage = () => {
 
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    const s = getSocket(user?.token);
+    const s = getSocket(user?._id);
     if (recipient && s) s.emit('typing', { senderId: user._id, receiverId: recipient._id });
   };
 
