@@ -1,5 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+const { parsePagination, setPaginationHeaders } = require('../utils/pagination');
 
 // @desc    Send a message
 // @route   POST /api/messages
@@ -7,6 +9,11 @@ const User = require('../models/User');
 const sendMessage = async (req, res) => {
   try {
     const { receiverId, content } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(receiverId) || typeof content !== 'string' ||
+        !content.trim() || content.length > 5000) {
+      return res.status(400).json({ message: 'Provide a valid recipient and a message of up to 5000 characters' });
+    }
 
     const receiver = await User.findById(receiverId);
     if (!receiver) {
@@ -33,13 +40,23 @@ const getConversation = async (req, res) => {
   try {
     const currentUserId = req.user._id;
     const { otherUserId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
 
-    const messages = await Message.find({
+    const { page, limit, skip } = parsePagination(req.query, 100);
+    const filter = {
       $or: [
         { sender: currentUserId, receiver: otherUserId },
         { sender: otherUserId, receiver: currentUserId }
       ]
-    }).sort('createdAt');
+    };
+    const [messages, total] = await Promise.all([
+      Message.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Message.countDocuments(filter),
+    ]);
+    messages.reverse();
+    setPaginationHeaders(res, { page, limit }, total);
 
     res.json(messages);
   } catch (error) {
@@ -55,8 +72,10 @@ const getConversations = async (req, res) => {
     const userId = req.user._id;
 
     // Find unique users from both sender and receiver fields
-    const sentTo = await Message.find({ sender: userId }).distinct('receiver');
-    const receivedFrom = await Message.find({ receiver: userId }).distinct('sender');
+    const [sentTo, receivedFrom] = await Promise.all([
+      Message.find({ sender: userId }).distinct('receiver'),
+      Message.find({ receiver: userId }).distinct('sender'),
+    ]);
 
     const uniqueUserIds = [...new Set([...sentTo, ...receivedFrom])];
 
