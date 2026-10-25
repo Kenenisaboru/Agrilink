@@ -2,6 +2,7 @@ const Message = require('../models/Message');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { getAuthCookie } = require('../middleware/authCookies');
 const {
   assertSenderMatchesSocket,
   canJoinTrackingRoom,
@@ -11,7 +12,8 @@ const {
 const socketHandler = (io) => {
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token || socket.handshake.query.token;
+      const token = socket.handshake.auth.token ||
+        getAuthCookie(socket.handshake.headers.cookie);
       if (!token) {
         return next(new Error('Authentication required'));
       }
