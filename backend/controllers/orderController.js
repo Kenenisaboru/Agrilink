@@ -3,6 +3,7 @@ const Crop = require('../models/Crop');
 const Notification = require('../models/Notification');
 const { sendSMS } = require('../utils/smsService');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const { canViewOrder, canUpdateOrderStatus } = require('../utils/orderGuards');
 
 /**
@@ -24,89 +25,101 @@ const { canViewOrder, canUpdateOrderStatus } = require('../utils/orderGuards');
 // @route   POST /api/orders
 // @access  Private (Buyer)
 exports.createOrder = async (req, res) => {
+  const reservedStock = [];
   try {
-    const {
-      orderItems,
-      deliveryAddress,
-      totalPrice,
-      paymentMethod,
-      transactionId
-    } = req.body;
-
-    // --- Validation ---
-    if (!orderItems || orderItems.length === 0) {
-      return res.status(400).json({ message: 'No order items provided' });
+    if (req.user.role !== 'Buyer') {
+      return res.status(403).json({ message: 'Only buyers can place orders' });
     }
 
-    if (!deliveryAddress) {
-      return res.status(400).json({ message: 'Delivery address is required' });
+    const { orderItems, deliveryAddress, paymentMethod } = req.body;
+    if (!Array.isArray(orderItems) || orderItems.length === 0 || orderItems.length > 50) {
+      return res.status(400).json({ message: 'Provide between 1 and 50 order items' });
+    }
+    if (typeof deliveryAddress !== 'string' || !deliveryAddress.trim() || deliveryAddress.length > 500) {
+      return res.status(400).json({ message: 'A valid delivery address is required' });
     }
 
-    // --- Find the farmer who owns these crops ---
-    // In a real multi-vendor marketplace, one order could have items from multiple farmers.
-    // For simplicity (and since most orders in Ethiopia will be from one farmer),
-    // we pick the farmer from the first crop item.
-    let farmerId = null;
-
-    // Try to look up the crop to find its farmer
-    if (orderItems[0]?.crop) {
-      const firstCrop = await Crop.findById(orderItems[0].crop);
-      if (firstCrop) {
-        farmerId = firstCrop.farmer;
+    const requestedItems = new Map();
+    for (const item of orderItems) {
+      const cropId = item?.crop;
+      const quantity = Number(item?.quantity);
+      if (!mongoose.Types.ObjectId.isValid(cropId) || !Number.isFinite(quantity) || quantity <= 0) {
+        return res.status(400).json({ message: 'Each item must have a valid crop ID and positive quantity' });
       }
+      requestedItems.set(cropId.toString(), (requestedItems.get(cropId.toString()) || 0) + quantity);
     }
 
-    // If we couldn't find the farmer from the crop, try the request body
-    if (!farmerId && req.body.farmerId) {
-      farmerId = req.body.farmerId;
+    const crops = await Crop.find({
+      _id: { $in: [...requestedItems.keys()] },
+      isAvailable: true,
+    });
+    if (crops.length !== requestedItems.size) {
+      return res.status(400).json({ message: 'One or more crops are unavailable' });
     }
 
-    // Last resort: use a placeholder (in demo mode)
-    if (!farmerId) {
-      // In demo mode, we still create the order but log a warning
-      console.warn('[ORDER] Could not determine farmer for this order. Using buyer as placeholder.');
-      farmerId = req.user._id;
+    const farmerId = crops[0].farmer;
+    if (crops.some(crop => crop.farmer.toString() !== farmerId.toString())) {
+      return res.status(400).json({ message: 'An order can contain crops from only one farmer' });
     }
 
-    // --- Create the Order ---
+    const authoritativeItems = crops.map(crop => {
+      const quantity = requestedItems.get(crop._id.toString());
+      if (quantity > crop.quantity) {
+        throw Object.assign(new Error(`${crop.name} does not have enough stock`), { statusCode: 409 });
+      }
+      return {
+        crop: crop._id,
+        name: crop.name,
+        quantity,
+        image: crop.image,
+        price: crop.pricePerUnit,
+        unit: crop.unit,
+      };
+    });
+    const totalPrice = authoritativeItems.reduce((total, item) => total + item.quantity * item.price, 0);
+    if (!Number.isFinite(totalPrice) || totalPrice <= 0) {
+      return res.status(400).json({ message: 'Order total must be greater than zero' });
+    }
+
     const order = new Order({
       buyer: req.user._id,
       farmer: farmerId,
-      orderItems,
+      orderItems: authoritativeItems,
       totalPrice,
-      deliveryAddress,
+      deliveryAddress: deliveryAddress.trim(),
       paymentMethod: paymentMethod || 'Telebirr',
-      transactionId: transactionId || null,
-      paymentStatus: transactionId ? 'Paid' : 'Unpaid',
-      status: transactionId ? 'Paid' : 'Pending',
+      paymentStatus: 'Unpaid',
+      status: 'Pending',
       buyerPhone: req.user.phone || req.user.telebirrNumber || '',
       buyerEmail: req.user.email || '',
     });
 
-    const createdOrder = await order.save();
-
-    // --- Reduce crop stock (optional but realistic) ---
-    for (const item of orderItems) {
-      if (item.crop) {
-        await Crop.findByIdAndUpdate(item.crop, {
-          $inc: { quantity: -item.quantity }
-        });
+    for (const item of authoritativeItems) {
+      const result = await Crop.updateOne(
+        { _id: item.crop, isAvailable: true, quantity: { $gte: item.quantity } },
+        { $inc: { quantity: -item.quantity } }
+      );
+      if (result.modifiedCount !== 1) {
+        for (const reserved of reservedStock) {
+          await Crop.updateOne({ _id: reserved.crop }, { $inc: { quantity: reserved.quantity } });
+        }
+        return res.status(409).json({ message: 'One or more crops no longer have enough stock' });
       }
+      reservedStock.push({ crop: item.crop, quantity: item.quantity });
     }
 
-    // --- Send notification to the farmer ---
-    if (farmerId && farmerId.toString() !== req.user._id.toString()) {
-      await createFarmerNotification(createdOrder, req.user);
-    }
-
-    // Log for demo purposes
-    console.log(`✅ [ORDER CREATED] Order #${createdOrder._id} | Buyer: ${req.user.name} | Total: ${totalPrice} ETB`);
-
+    const createdOrder = await order.save();
     res.status(201).json(createdOrder);
 
   } catch (error) {
+    for (const reserved of reservedStock) {
+      await Crop.updateOne({ _id: reserved.crop }, { $inc: { quantity: reserved.quantity } });
+    }
+    if (error.statusCode === 409) {
+      return res.status(409).json({ message: error.message });
+    }
     console.error('[ORDER ERROR]', error);
-    res.status(500).json({ message: 'Failed to create order: ' + error.message });
+    res.status(500).json({ message: 'Failed to create order' });
   }
 };
 
