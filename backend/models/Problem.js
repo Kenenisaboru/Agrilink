@@ -31,4 +31,6 @@ const problemSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+problemSchema.index({ status: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Problem', problemSchema);
