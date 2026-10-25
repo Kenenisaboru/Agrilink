@@ -22,8 +22,14 @@ services:
       - key: FLASK_API_URL
         value: https://agrilink-ai.onrender.com/api
       - key: PAYMENT_MODE
-        value: DEMO
+        value: LIVE
       - key: CHAPA_SECRET_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
 
   # 2. Flask AI Backend
@@ -36,9 +42,17 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
+      - key: ALLOWED_ORIGINS
+        value: https://agrilink-frontend.onrender.com
       - key: PORT
         value: 5001
       - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://agrilink-frontend.onrender.com
+      - key: RATELIMIT_STORAGE_URI
         sync: false
 
   # 3. FastAPI Recommendation Service
@@ -51,6 +65,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
+      - key: ALLOWED_ORIGINS
+        value: https://agrilink-frontend.onrender.com
 
   # 4. React/Vite Frontend
   - type: web
