@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.error('👉 Fix: Go to MongoDB Atlas → Network Access → Add IP "0.0.0.0/0"');
-    process.exit(1);
+  if (!process.env.MONGO_URI) {
+    throw new Error('MONGO_URI is required');
   }
+
+  const conn = await mongoose.connect(process.env.MONGO_URI);
+  console.log(`MongoDB connected: ${conn.connection.name}`);
+  return conn;
 };
 
 module.exports = connectDB;
