@@ -96,7 +96,7 @@ const FarmerDashboard = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!user?.token) return;
+      if (!user?._id) return;
       try {
         const config = {
           headers: { Authorization: `Bearer ${user.token}` }
