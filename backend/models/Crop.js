@@ -18,6 +18,7 @@ const cropSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: [true, 'Please specify available quantity'],
+    min: 0,
   },
   unit: {
     type: String,
@@ -26,6 +27,7 @@ const cropSchema = new mongoose.Schema({
   pricePerUnit: {
     type: Number,
     required: [true, 'Please specify price per unit'],
+    min: 0,
   },
   location: {
     type: String,
@@ -53,5 +55,8 @@ const cropSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+cropSchema.index({ isAvailable: 1, createdAt: -1 });
+cropSchema.index({ farmer: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Crop', cropSchema);
