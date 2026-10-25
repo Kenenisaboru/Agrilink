@@ -1,8 +1,8 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { isCloudinaryConfigured } = require('../middleware/uploadMiddleware');
-
-const REGISTRABLE_ROLES = new Set(['Farmer', 'Student', 'Buyer']);
+const { setAuthCookie, clearAuthCookie } = require('../middleware/authCookies');
+const { canRegisterRole } = require('../utils/authGuards');
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -15,7 +15,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide name, email, password and role' });
     }
 
-    if (!REGISTRABLE_ROLES.has(role)) {
+    if (!canRegisterRole(role)) {
       return res.status(400).json({ message: 'Please select a supported account type' });
     }
 
@@ -65,6 +65,7 @@ const registerUser = async (req, res) => {
 
     if (user) {
       const token = generateToken(user._id, user.role);
+      setAuthCookie(res, token);
       res.status(201).json({
         _id: user._id,
         name: user.name,
@@ -112,6 +113,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user._id, user.role);
+    setAuthCookie(res, token);
     res.json({
       _id: user._id,
       name: user.name,
@@ -137,6 +139,8 @@ const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
     if (user) {
+      const token = generateToken(user._id, user.role);
+      setAuthCookie(res, token);
       res.json({
         _id: user._id,
         name: user.name,
@@ -150,6 +154,7 @@ const getUserProfile = async (req, res) => {
         balance: user.balance || 0,
         university: user.university,
         createdAt: user.createdAt,
+        token,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -177,11 +182,15 @@ const updateUserProfile = async (req, res) => {
     user.university = university || user.university;
 
     if (req.body.password) {
+      if (typeof req.body.password !== 'string' || req.body.password.length < 8 || req.body.password.length > 128) {
+        return res.status(400).json({ message: 'Password must be between 8 and 128 characters' });
+      }
       user.password = req.body.password;
     }
 
     const updatedUser = await user.save();
     const token = generateToken(updatedUser._id, updatedUser.role);
+    setAuthCookie(res, token);
 
     res.json({
       _id: updatedUser._id,
@@ -199,9 +208,15 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const logoutUser = (req, res) => {
+  clearAuthCookie(res);
+  res.json({ success: true, message: 'Logged out successfully' });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
+  logoutUser,
 };
