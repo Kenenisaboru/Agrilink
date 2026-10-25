@@ -70,9 +70,9 @@ const DeliveryTracking = () => {
 
   // Initialize Socket Connection with auth
   useEffect(() => {
-    if (!user?.token) return;
+    if (!user?._id) return;
     const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5557', {
-      auth: { token: user.token },
+      withCredentials: true,
       reconnection: true,
       reconnectionDelay: 1000,
     });
@@ -120,7 +120,7 @@ const DeliveryTracking = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user?.token) return;
+      if (!user?._id) return;
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         
