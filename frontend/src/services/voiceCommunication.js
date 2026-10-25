@@ -19,14 +19,14 @@ class VoiceCommunicationService {
   }
 
   // Initialize voice communication
-  initialize(userId, token) {
+  initialize(userId) {
     try {
       // Use dynamic host detection to avoid hardcoded IPs
       const defaultHost = window.location.hostname || 'localhost';
       const apiUrl = import.meta.env.VITE_API_URL || `http://${defaultHost}:5557`;
       
       this.socket = io(apiUrl, {
-        auth: { token },
+        withCredentials: true,
         query: { userId }
       });
 
