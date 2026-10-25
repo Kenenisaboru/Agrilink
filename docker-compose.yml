@@ -1,0 +1,73 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-agrilink}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD in .env}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-agrilink}
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGO_URI: mongodb://${MONGO_USER:-agrilink}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB:-agrilink}?authSource=admin&replicaSet=rs0
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      ALLOWED_ORIGINS: http://localhost:8080
+      FRONTEND_URL: http://localhost:8080
+      PAYMENT_MODE: ${PAYMENT_MODE:-DEMO}
+      CHAPA_SECRET_KEY: ${CHAPA_SECRET_KEY:-}
+      FLASK_API_URL: http://flask-ai:5001/api
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  flask-ai:
+    build: ./flask_ai
+    restart: unless-stopped
+    environment:
+      PORT: 5001
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      ALLOWED_ORIGINS: http://localhost:8080
+      RATELIMIT_STORAGE_URI: ${RATELIMIT_STORAGE_URI:-memory://}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "5001:5001"
+
+  recommender:
+    build: ./fastapi_recommender
+    restart: unless-stopped
+    environment:
+      PORT: 8001
+      ALLOWED_ORIGINS: http://localhost:8080
+    ports:
+      - "8001:8001"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:5000
+        VITE_FLASK_API_URL: http://localhost:5001/api
+        VITE_RECOMMENDER_URL: http://localhost:8001
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+      - flask-ai
+      - recommender
+
+volumes:
+  mongodb_data:
