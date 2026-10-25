@@ -1,8 +1,13 @@
 import json
 import os
-import hashlib
+import base64
+import hmac
+import time
+from functools import wraps
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from modules.chatbot import get_chat_response, clear_history, get_history_length, detect_language
 from modules.model import predict_price
 from modules.recommendation import get_recommendations
@@ -14,289 +19,69 @@ from modules.cache import cache, TTL_CHAT_RESPONSE
 from modules.translate import translate_message
 
 app = Flask(__name__)
-CORS(app)
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+    if origin.strip()
+]
+CORS(app, origins=allowed_origins, supports_credentials=True)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=['120 per minute'],
+    storage_uri=os.getenv('RATELIMIT_STORAGE_URI', 'memory://'),
+)
 
 # ── Feedback log (in-memory; extend to DB in production) ─────────────────────
 _feedback_log: list = []
 
-# ── Order tracking database (in-memory; extend to DB in production) ───────────
-_order_tracking_db: dict = {}
+def _decode_jwt_claims():
+    authorization = request.headers.get('Authorization', '')
+    if not authorization.startswith('Bearer '):
+        return None
 
-# Initialize with demo tracking data
-def init_tracking_data():
-    if not _order_tracking_db:
-        _order_tracking_db['ORD-2026-0426-001'] = {
-            'order_id': 'ORD-2026-0426-001',
-            'destination': 'Ethiopia',
-            'current_location': 'Dire Dawa',
-            'progress': 65,
-            'estimated_arrival': '2 hours 30 minutes',
-            'driver': {
-                'name': 'Mohammed Ahmed',
-                'phone': '+251 911 234 567',
-                'rating': 4.8
-            },
-            'checkpoints': [
-                {'location': 'Addis Ababa', 'time': '8:00 AM', 'status': 'completed'},
-                {'location': 'Adama', 'time': '10:30 AM', 'status': 'completed'},
-                {'location': 'Dire Dawa', 'time': '1:00 PM', 'status': 'current'},
-                {'location': 'Harar', 'time': '3:30 PM', 'status': 'pending'}
-            ],
-            'coordinates': {
-                'lat': 9.59,
-                'lng': 41.86
-            },
-            'status': 'in_transit',
-            'updated_at': __import__('datetime').datetime.now().isoformat()
-        }
+    secret = os.getenv('JWT_SECRET')
+    if not secret:
+        return None
 
-init_tracking_data()
+    token = authorization[7:]
+    try:
+        encoded_header, encoded_payload, signature = token.split('.')
+        signing_input = f'{encoded_header}.{encoded_payload}'.encode()
+        expected = hmac.new(secret.encode(), signing_input, 'sha256').digest()
+        actual = base64.urlsafe_b64decode(signature + '=' * (-len(signature) % 4))
+        if not hmac.compare_digest(expected, actual):
+            return None
 
-# ── User database (in-memory; extend to DB in production) ───────────────────
-_users_db: list = []
-
-# Initialize with a demo user
-def init_demo_users():
-    if not _users_db:
-        # Demo users for testing
-        demo_users = [
-            {
-                'id': 1,
-                'email': 'farmer@agrilink.et',
-                'password': hashlib.sha256('farmer123'.encode()).hexdigest(),
-                'role': 'Farmer',
-                'name': 'Abebe Kebede'
-            },
-            {
-                'id': 2,
-                'email': 'buyer@agrilink.et',
-                'password': hashlib.sha256('buyer123'.encode()).hexdigest(),
-                'role': 'Buyer',
-                'name': 'Fatuma Ahmed'
-            },
-            {
-                'id': 3,
-                'email': 'student@agrilink.et',
-                'password': hashlib.sha256('student123'.encode()).hexdigest(),
-                'role': 'Student',
-                'name': 'Kedir Jemal'
-            },
-            {
-                'id': 4,
-                'email': 'admin@agrilink.et',
-                'password': hashlib.sha256('admin123'.encode()).hexdigest(),
-                'role': 'Admin',
-                'name': 'System Admin'
-            }
-        ]
-        _users_db.extend(demo_users)
-
-init_demo_users()
-
-# ── Generate JWT-like token (simplified for demo) ───────────────────────────
-def generate_token(user_id):
-    import secrets
-    return secrets.token_hex(32)
-
-# ─────────────────────────────────────────────────────────────────────────────
-# AUTHENTICATION ENDPOINTS
-# ─────────────────────────────────────────────────────────────────────────────
-@app.route('/api/auth/login', methods=['POST'])
-def login_endpoint():
-    data = request.json
-    if not data or 'email' not in data or 'password' not in data:
-        return jsonify({'error': 'Email and password are required'}), 400
-
-    email = data['email']
-    password = hashlib.sha256(data['password'].encode()).hexdigest()
-
-    # Find user
-    user = None
-    for u in _users_db:
-        if u['email'] == email and u['password'] == password:
-            user = u
-            break
-
-    if not user:
-        return jsonify({'error': 'Invalid email or password'}), 401
-
-    # Generate token
-    token = generate_token(user['id'])
-
-    # Return user data with token
-    return jsonify({
-        'id': user['id'],
-        'email': user['email'],
-        'role': user['role'],
-        'name': user['name'],
-        'token': token
-    })
+        header = json.loads(base64.urlsafe_b64decode(encoded_header + '=' * (-len(encoded_header) % 4)))
+        claims = json.loads(base64.urlsafe_b64decode(encoded_payload + '=' * (-len(encoded_payload) % 4)))
+        if header.get('alg') != 'HS256' or claims.get('exp', 0) <= time.time() or not claims.get('id'):
+            return None
+        return claims
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return None
 
 
-@app.route('/api/auth/register', methods=['POST'])
-def register_endpoint():
-    data = request.json
-    if not data or 'email' not in data or 'password' not in data or 'role' not in data:
-        return jsonify({'error': 'Email, password, and role are required'}), 400
-
-    email = data['email']
-    password = hashlib.sha256(data['password'].encode()).hexdigest()
-    role = data['role']
-    name = data.get('name', email.split('@')[0])
-
-    # Check if user already exists
-    for u in _users_db:
-        if u['email'] == email:
-            return jsonify({'error': 'User already exists'}), 400
-
-    # Create new user
-    new_user = {
-        'id': len(_users_db) + 1,
-        'email': email,
-        'password': password,
-        'role': role,
-        'name': name
-    }
-    _users_db.append(new_user)
-
-    # Generate token
-    token = generate_token(new_user['id'])
-
-    return jsonify({
-        'id': new_user['id'],
-        'email': new_user['email'],
-        'role': new_user['role'],
-        'name': new_user['name'],
-        'token': token
-    }), 201
+def requires_auth(admin_only=False):
+    def decorator(handler):
+        @wraps(handler)
+        def wrapped(*args, **kwargs):
+            claims = _decode_jwt_claims()
+            if not claims:
+                return jsonify({'error': 'Authentication required'}), 401
+            if admin_only and claims.get('role') != 'Admin':
+                return jsonify({'error': 'Administrator access required'}), 403
+            request.auth_claims = claims
+            return handler(*args, **kwargs)
+        return wrapped
+    return decorator
 
 
-@app.route('/api/auth/me', methods=['GET'])
-def me_endpoint():
-    token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    if not token:
-        return jsonify({'error': 'No token provided'}), 401
-
-    # In production, validate token properly
-    # For demo, return first user
-    if _users_db:
-        user = _users_db[0]
-        return jsonify({
-            'id': user['id'],
-            'email': user['email'],
-            'role': user['role'],
-            'name': user['name']
-        })
-    
-    return jsonify({'error': 'Invalid token'}), 401
-
-# ─────────────────────────────────────────────────────────────────────────────
-# GPS TRACKING ENDPOINTS
-# ─────────────────────────────────────────────────────────────────────────────
-@app.route('/api/tracking/<order_id>', methods=['GET'])
-def get_tracking_endpoint(order_id):
-    """Get tracking information for a specific order"""
-    if order_id not in _order_tracking_db:
-        return jsonify({'error': 'Order not found'}), 404
-    
-    tracking_data = _order_tracking_db[order_id]
-    return jsonify(tracking_data)
-
-
-@app.route('/api/tracking/<order_id>/location', methods=['POST'])
-def update_location_endpoint(order_id):
-    """Update location for an order (called by driver app)"""
-    if order_id not in _order_tracking_db:
-        return jsonify({'error': 'Order not found'}), 404
-    
-    data = request.json
-    if not data or 'lat' not in data or 'lng' not in data:
-        return jsonify({'error': 'Latitude and longitude are required'}), 400
-    
-    _order_tracking_db[order_id]['coordinates'] = {
-        'lat': data['lat'],
-        'lng': data['lng']
-    }
-    _order_tracking_db[order_id]['current_location'] = data.get('location', 'Unknown')
-    _order_tracking_db[order_id]['updated_at'] = __import__('datetime').datetime.now().isoformat()
-    
-    return jsonify({'success': True, 'message': 'Location updated'})
-
-
-@app.route('/api/tracking/orders', methods=['GET'])
-def get_user_tracking_orders_endpoint():
-    """Get all active tracking orders for a user"""
-    user_id = request.args.get('user_id')
-    
-    # In production, filter by user_id
-    # For demo, return all orders
-    return jsonify({
-        'orders': list(_order_tracking_db.values())
-    })
-
-
-@app.route('/api/tracking/<order_id>/status', methods=['PUT'])
-def update_status_endpoint(order_id):
-    """Update order status and progress"""
-    if order_id not in _order_tracking_db:
-        return jsonify({'error': 'Order not found'}), 404
-    
-    data = request.json
-    if not data or 'status' not in data:
-        return jsonify({'error': 'Status is required'}), 400
-    
-    _order_tracking_db[order_id]['status'] = data['status']
-    _order_tracking_db[order_id]['progress'] = data.get('progress', _order_tracking_db[order_id]['progress'])
-    _order_tracking_db[order_id]['updated_at'] = __import__('datetime').datetime.now().isoformat()
-    
-    # Update checkpoint status based on progress
-    progress = _order_tracking_db[order_id]['progress']
-    checkpoints = _order_tracking_db[order_id]['checkpoints']
-    
-    for i, checkpoint in enumerate(checkpoints):
-        if progress >= (i + 1) * 25:
-            checkpoint['status'] = 'completed'
-        elif progress >= i * 25:
-            checkpoint['status'] = 'current'
-        else:
-            checkpoint['status'] = 'pending'
-    
-    return jsonify({'success': True, 'message': 'Status updated'})
-
-
-@app.route('/api/tracking/create', methods=['POST'])
-def create_tracking_endpoint():
-    """Create a new tracking entry for an order"""
-    data = request.json
-    if not data or 'order_id' not in data or 'destination' not in data:
-        return jsonify({'error': 'order_id and destination are required'}), 400
-    
-    order_id = data['order_id']
-    
-    if order_id in _order_tracking_db:
-        return jsonify({'error': 'Order already exists'}), 400
-    
-    _order_tracking_db[order_id] = {
-        'order_id': order_id,
-        'destination': data['destination'],
-        'current_location': data.get('origin', 'Addis Ababa'),
-        'progress': 0,
-        'estimated_arrival': data.get('estimated_arrival', 'Calculating...'),
-        'driver': data.get('driver', {
-            'name': 'Driver Assigned',
-            'phone': '+251 900 000 000',
-            'rating': 4.5
-        }),
-        'checkpoints': data.get('checkpoints', [
-            {'location': data.get('origin', 'Addis Ababa'), 'time': 'Pending', 'status': 'current'},
-            {'location': data['destination'], 'time': 'Pending', 'status': 'pending'}
-        ]),
-        'coordinates': data.get('coordinates', {'lat': 9.0, 'lng': 38.0}),
-        'status': 'pending',
-        'updated_at': __import__('datetime').datetime.now().isoformat()
-    }
-    
-    return jsonify({'success': True, 'message': 'Tracking created', 'data': _order_tracking_db[order_id]}), 201
+@app.before_request
+def disable_mock_identity_and_tracking():
+    if request.path.startswith('/api/auth/') or request.path.startswith('/api/tracking/'):
+        return jsonify({'error': 'This endpoint is not available'}), 404
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CHAT ENDPOINT — with conversation memory & RAG-lite
@@ -489,6 +274,7 @@ def feedback_endpoint():
 
 
 @app.route('/api/feedback/stats', methods=['GET'])
+@requires_auth(admin_only=True)
 def feedback_stats():
     """Return feedback statistics — useful for the admin dashboard."""
     if not _feedback_log:
@@ -508,16 +294,23 @@ def feedback_stats():
 # PRICE ALERT ENGINE
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/api/alerts', methods=['POST'])
+@requires_auth()
 def create_alert_endpoint():
     """Create a new price alert for a user."""
     data = request.json
     if not data or 'crop' not in data or 'target_price' not in data:
         return jsonify({'error': 'crop and target_price are required'}), 400
 
+    try:
+        target_price = float(data['target_price'])
+    except (TypeError, ValueError):
+        return jsonify({'error': 'target_price must be a number'}), 400
+    if not target_price > 0:
+        return jsonify({'error': 'target_price must be greater than zero'}), 400
     result = create_alert(
-        user_id=data.get('user_id', 'anonymous'),
+        user_id=str(request.auth_claims['id']),
         crop=data['crop'],
-        target_price=float(data['target_price']),
+        target_price=target_price,
         condition=data.get('condition', 'above'),
         location=data.get('location', 'Ethiopia')
     )
@@ -525,26 +318,28 @@ def create_alert_endpoint():
 
 
 @app.route('/api/alerts/check', methods=['GET'])
+@requires_auth()
 def check_alerts_endpoint():
     """Check all active alerts for a user against current prices."""
-    user_id = request.args.get('user_id', 'anonymous')
+    user_id = str(request.auth_claims['id'])
     result = check_alerts(user_id)
     return jsonify(result)
 
 
 @app.route('/api/alerts', methods=['GET'])
+@requires_auth()
 def get_alerts_endpoint():
     """Get all active alerts for a user."""
-    user_id = request.args.get('user_id', 'anonymous')
+    user_id = str(request.auth_claims['id'])
     alerts = get_user_alerts(user_id)
     return jsonify({'alerts': alerts})
 
 
 @app.route('/api/alerts/<alert_id>', methods=['DELETE'])
+@requires_auth()
 def dismiss_alert_endpoint(alert_id):
     """Dismiss (deactivate) a specific alert."""
-    data = request.json or {}
-    user_id = data.get('user_id', 'anonymous')
+    user_id = str(request.auth_claims['id'])
     result = dismiss_alert(alert_id, user_id)
     return jsonify(result)
 
@@ -553,11 +348,13 @@ def dismiss_alert_endpoint(alert_id):
 # CACHE STATS (dev/admin tool)
 # ─────────────────────────────────────────────────────────────────────────────
 @app.route('/api/cache/stats', methods=['GET'])
+@requires_auth(admin_only=True)
 def cache_stats_endpoint():
     return jsonify(cache.stats())
 
 
 @app.route('/api/cache/clear', methods=['POST'])
+@requires_auth(admin_only=True)
 def cache_clear_endpoint():
     cache.clear()
     return jsonify({'success': True, 'message': 'Cache cleared.'})
