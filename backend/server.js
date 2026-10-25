@@ -6,36 +6,26 @@ const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const socketHandler = require('./sockets/chatSocket');
+const errorHandler = require('./middleware/errorMiddleware');
 
 dotenv.config();
-connectDB();
 
 const app = express();
 const server = http.createServer(app);
 
-// CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',')    : [
+const allowedOrigins = (process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : [
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3000',
-    ];
+    ]).map(origin => origin.trim()).filter(Boolean);
 
-// Helper to check if origin is allowed
 const isOriginAllowed = (origin) => {
-  if (!origin) return true; 
-  if (allowedOrigins.includes(origin)) return true;
-  if (origin.endsWith('.vercel.app')) return true;
-  
-  // Allow local network IPs in development
-  if (process.env.NODE_ENV !== 'production') {
-    if (origin.startsWith('http://192.168.') || origin.startsWith('http://10.') || origin.startsWith('http://172.')) {
-      return true;
-    }
-  }
-  return false;
+  return !origin || allowedOrigins.includes(origin);
 };
 
 const io = socketio(server, {
@@ -63,6 +53,13 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
+      req.headers.origin && !isOriginAllowed(req.headers.origin)) {
+    return res.status(403).json({ success: false, error: 'Origin not allowed' });
+  }
+  next();
+});
 
 // 1. Set security HTTP headers
 app.use(helmet({
@@ -73,26 +70,45 @@ app.use(helmet({
 const limiter = rateLimit({
   max: 200, // Limit each IP to 200 requests per 15 minutes
   windowMs: 15 * 60 * 1000, 
-  message: 'Too many requests from this IP, please try again in 15 minutes!'
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: (req, res) => res.status(429).json({
+    success: false,
+    error: 'Too many requests. Please try again later.',
+  }),
 });
 app.use('/api', limiter);
+app.use('/api/auth', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: (req, res) => res.status(429).json({
+    success: false,
+    error: 'Too many authentication attempts. Please try again later.',
+  }),
+}));
 
 // 3. Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 const path = require('path');
 const fs = require('fs');
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('📁 Created uploads directory');
 }
 app.use('/uploads', express.static(uploadsDir));
-app.use('/uploads', express.static('uploads')); // Fallback for root level uploads folder
-// Health check
-app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
+app.get('/health', (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ok' : 'unavailable',
+    database: ready ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -109,38 +125,51 @@ app.use('/api/representative', require('./routes/representativeRoutes'));
 // Socket.io Integration
 socketHandler(io);
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  const message =
-    process.env.NODE_ENV === 'production'
-      ? 'Internal server error'
-      : err.message || 'Internal server error';
-  res.status(500).json({ message });
-});
-
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+  res.status(404).json({ success: false, error: 'Route not found' });
 });
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-const startServer = (port) => {
-  server.listen(port, () => {
-    console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
-  }).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`⚠️ Port ${port} is busy, trying port ${port + 1}...`);
-      startServer(port + 1);
-    } else {
-      console.error('Server error:', err);
+const startServer = async (port) => {
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+      throw new Error('A JWT_SECRET of at least 32 characters is required in production');
     }
+    if (process.env.PAYMENT_MODE !== 'LIVE') {
+      throw new Error('PAYMENT_MODE must be LIVE in production');
+    }
+    if (!process.env.CHAPA_SECRET_KEY) {
+      throw new Error('CHAPA_SECRET_KEY is required for live production payments');
+    }
+    if (!process.env.FRONTEND_URL || !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+      throw new Error('FRONTEND_URL must also be included in ALLOWED_ORIGINS in production');
+    }
+    if (!process.env.CLOUDINARY_CLOUD_NAME ||
+        !process.env.CLOUDINARY_API_KEY ||
+        !process.env.CLOUDINARY_API_SECRET) {
+      throw new Error('Cloudinary credentials are required for persistent production uploads');
+    }
+  }
+
+  await connectDB();
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, () => {
+      server.removeListener('error', reject);
+      console.log(`Server listening on port ${port} (${process.env.NODE_ENV || 'development'})`);
+      resolve(server);
+    });
   });
 };
 
 if (require.main === module) {
-  startServer(Number(PORT));
+  startServer(Number(PORT)).catch(error => {
+    console.error('Server startup failed:', error.message);
+    process.exitCode = 1;
+  });
 }
 
-module.exports = { app, server };
+module.exports = { app, server, startServer, isOriginAllowed };
