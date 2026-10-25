@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const { sendSMS } = require('../utils/smsService');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { parsePagination, setPaginationHeaders } = require('../utils/pagination');
 const { canViewOrder, canUpdateOrderStatus } = require('../utils/orderGuards');
 
 /**
@@ -177,10 +178,18 @@ exports.createOrderAfterPayment = async ({ buyerId, orderItems, totalPrice, deli
 // @access  Private (Buyer)
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ buyer: req.user._id })
-      .populate('farmer', 'name email phone location')
-      .populate('orderItems.crop', 'name image category')
-      .sort('-createdAt');
+    const { page, limit, skip } = parsePagination(req.query);
+    const filter = { buyer: req.user._id };
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .populate('farmer', 'name email phone location')
+        .populate('orderItems.crop', 'name image category')
+        .sort('-createdAt')
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments(filter),
+    ]);
+    setPaginationHeaders(res, { page, limit }, total);
 
     res.json(orders);
   } catch (error) {
@@ -194,10 +203,18 @@ exports.getMyOrders = async (req, res) => {
 // @access  Private (Farmer)
 exports.getFarmerOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ farmer: req.user._id })
-      .populate('buyer', 'name email phone location')
-      .populate('orderItems.crop', 'name image category')
-      .sort('-createdAt');
+    const { page, limit, skip } = parsePagination(req.query);
+    const filter = { farmer: req.user._id };
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .populate('buyer', 'name email phone location')
+        .populate('orderItems.crop', 'name image category')
+        .sort('-createdAt')
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments(filter),
+    ]);
+    setPaginationHeaders(res, { page, limit }, total);
 
     res.json(orders);
   } catch (error) {
