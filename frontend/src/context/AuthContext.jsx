@@ -1,8 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
-// Axios baseURL is handled in main.jsx
-
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -11,75 +9,64 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Set axios auth header whenever user changes
-  useEffect(() => {
-    if (user?.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${user.token}`;
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', user.token);
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
+  const setAuthenticatedUser = (userData) => {
+    if (userData?.token) {
+      axios.defaults.headers.common.Authorization = `Bearer ${userData.token}`;
     }
-  }, [user]);
+    setUser(userData);
+  };
 
-  // Load user from localStorage on mount
   useEffect(() => {
-    const initializeAuth = () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          setUser(parsed);
-          if (parsed.token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to parse user data:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      } finally {
-        setLoading(false);
-      }
-    };
+    let active = true;
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
 
-    initializeAuth();
+    axios.get('/api/auth/profile')
+      .then(({ data }) => {
+        if (active) setAuthenticatedUser(data);
+      })
+      .catch((error) => {
+        if (error.response?.status !== 401) {
+          console.error('Failed to restore session:', error.message);
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const login = async (email, password) => {
     const response = await axios.post('/api/auth/login', { email, password });
-    const userData = response.data;
-    setUser(userData);
-    return userData;
+    setAuthenticatedUser(response.data);
+    return response.data;
   };
 
   const register = async (userData) => {
-    let response;
-    if (userData instanceof FormData) {
-      // File upload: send as multipart/form-data
-      response = await axios.post('/api/auth/register', userData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-    } else {
-      response = await axios.post('/api/auth/register', userData);
-    }
-    const data = response.data;
-    setUser(data);
-    return data;
+    const response = userData instanceof FormData
+      ? await axios.post('/api/auth/register', userData)
+      : await axios.post('/api/auth/register', userData);
+    setAuthenticatedUser(response.data);
+    return response.data;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    delete axios.defaults.headers.common.Authorization;
+    axios.post('/api/auth/logout').catch((error) => {
+      console.error('Failed to invalidate server session:', error.message);
+    });
   };
 
   const updateUser = (newData) => {
     setUser(prev => {
-      const updated = { ...prev, ...newData };
-      localStorage.setItem('user', JSON.stringify(updated));
+      const updated = prev ? { ...prev, ...newData } : prev;
+      if (updated?.token) {
+        axios.defaults.headers.common.Authorization = `Bearer ${updated.token}`;
+      }
       return updated;
     });
   };
