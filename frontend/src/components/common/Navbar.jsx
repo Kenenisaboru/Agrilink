@@ -52,7 +52,7 @@ const Navbar = () => {
       }
     };
 
-    if (user?.token) {
+    if (user?._id) {
       fetchNotifications();
       // Poll for new notifications every 30 seconds
       const interval = setInterval(fetchNotifications, 30000);
