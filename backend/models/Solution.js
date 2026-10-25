@@ -14,6 +14,7 @@ const solutionSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, 'Please provide a detailed solution'],
+    maxlength: 10000,
   },
   projectProposalUrl: {
     type: String,
